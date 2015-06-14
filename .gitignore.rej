@@ -1,0 +1,6 @@
+diff a/.gitignore b/.gitignore	(rejected hunks)
+@@ -38,3 +38,4 @@
+ Tests/Fathen/Fathen_plant2.sum
+ Tests/Fathen/FathenTest2.apsimx
+ Documents/
++>>>>>>> 371799b5d456b55aa83caefa253f0cb4aa7cd80f
