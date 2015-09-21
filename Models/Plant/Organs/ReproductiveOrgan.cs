@@ -11,19 +11,12 @@ using System.Xml.Serialization;
 namespace Models.PMF.Organs
 {
     /// <summary>
-    /// The reproductive organ
+    /// This organ uses a generic model for plant reproductive components.  Yield is calculated from its components in terms of organ number and size (for example, grain number and grain size).  
     /// </summary>
     [Serializable]
     public class ReproductiveOrgan : BaseOrgan, Reproductive, AboveGround
     {
-        /// <summary>The summary</summary>
-        [Link]
-        ISummary Summary = null;
-
         #region Parameter Input Classes
-        /// <summary>The plant</summary>
-        [Link]
-        protected Plant Plant = null;
         /// <summary>The phenology</summary>
         [Link]
         protected Phenology Phenology = null;
@@ -150,8 +143,11 @@ namespace Models.PMF.Organs
         [EventSubscribe("DoPotentialPlantGrowth")]
         protected void OnDoPotentialPlantGrowth(object sender, EventArgs e)
         {
-            Number = NumberFunction.Value;
-            MaximumSize = MaximumPotentialGrainSize.Value;
+            if (Plant.IsAlive)
+            {
+                Number = NumberFunction.Value;
+                MaximumSize = MaximumPotentialGrainSize.Value;
+            }
         }
 
         /// <summary>Called when crop is ending</summary>
@@ -192,16 +188,6 @@ namespace Models.PMF.Organs
         private void OnSimulationCommencing(object sender, EventArgs e)
         {
             Clear();
-        }
-
-        /// <summary>Called when crop is ending</summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        [EventSubscribe("PlantEnding")]
-        private void OnPlantEnding(object sender, EventArgs e)
-        {
-            if (sender == Plant)
-                Clear();
         }
 
         /// <summary>Called when crop is being cut.</summary>
@@ -296,6 +282,65 @@ namespace Models.PMF.Organs
             get
             {
                 return MinimumNConc.Value;
+            }
+        }
+        #endregion
+        #region Biomass removal 
+        /// <summary>
+        /// The default proportions biomass to removeed from each organ on harvest.
+        /// </summary>
+        public override OrganBiomassRemovalType HarvestDefault
+        {
+            get
+            {
+                return new OrganBiomassRemovalType
+                {
+                    FractionRemoved = 1,
+                    FractionToResidue = 0
+                };
+            }
+        }
+
+        /// <summary>
+        /// The default proportions biomass to removeed from each organ on Cutting
+        /// </summary>
+        public override OrganBiomassRemovalType CutDefault
+        {
+            get
+            {
+                return new OrganBiomassRemovalType
+                {
+                    FractionRemoved = 1,
+                    FractionToResidue = 0
+                };
+            }
+        }
+        /// <summary>
+        /// The default proportions biomass to removeed from each organ on Pruning
+        /// </summary>
+        public override OrganBiomassRemovalType PruneDefault
+        {
+            get
+            {
+                return new OrganBiomassRemovalType
+                {
+                    FractionRemoved = 0,
+                    FractionToResidue = 0.8
+                };
+            }
+        }
+        /// <summary>
+        /// The default proportions biomass to removeed from each organ on Grazing
+        /// </summary>
+        public override OrganBiomassRemovalType GrazeDefault
+        {
+            get
+            {
+                return new OrganBiomassRemovalType
+                {
+                    FractionRemoved = 0.6,
+                    FractionToResidue = 0.2
+                };
             }
         }
         #endregion

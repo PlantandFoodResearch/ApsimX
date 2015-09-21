@@ -3,6 +3,7 @@
     using System;
     using Models.Soils;
     using Models.Core;
+    using PMF.Interfaces;
 
     /// <summary>
     /// An event arguments class for some events.
@@ -101,21 +102,36 @@
         public Plant Plant = null;
 
         /// <summary>The cultivar</summary>
-        public String Cultivar = "";
+        public String Cultivar { get; set; }
         /// <summary>The population</summary>
-        public Double Population = 100;
+        public Double Population { get; set; }
         /// <summary>The depth</summary>
-        public Double Depth = 100;
+        public Double Depth { get; set; }
         /// <summary>The row spacing</summary>
-        public Double RowSpacing = 150;
+        public Double RowSpacing { get; set; }
         /// <summary>The maximum cover</summary>
-        public Double MaxCover = 1;
+        public Double MaxCover { get; set; }
         /// <summary>The bud number</summary>
-        public Double BudNumber = 1;
+        public Double BudNumber { get; set; }
         /// <summary>The skip row</summary>
-        public Double SkipRow; //Not yet handled in Code
+        public Double SkipRow { get; set; }
         /// <summary>The skip plant</summary>
-        public Double SkipPlant; //Not yet handled in Code
+        public Double SkipPlant { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SowPlant2Type"/> class.
+        /// </summary>
+        public SowPlant2Type()
+        {
+            Cultivar = "";
+            Population = 100;
+            Depth = 100;
+            RowSpacing = 150;
+            MaxCover = 1;
+            BudNumber = 1;
+        }
+
+
     }
     /// <summary>
     /// 
@@ -146,4 +162,87 @@
         public String crop_type = "";
     }
 
+    ///<summary>Data passed to each organ when a biomass remove event occurs.  The proportion of biomass removed from each organ is the sum of the FractionRemoved and the FractionToRedidues</summary>
+    [Serializable]
+    public class OrganBiomassRemovalType
+    {
+        /// <summary>
+        /// The name of each organ
+        /// </summary>
+        public string NameOfOrgan { get; set; }
+        /// <summary>
+        /// The amount of biomass taken from each organ and removeed from the zone on harvest, cut, graze or prune.
+        /// </summary>
+        public double FractionRemoved { get; set; }
+        /// <summary>
+        /// The amount of biomass to removed from each organ and passed to residue pool on on harvest, cut, graze or prune
+        /// </summary>
+        public double FractionToResidue { get; set; }
+        /// <summary>
+        /// Removal method specifies for cohorted organs (leaf) if biomass removal events take biomass from the top, bottom or side of cohorts.
+        /// </summary>
+        public string RemovalMethod { get; set; }
+    }
+
+    ///<summary>Data structure to hold removal and residue returns fractions for all plant organs</summary>
+    [Serializable]
+    public class RemovalFractions
+    {
+        /// <summary>
+        /// The list of BiomassRemovalTypes for each organ
+        ///</summary>
+        public OrganBiomassRemovalType[] OrganList {get; set;}
+        
+        ///<summary>
+        ///Method to construct list
+        ///</summary>
+        public RemovalFractions(IOrgan[] Organs)
+        {
+            OrganList = new OrganBiomassRemovalType[Organs.Length];
+            int k = 0;
+            foreach (IOrgan o in Organs)
+            {
+                OrganList[k] = new OrganBiomassRemovalType();
+                OrganList[k].NameOfOrgan = o.Name;
+                k += 1;
+            }
+        }
+
+        ///<summary>
+        ///Default constructor
+        ///</summary>
+        public RemovalFractions() { }
+
+        /// <summary>
+        /// Method to set the FractionRemoved for specified Organ
+        ///</summary>
+        public void SetFractionRemoved(string organName, double Fraction)
+        {
+            bool Matchfound = false;
+            foreach (OrganBiomassRemovalType r in OrganList)
+                if (String.Equals(r.NameOfOrgan, organName, StringComparison.OrdinalIgnoreCase))
+                {
+                    r.FractionRemoved = Fraction;
+                    Matchfound = true;
+                }
+            if (Matchfound == false)
+            throw new Exception("The plant model could not find an organ with a name that matches " + organName+ " when matching FractionRemoved. Check your spelling?");
+        }
+        
+        /// <summary>
+        /// Method to set the FractionToResidue for specified Organ
+        ///</summary>
+        public void SetFractionToResidue(string organName, double Fraction)
+        {
+            bool Matchfound = false;
+            foreach (OrganBiomassRemovalType r in OrganList)
+                if (String.Equals(r.NameOfOrgan, organName, StringComparison.OrdinalIgnoreCase))
+                {
+                    r.FractionRemoved = Fraction;
+                    Matchfound = true;
+                }
+            if (Matchfound == false)
+            throw new Exception("The plant model could not find an organ with a name that matches " + organName + " when matching FractionToResidue. Check your spelling?");
+        }
+    }
 }
