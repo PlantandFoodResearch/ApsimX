@@ -144,13 +144,25 @@
         <GenericPhase>
           <Name>PreBulb</Name>
           <Constant>
-            <Name>T_E2B</Name>
+            <Name>Target</Name>
             <Value>432</Value>
           </Constant>
-          <VariableReference>
-            <Name>ThermalTime</Name>
-            <VariableName>[Phenology].ThermalTime.Value</VariableName>
-          </VariableReference>
+          <AccumulateFunction>
+            <Name>ThermalTine</Name>
+            <MultiplyFunction>
+              <Name>MultiplyFunction</Name>
+              <VariableReference>
+                <Name>TT</Name>
+                <VariableName>[Phenology].ThermalTime.Value</VariableName>
+              </VariableReference>
+              <VariableReference>
+                <Name>Photo</Name>
+                <VariableName>[Phenology].Photoperiod.Value</VariableName>
+              </VariableReference>
+            </MultiplyFunction>
+            <StartStageName>PreEmerge</StartStageName>
+            <EndStageName>Maturity</EndStageName>
+          </AccumulateFunction>
           <Start>Established</Start>
           <End>InitRepro</End>
         </GenericPhase>
@@ -206,6 +218,26 @@
           <Name>Photoperiod</Name>
           <Twilight>-6</Twilight>
         </PhotoperiodFunction>
+        <AccumulateFunction>
+          <Name>PhotoThermal</Name>
+          <VariableReference>
+            <Name>VariableReference</Name>
+            <VariableName>[Phenology].ThermalTime.Value</VariableName>
+          </VariableReference>
+          <MultiplyFunction>
+            <Name>MultiplyFunction</Name>
+            <VariableReference>
+              <Name>TT</Name>
+              <VariableName>[Phenology].ThermalTime.Value</VariableName>
+            </VariableReference>
+            <VariableReference>
+              <Name>Photo</Name>
+              <VariableName>[Phenology].Photoperiod.Value</VariableName>
+            </VariableReference>
+          </MultiplyFunction>
+          <StartStageName>PreEmerge</StartStageName>
+          <EndStageName>Maturity</EndStageName>
+        </AccumulateFunction>
       </Phenology>
       <Structure>
         <Name>Structure</Name>
@@ -695,6 +727,10 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
         </PhaseLookup>
         <RUEModel>
           <Name>Photosynthesis</Name>
+          <Constant>
+            <Name>RUE</Name>
+            <Value>2.2</Value>
+          </Constant>
           <RUECO2Function>
             <Name>FCO2</Name>
             <PhotosyntheticPathway>C3</PhotosyntheticPathway>
