@@ -176,6 +176,24 @@
             <Name>ThermalTime</Name>
             <VariableName>[Phenology].ThermalTime.Value</VariableName>
           </VariableReference>
+          <AddFunction>
+            <Name>DVS</Name>
+            <Constant>
+              <Name>Constant</Name>
+              <Value>1</Value>
+            </Constant>
+            <DivideFunction>
+              <Name>DivideFunction</Name>
+              <VariableReference>
+                <Name>VariableReference</Name>
+                <VariableName>[Phenology].TopDownATT</VariableName>
+              </VariableReference>
+              <Constant>
+                <Name>Constant</Name>
+                <Value>1000</Value>
+              </Constant>
+            </DivideFunction>
+          </AddFunction>
           <Start>InitRepro</Start>
           <End>StartBolt</End>
         </GenericPhase>
@@ -189,6 +207,24 @@
             <Name>ThermalTime</Name>
             <VariableName>[Phenology].ThermalTime.Value</VariableName>
           </VariableReference>
+          <AddFunction>
+            <Name>DVS</Name>
+            <Constant>
+              <Name>Constant</Name>
+              <Value>1</Value>
+            </Constant>
+            <DivideFunction>
+              <Name>DivideFunction</Name>
+              <VariableReference>
+                <Name>VariableReference</Name>
+                <VariableName>TopDownATT</VariableName>
+              </VariableReference>
+              <Constant>
+                <Name>Constant</Name>
+                <Value>1000</Value>
+              </Constant>
+            </DivideFunction>
+          </AddFunction>
           <Start>StartBolt</Start>
           <End>Bolting</End>
         </GenericPhase>
@@ -202,6 +238,24 @@
             <Name>ThermalTime</Name>
             <VariableName>[Phenology].ThermalTime.Value</VariableName>
           </VariableReference>
+          <AddFunction>
+            <Name>DVS</Name>
+            <Constant>
+              <Name>Constant</Name>
+              <Value>1</Value>
+            </Constant>
+            <DivideFunction>
+              <Name>DivideFunction</Name>
+              <VariableReference>
+                <Name>VariableReference</Name>
+                <VariableName>TopDownATT</VariableName>
+              </VariableReference>
+              <Constant>
+                <Name>Constant</Name>
+                <Value>1000</Value>
+              </Constant>
+            </DivideFunction>
+          </AddFunction>
           <Start>Bolting</Start>
           <End>Maturity</End>
         </EndPhase>
@@ -236,6 +290,15 @@
             </VariableReference>
           </MultiplyFunction>
           <StartStageName>PreEmerge</StartStageName>
+          <EndStageName>Maturity</EndStageName>
+        </AccumulateFunction>
+        <AccumulateFunction>
+          <Name>TopDownATT</Name>
+          <VariableReference>
+            <Name>VariableReference</Name>
+            <VariableName>[Phenology].ThermalTime.Value</VariableName>
+          </VariableReference>
+          <StartStageName>Bulbing</StartStageName>
           <EndStageName>Maturity</EndStageName>
         </AccumulateFunction>
       </Phenology>
@@ -337,6 +400,14 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
           </XYPairs>
           <XProperty>[Leaf].CoverGreen</XProperty>
         </LinearInterpolationFunction>
+        <Constant>
+          <Name>Density</Name>
+          <Memo>
+            <Name>Memo</Name>
+            <MemoText><![CDATA[]]></MemoText>
+          </Memo>
+          <Value>20</Value>
+        </Constant>
         <InitialiseStage>PreEmerge</InitialiseStage>
         <PrimaryBudNo>1</PrimaryBudNo>
       </Structure>
@@ -660,6 +731,10 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
               <Name>Zero</Name>
               <Value>0</Value>
             </Constant>
+            <VariableReference>
+              <Name>PrevLAI</Name>
+              <VariableName>Leaf.LAI</VariableName>
+            </VariableReference>
             <Start>Emerging</Start>
             <End>Bulbing</End>
           </PhaseLookupValue>
@@ -1789,5 +1864,5 @@ namespace Models
       </Graph>
     </Folder>
   </Experiment>
-  <ExplorerWidth>301</ExplorerWidth>
+  <ExplorerWidth>335</ExplorerWidth>
 </Simulations>
