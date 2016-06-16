@@ -70,8 +70,9 @@ namespace Models.PMF.Organs
         {
             get
             {
+
                 if (CoverFunction == null)
-                    return 1.0 - Math.Exp((-1 * ExtinctionCoefficientFunction.Value) * LAI);
+                    return (LAI== 0) ? 0 : 1.0 - Math.Exp((-1 * ExtinctionCoefficientFunction.Value) * LAI);
                 return Math.Min(Math.Max(CoverFunction.Value, 0), 1);
             }
         }
