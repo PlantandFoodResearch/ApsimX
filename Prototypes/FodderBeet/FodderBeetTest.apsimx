@@ -266,7 +266,7 @@
           <Value>0</Value>
         </Constant>
         <Constant>
-          <Name>ShadeInducedBranchMortality</Name>
+          <Name>BranchMortality</Name>
           <Value>0</Value>
         </Constant>
         <LinearInterpolationFunction>
@@ -765,7 +765,56 @@
             <Name>InitialNConc</Name>
             <Value>0</Value>
           </Constant>
+          <Constant>
+            <Name>SenessingLeafRelativeSize</Name>
+            <Value>1</Value>
+            <Units>0-1</Units>
+          </Constant>
         </LeafCohortParameters>
+<<<<<<< HEAD
+=======
+        <MinimumFunction>
+          <Name>FRGRFunction</Name>
+          <VariableReference>
+            <Name>RUE_FT</Name>
+            <VariableName>[Leaf].Photosynthesis.FT.Value</VariableName>
+          </VariableReference>
+          <MinimumFunction>
+            <Name>Others</Name>
+            <VariableReference>
+              <Name>RUE_FN</Name>
+              <VariableName>[Leaf].Photosynthesis.FN.Value</VariableName>
+            </VariableReference>
+            <VariableReference>
+              <Name>RUE_FVPD</Name>
+              <VariableName>[Leaf].Photosynthesis.FVPD.Value</VariableName>
+            </VariableReference>
+          </MinimumFunction>
+        </MinimumFunction>
+        <Folder>
+          <Name>BiomassRemovalDefaults</Name>
+          <OrganBiomassRemovalType>
+            <Name>Harvest</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.3</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Cut</Name>
+            <FractionRemoved>0.8</FractionRemoved>
+            <FractionToResidue>0</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Prune</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.6</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Graze</Name>
+            <FractionRemoved>0.6</FractionRemoved>
+            <FractionToResidue>0.1</FractionToResidue>
+          </OrganBiomassRemovalType>
+        </Folder>
+>>>>>>> d50f5fe78440e604192ade0df023ca5e4e40bd99
         <CurrentExpandingLeaf>0</CurrentExpandingLeaf>
         <StartFractionExpanded>0</StartFractionExpanded>
         <FractionNextleafExpanded>0</FractionNextleafExpanded>
@@ -774,10 +823,14 @@
         <MaxCover>1</MaxCover>
         <PotentialEP>0</PotentialEP>
         <KDead>0.03</KDead>
+<<<<<<< HEAD
         <GsMax>0.03</GsMax>
         <R50>200</R50>
         <Emissivity>0.96</Emissivity>
         <Albido>0.26</Albido>
+=======
+        <MaximumMainStemLeafNumber>80</MaximumMainStemLeafNumber>
+>>>>>>> d50f5fe78440e604192ade0df023ca5e4e40bd99
         <FractionDied>0</FractionDied>
       </Leaf>
       <Root>
@@ -878,24 +931,79 @@
           <Name>StructuralFraction</Name>
           <Value>0.8</Value>
         </Constant>
+<<<<<<< HEAD
+=======
+        <Folder>
+          <Name>BiomassRemovalDefaults</Name>
+          <OrganBiomassRemovalType>
+            <Name>Harvest</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.2</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Cut</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.3</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Prune</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.1</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Graze</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.15</FractionToResidue>
+          </OrganBiomassRemovalType>
+        </Folder>
+        <LinearInterpolationFunction>
+          <Name>KNO3</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>0</double>
+              <double>0.003</double>
+            </X>
+            <Y>
+              <double>0.02</double>
+              <double>0.02</double>
+            </Y>
+          </XYPairs>
+          <XProperty>[Root].RootLengthDenisty</XProperty>
+        </LinearInterpolationFunction>
+        <LinearInterpolationFunction>
+          <Name>KNH4</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>0</double>
+              <double>0.003</double>
+            </X>
+            <Y>
+              <double>0</double>
+              <double>0</double>
+            </Y>
+          </XYPairs>
+          <XProperty>[Root].RootLengthDenisty</XProperty>
+        </LinearInterpolationFunction>
+        <LinearInterpolationFunction>
+          <Name>NUptakeSWFactor</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>0</double>
+              <double>1</double>
+            </X>
+            <Y>
+              <double>0</double>
+              <double>1</double>
+            </Y>
+          </XYPairs>
+          <XProperty>[Root].RWC</XProperty>
+        </LinearInterpolationFunction>
+>>>>>>> d50f5fe78440e604192ade0df023ca5e4e40bd99
         <InitialDM>5</InitialDM>
         <SpecificRootLength>40000</SpecificRootLength>
-        <KNO3_yProperty>
-          <double>0.02</double>
-          <double>0.02</double>
-        </KNO3_yProperty>
-        <KNO3_xRootLength>
-          <double>0</double>
-          <double>0.003</double>
-        </KNO3_xRootLength>
-        <KNH4_yProperty>
-          <double>0</double>
-          <double>0</double>
-        </KNH4_yProperty>
-        <KNH4_xRootLength>
-          <double>0</double>
-          <double>0.003</double>
-        </KNH4_xRootLength>
         <NuptakeSupply>0</NuptakeSupply>
       </Root>
       <GenericAboveGroundOrgan>
@@ -977,6 +1085,32 @@
             </PhaseLookupValue>
           </PhaseLookup>
         </PartitionFractionDemandFunction>
+<<<<<<< HEAD
+=======
+        <Folder>
+          <Name>BiomassRemovalDefaults</Name>
+          <OrganBiomassRemovalType>
+            <Name>Harvest</Name>
+            <FractionRemoved>0.5</FractionRemoved>
+            <FractionToResidue>0.1</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Cut</Name>
+            <FractionRemoved>0.8</FractionRemoved>
+            <FractionToResidue>0</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Prune</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.6</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Graze</Name>
+            <FractionRemoved>0.6</FractionRemoved>
+            <FractionToResidue>0.2</FractionToResidue>
+          </OrganBiomassRemovalType>
+        </Folder>
+>>>>>>> d50f5fe78440e604192ade0df023ca5e4e40bd99
       </GenericAboveGroundOrgan>
       <GenericAboveGroundOrgan>
         <Name>Petiole</Name>
@@ -1060,6 +1194,44 @@
             </PhaseLookupValue>
           </PhaseLookup>
         </PartitionFractionDemandFunction>
+<<<<<<< HEAD
+=======
+        <VariableReference>
+          <Name>SenescenceRateFunction</Name>
+          <VariableName>[Leaf].FractionDied</VariableName>
+        </VariableReference>
+        <Constant>
+          <Name>DMReallocationFactor</Name>
+          <Value>0</Value>
+        </Constant>
+        <Constant>
+          <Name>NReallocationFactor</Name>
+          <Value>0.95</Value>
+        </Constant>
+        <Folder>
+          <Name>BiomassRemovalDefaults</Name>
+          <OrganBiomassRemovalType>
+            <Name>Harvest</Name>
+            <FractionRemoved>0.5</FractionRemoved>
+            <FractionToResidue>0.1</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Cut</Name>
+            <FractionRemoved>0.8</FractionRemoved>
+            <FractionToResidue>0</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Prune</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.6</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Graze</Name>
+            <FractionRemoved>0.6</FractionRemoved>
+            <FractionToResidue>0.2</FractionToResidue>
+          </OrganBiomassRemovalType>
+        </Folder>
+>>>>>>> d50f5fe78440e604192ade0df023ca5e4e40bd99
       </GenericAboveGroundOrgan>
       <Summariser>
         <Name>Summariser</Name>

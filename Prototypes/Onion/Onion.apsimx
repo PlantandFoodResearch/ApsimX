@@ -21,12 +21,15 @@
       </OrganArbitrator>
       <Phenology>
         <Name>Phenology</Name>
+        <PhotoperiodFunction>
+          <Name>Photoperiod</Name>
+          <Twilight>-6</Twilight>
+        </PhotoperiodFunction>
         <AirTemperatureFunction>
           <Name>ThermalTime</Name>
           <XYPairs>
-            <Name>tt</Name>
+            <Name>XYPairs</Name>
             <X>
-              <double>0</double>
               <double>5</double>
               <double>27</double>
               <double>35</double>
@@ -34,17 +37,12 @@
             </X>
             <Y>
               <double>0</double>
-              <double>0</double>
-              <double>1</double>
-              <double>0.5</double>
+              <double>26</double>
+              <double>20</double>
               <double>0</double>
             </Y>
           </XYPairs>
         </AirTemperatureFunction>
-        <PhotoperiodFunction>
-          <Name>Photoperiod</Name>
-          <Twilight>-6</Twilight>
-        </PhotoperiodFunction>
         <GerminatingPhase>
           <Name>Planted</Name>
           <Start>Sowing</Start>
@@ -56,20 +54,16 @@
             <Name>ThermalTime</Name>
             <VariableName>[Phenology].ThermalTime.Value</VariableName>
           </VariableReference>
-          <Memo>
-            <Name>Memo</Name>
-            <MemoText><![CDATA[Turned off the lag and used only the Tt per mm to empirically fit simulations to FRNL data of emergence.]]></MemoText>
-          </Memo>
           <Start>Germination</Start>
           <End>PreEmerge</End>
-          <ShootLag>1</ShootLag>
-          <ShootRate>20</ShootRate>
+          <ShootLag>100</ShootLag>
+          <ShootRate>0.7</ShootRate>
         </EmergingPhase>
         <GenericPhase>
           <Name>Emerging</Name>
           <Constant>
-            <Name>Tcrit_emer</Name>
-            <Value>200</Value>
+            <Name>Target</Name>
+            <Value>50</Value>
           </Constant>
           <VariableReference>
             <Name>ThermalTime</Name>
@@ -85,7 +79,7 @@
             <Value>432</Value>
           </Constant>
           <AccumulateFunction>
-            <Name>ThermalTine</Name>
+            <Name>ThermalTime</Name>
             <MultiplyFunction>
               <Name>MultiplyFunction</Name>
               <VariableReference>
@@ -101,7 +95,7 @@
             <EndStageName>Maturity</EndStageName>
           </AccumulateFunction>
           <Start>Established</Start>
-          <End>InitRepro</End>
+          <End>BulbStart</End>
         </GenericPhase>
         <GenericPhase>
           <Name>Bulbing</Name>
@@ -131,8 +125,8 @@
               </Constant>
             </DivideFunction>
           </AddFunction>
-          <Start>InitRepro</Start>
-          <End>StartBolt</End>
+          <Start>BulbStart</Start>
+          <End>Topdown</End>
         </GenericPhase>
         <GenericPhase>
           <Name>TopDown</Name>
@@ -162,8 +156,8 @@
               </Constant>
             </DivideFunction>
           </AddFunction>
-          <Start>StartBolt</Start>
-          <End>Bolting</End>
+          <Start>Topdown</Start>
+          <End>Down</End>
         </GenericPhase>
         <EndPhase>
           <Name>Maturity</Name>
@@ -193,7 +187,7 @@
               </Constant>
             </DivideFunction>
           </AddFunction>
-          <Start>Bolting</Start>
+          <Start>Down</Start>
           <End>Maturity</End>
         </EndPhase>
         <AccumulateFunction>
@@ -231,7 +225,16 @@
             <Name>VariableReference</Name>
             <VariableName>[Phenology].ThermalTime.Value</VariableName>
           </VariableReference>
-          <StartStageName>Bulbing</StartStageName>
+          <StartStageName>BulbStart</StartStageName>
+          <EndStageName>Maturity</EndStageName>
+        </AccumulateFunction>
+        <AccumulateFunction>
+          <Name>AccumulateFunction</Name>
+          <Constant>
+            <Name>Constant</Name>
+            <Value>1</Value>
+          </Constant>
+          <StartStageName>PreEmerge</StartStageName>
           <EndStageName>Maturity</EndStageName>
         </AccumulateFunction>
       </Phenology>
@@ -244,15 +247,15 @@
           <Name>Dead</Name>
         </Biomass>
         <PhaseLookup>
-          <Name>LaiFunction</Name>
+          <Name>LAIFunction</Name>
           <PhaseLookupValue>
-            <Name>PreEmergence</Name>
+            <Name>UnderGround</Name>
             <Constant>
-              <Name>Zero</Name>
+              <Name>Constant</Name>
               <Value>0</Value>
             </Constant>
-            <Start>Planted</Start>
-            <End>Emerging</End>
+            <Start>Sowing</Start>
+            <End>PreEmerge</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>Emergence</Name>
@@ -285,7 +288,7 @@
                     </VariableReference>
                     <VariableReference>
                       <Name>gprime</Name>
-                      <VariableName>[Leaf].TPrime</VariableName>
+                      <VariableName>[Leaf].TPrime.Value</VariableName>
                     </VariableReference>
                     <MultiplyFunction>
                       <Name>growth</Name>
@@ -313,7 +316,7 @@
                             </VariableReference>
                             <VariableReference>
                               <Name>lpot</Name>
-                              <VariableName>[Leaf].Lpot</VariableName>
+                              <VariableName>[Leaf].Lpot.Value</VariableName>
                             </VariableReference>
                           </MultiplyFunction>
                         </DivideFunction>
@@ -327,8 +330,8 @@
                 <Value>0</Value>
               </Constant>
             </SubtractFunction>
-            <Start>Emerging</Start>
-            <End>Bulbing</End>
+            <Start>PreEmerge</Start>
+            <End>BulbStart</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>BulbGrowth</Name>
@@ -365,7 +368,7 @@
                     </VariableReference>
                     <VariableReference>
                       <Name>gprime</Name>
-                      <VariableName>[Leaf].TPrime</VariableName>
+                      <VariableName>[Leaf].TPrime.Value</VariableName>
                     </VariableReference>
                     <MultiplyFunction>
                       <Name>growth</Name>
@@ -393,7 +396,7 @@
                             </VariableReference>
                             <VariableReference>
                               <Name>lpot</Name>
-                              <VariableName>[Leaf].Lpot</VariableName>
+                              <VariableName>[Leaf].Lpot.Value</VariableName>
                             </VariableReference>
                           </MultiplyFunction>
                         </DivideFunction>
@@ -407,8 +410,8 @@
                 <Value>0</Value>
               </Constant>
             </SubtractFunction>
-            <Start>Bulbing</Start>
-            <End>TopDown</End>
+            <Start>BulbStart</Start>
+            <End>Topdown</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>TDown</Name>
@@ -473,7 +476,7 @@
                             </VariableReference>
                             <VariableReference>
                               <Name>lpot</Name>
-                              <VariableName>[Leaf].Lpot</VariableName>
+                              <VariableName>[Leaf].Lpot.Value</VariableName>
                             </VariableReference>
                           </MultiplyFunction>
                         </DivideFunction>
@@ -487,7 +490,7 @@
                 <Value>0</Value>
               </Constant>
             </SubtractFunction>
-            <Start>TopDown</Start>
+            <Start>Topdown</Start>
             <End>Maturity</End>
           </PhaseLookupValue>
         </PhaseLookup>
@@ -503,8 +506,8 @@
               <Name>Zero</Name>
               <Value>0</Value>
             </Constant>
-            <Start>Planted</Start>
-            <End>Emerging</End>
+            <Start>Sowing</Start>
+            <End>PreEmerge</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>Emergence</Name>
@@ -512,8 +515,8 @@
               <Name>One</Name>
               <Value>1</Value>
             </Constant>
-            <Start>Emerging</Start>
-            <End>Bulbing</End>
+            <Start>PreEmerge</Start>
+            <End>BulbStart</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>BulbGrowth</Name>
@@ -521,8 +524,8 @@
               <Name>One</Name>
               <Value>1</Value>
             </Constant>
-            <Start>Bulbing</Start>
-            <End>TopDown</End>
+            <Start>BulbStart</Start>
+            <End>Topdown</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>TDown</Name>
@@ -530,7 +533,7 @@
               <Name>Zero</Name>
               <Value>0</Value>
             </Constant>
-            <Start>TopDown</Start>
+            <Start>Topdown</Start>
             <End>Maturity</End>
           </PhaseLookupValue>
         </PhaseLookup>
@@ -544,13 +547,73 @@
             <Name>FCO2</Name>
             <PhotosyntheticPathway>C3</PhotosyntheticPathway>
           </RUECO2Function>
+          <LinearInterpolationFunction>
+            <Name>FVPD</Name>
+            <XYPairs>
+              <Name>XYPairs</Name>
+              <X>
+                <double>0</double>
+                <double>100</double>
+              </X>
+              <Y>
+                <double>1</double>
+                <double>1</double>
+              </Y>
+            </XYPairs>
+            <XProperty>[Leaf].Photosynthesis.VPD</XProperty>
+          </LinearInterpolationFunction>
+          <LinearInterpolationFunction>
+            <Name>FN</Name>
+            <XYPairs>
+              <Name>XYPairs</Name>
+              <X>
+                <double>5</double>
+                <double>40</double>
+              </X>
+              <Y>
+                <double>1</double>
+                <double>1</double>
+              </Y>
+            </XYPairs>
+            <XProperty>[Leaf].Fn</XProperty>
+          </LinearInterpolationFunction>
+          <LinearInterpolationFunction>
+            <Name>FW</Name>
+            <XYPairs>
+              <Name>XYPairs</Name>
+              <X>
+                <double>5</double>
+                <double>40</double>
+              </X>
+              <Y>
+                <double>1</double>
+                <double>1</double>
+              </Y>
+            </XYPairs>
+            <XProperty>[Leaf].Fw</XProperty>
+          </LinearInterpolationFunction>
+          <WeightedTemperatureFunction>
+            <Name>FT</Name>
+            <XYPairs>
+              <Name>XYPairs</Name>
+              <X>
+                <double>0</double>
+                <double>40</double>
+              </X>
+              <Y>
+                <double>0.75</double>
+                <double>0.75</double>
+              </Y>
+            </XYPairs>
+            <MaximumTemperatureWeighting>0.75</MaximumTemperatureWeighting>
+          </WeightedTemperatureFunction>
         </RUEModel>
         <Constant>
           <Name>DMSinkCapacity</Name>
           <Value>0</Value>
         </Constant>
         <MultiplyFunction>
-          <Name>ExtinctionCoeff</Name>
+          <Name>ExtinctionCoefficientFunction</Name>
           <Constant>
             <Name>Potential</Name>
             <Value>0.41</Value>
@@ -566,34 +629,34 @@
                 <Name>Zero</Name>
                 <Value>0</Value>
               </Constant>
-              <Start>Planted</Start>
-              <End>Emerging</End>
+              <Start>Sowing</Start>
+              <End>PreEmerge</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>Emergence</Name>
               <Constant>
                 <Name>Zero</Name>
-                <Value>0</Value>
+                <Value>0.9</Value>
               </Constant>
-              <Start>Emerging</Start>
-              <End>Bulbing</End>
+              <Start>PreEmerge</Start>
+              <End>BulbStart</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>BulbGrowth</Name>
               <Constant>
                 <Name>Zero</Name>
-                <Value>0</Value>
+                <Value>0.4</Value>
               </Constant>
-              <Start>Bulbing</Start>
-              <End>TopDown</End>
+              <Start>BulbStart</Start>
+              <End>Topdown</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>TDown</Name>
               <Constant>
                 <Name>Zero</Name>
-                <Value>0</Value>
+                <Value>0.4</Value>
               </Constant>
-              <Start>TopDown</Start>
+              <Start>Topdown</Start>
               <End>Maturity</End>
             </PhaseLookupValue>
           </PhaseLookup>
@@ -669,12 +732,12 @@
         <AirTemperatureFunction>
           <Name>FRGRFunction</Name>
           <XYPairs>
-            <Name>FRGR</Name>
+            <Name>XYPairs</Name>
             <X>
               <double>0</double>
               <double>10</double>
               <double>25</double>
-              <double>40</double>
+              <double>35</double>
             </X>
             <Y>
               <double>0</double>
@@ -684,22 +747,34 @@
             </Y>
           </XYPairs>
         </AirTemperatureFunction>
-        <SubtractFunction>
+        <Constant>
+          <Name>MaximumNConc</Name>
+          <Value>0.01</Value>
+        </Constant>
+        <Constant>
+          <Name>MinimumNConc</Name>
+          <Value>0.005</Value>
+        </Constant>
+        <MaximumFunction>
           <Name>RadnInt</Name>
-          <Constant>
-            <Name>Constant</Name>
-            <Value>1</Value>
-          </Constant>
           <ExponentialFunction>
-            <Name>ExponentialFunction</Name>
+            <Name>RadnInt</Name>
+            <VariableReference>
+              <Name>VariableReference</Name>
+              <VariableName>[Leaf].LAI</VariableName>
+            </VariableReference>
             <A>1</A>
-            <B>0.41</B>
-            <C>2</C>
+            <B>-1</B>
+            <C>-0.41</C>
           </ExponentialFunction>
-        </SubtractFunction>
-        <FractionRemoved>0</FractionRemoved>
-        <FractionToResidue>0</FractionToResidue>
+          <Constant>
+            <Name>Zero</Name>
+            <Value>0</Value>
+          </Constant>
+        </MaximumFunction>
         <BiomassYesterday>0</BiomassYesterday>
+        <CohortsInitialised>false</CohortsInitialised>
+        <PlantAppearedLeafNo>0</PlantAppearedLeafNo>
         <Albedo>0</Albedo>
         <Gsmax>0</Gsmax>
         <R50>0</R50>
@@ -725,11 +800,11 @@
             <Name>NodeInitiationRateFunction</Name>
             <VariableReference>
               <Name>Phyllochron</Name>
-              <VariableName>[Structure].MainStemNodeAppearanceRate.Phyllochron.Value</VariableName>
+              <VariableName>[Structure].MainStemNodeAppearanceRate.Value</VariableName>
             </VariableReference>
             <Constant>
               <Name>PrimordiaPerMainstemNode</Name>
-              <Value>2</Value>
+              <Value>1</Value>
             </Constant>
           </DivideFunction>
           <Start>PreEmerge</Start>
@@ -792,6 +867,25 @@
           </Memo>
           <Value>0</Value>
         </Constant>
+        <LinearInterpolationFunction>
+          <Name>HeightModel</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>0</double>
+              <double>40</double>
+            </X>
+            <Y>
+              <double>20</double>
+              <double>2500</double>
+            </Y>
+          </XYPairs>
+          <XProperty>[Structure].MainStemNodeNo</XProperty>
+        </LinearInterpolationFunction>
+        <Constant>
+          <Name>BranchMortality</Name>
+          <Value>0</Value>
+        </Constant>
         <InitialiseStage>PreEmerge</InitialiseStage>
         <PrimaryBudNo>1</PrimaryBudNo>
       </Structure>
@@ -812,10 +906,10 @@
         <AirTemperatureFunction>
           <Name>TemperatureEffect</Name>
           <XYPairs>
-            <Name>TE</Name>
+            <Name>XYPairs</Name>
             <X>
               <double>0</double>
-              <double>26</double>
+              <double>25</double>
               <double>35</double>
             </X>
             <Y>
@@ -825,18 +919,6 @@
             </Y>
           </XYPairs>
         </AirTemperatureFunction>
-        <PhaseLookup>
-          <Name>RootFrontVelocity</Name>
-          <PhaseLookupValue>
-            <Name>PhaseLookupValue</Name>
-            <Constant>
-              <Name>Constant</Name>
-              <Value>10</Value>
-            </Constant>
-            <Start>Germination</Start>
-            <End>Maturity</End>
-          </PhaseLookupValue>
-        </PhaseLookup>
         <Constant>
           <Name>MaximumNConc</Name>
           <Value>0.01</Value>
@@ -878,8 +960,8 @@
               <Name>Zero</Name>
               <Value>0</Value>
             </Constant>
-            <Start>Planted</Start>
-            <End>Emerging</End>
+            <Start>Sowing</Start>
+            <End>PreEmerge</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>Emergence</Name>
@@ -887,8 +969,8 @@
               <Name>C</Name>
               <Value>0</Value>
             </Constant>
-            <Start>Emerging</Start>
-            <End>Bulbing</End>
+            <Start>PreEmerge</Start>
+            <End>BulbStart</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>BulbGrowth</Name>
@@ -896,8 +978,8 @@
               <Name>C</Name>
               <Value>0</Value>
             </Constant>
-            <Start>Bulbing</Start>
-            <End>TopDown</End>
+            <Start>BulbStart</Start>
+            <End>Topdown</End>
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>TDown</Name>
@@ -905,30 +987,61 @@
               <Name>C</Name>
               <Value>0.05</Value>
             </Constant>
-            <Start>TopDown</Start>
+            <Start>Topdown</Start>
             <End>Maturity</End>
           </PhaseLookupValue>
         </PhaseLookup>
-        <FractionRemoved>0</FractionRemoved>
-        <FractionToResidue>0</FractionToResidue>
+        <LinearInterpolationFunction>
+          <Name>KNO3</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>0</double>
+              <double>0.003</double>
+            </X>
+            <Y>
+              <double>0.02</double>
+              <double>0.02</double>
+            </Y>
+          </XYPairs>
+          <XProperty>[Root].RootLengthDensity</XProperty>
+        </LinearInterpolationFunction>
+        <LinearInterpolationFunction>
+          <Name>KNH4</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>0</double>
+              <double>0.03</double>
+            </X>
+            <Y>
+              <double>0</double>
+              <double>0</double>
+            </Y>
+          </XYPairs>
+          <XProperty>[Root].RootLengthDenisty</XProperty>
+        </LinearInterpolationFunction>
+        <LinearInterpolationFunction>
+          <Name>NUptakeSWFactor</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>0</double>
+              <double>1</double>
+            </X>
+            <Y>
+              <double>0</double>
+              <double>1</double>
+            </Y>
+          </XYPairs>
+          <XProperty>[Root].RWC</XProperty>
+        </LinearInterpolationFunction>
+        <Constant>
+          <Name>RootFrontVelocity</Name>
+          <Value>10</Value>
+        </Constant>
         <InitialDM>5</InitialDM>
         <SpecificRootLength>40000</SpecificRootLength>
-        <KNO3_yProperty>
-          <double>0.02</double>
-          <double>0.02</double>
-        </KNO3_yProperty>
-        <KNO3_xRootLength>
-          <double>0</double>
-          <double>0.003</double>
-        </KNO3_xRootLength>
-        <KNH4_yProperty>
-          <double>0</double>
-          <double>0</double>
-        </KNH4_yProperty>
-        <KNH4_xRootLength>
-          <double>0</double>
-          <double>0.003</double>
-        </KNH4_xRootLength>
         <NuptakeSupply>0</NuptakeSupply>
       </Root>
       <GenericAboveGroundOrgan>
@@ -978,8 +1091,8 @@
                 <Name>Zero</Name>
                 <Value>0</Value>
               </Constant>
-              <Start>Planted</Start>
-              <End>Emerging</End>
+              <Start>Sowing</Start>
+              <End>PreEmerge</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>Emergence</Name>
@@ -987,8 +1100,8 @@
                 <Name>C</Name>
                 <Value>0</Value>
               </Constant>
-              <Start>Emerging</Start>
-              <End>Bulbing</End>
+              <Start>PreEmerge</Start>
+              <End>BulbStart</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>BulbGrowth</Name>
@@ -996,8 +1109,8 @@
                 <Name>C</Name>
                 <Value>0.6</Value>
               </Constant>
-              <Start>Bulbing</Start>
-              <End>TopDown</End>
+              <Start>BulbStart</Start>
+              <End>Topdown</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>TDown</Name>
@@ -1005,13 +1118,11 @@
                 <Name>C</Name>
                 <Value>0.6</Value>
               </Constant>
-              <Start>TopDown</Start>
+              <Start>Topdown</Start>
               <End>Maturity</End>
             </PhaseLookupValue>
           </PhaseLookup>
         </PartitionFractionDemandFunction>
-        <FractionRemoved>0</FractionRemoved>
-        <FractionToResidue>0</FractionToResidue>
       </GenericAboveGroundOrgan>
       <CompositeBiomass>
         <Name>AboveGround</Name>
@@ -1020,8 +1131,6 @@
           <string>[Leaf].Dead</string>
           <string>[Bulb].Live</string>
           <string>[Bulb].Dead</string>
-          <string>[Petiole].Live</string>
-          <string>[Petiole].Dead</string>
         </Propertys>
       </CompositeBiomass>
       <CompositeBiomass>
@@ -1038,8 +1147,6 @@
           <string>[Leaf].Dead</string>
           <string>[Bulb].Live</string>
           <string>[Bulb].Dead</string>
-          <string>[Petiole].Live</string>
-          <string>[Petiole].Dead</string>
           <string>[Root].Live</string>
           <string>[Root].Dead</string>
         </Propertys>
@@ -1048,7 +1155,6 @@
         <Name>TotalLive</Name>
         <Propertys>
           <string>[Leaf].Live</string>
-          <string>[Petiole].Live</string>
           <string>[Bulb].Live</string>
           <string>[Root].Live</string>
         </Propertys>
@@ -1057,7 +1163,6 @@
         <Name>TotalDead</Name>
         <Propertys>
           <string>[Leaf].Dead</string>
-          <string>[Petiole].Dead</string>
           <string>[Bulb].Dead</string>
           <string>[Root].Dead</string>
         </Propertys>
@@ -1494,10 +1599,12 @@
             <string>[Onion].Phenology.CurrentPhaseName</string>
             <string>[Onion].Phenology.Stage</string>
             <string>[Onion].Phenology.ThermalTime.Value</string>
+            <string>[Onion].Phenology.Photoperiod.Value</string>
             <string>[Onion].Phenology.AccumulatedThermalTime.Value</string>
+            <string>[Onion].Phenology.PhotoThermal.Value</string>
+            <string>[Onion].Phenology.TopDownATT.Value</string>
             <string>[Onion].Leaf.Live.Wt</string>
             <string>[Onion].Total.Wt</string>
-            <string>[Onion].Petiole.Live.Wt</string>
             <string>[Onion].Bulb.Live.Wt</string>
             <string>[Onion].Leaf.LAI</string>
             <string>[Onion].Structure.MainStemNodeNo</string>
@@ -1514,7 +1621,6 @@
             <string>[Onion].Leaf.Live.N</string>
             <string>[Onion].Root.Live.N</string>
             <string>[Onion].Bulb.Live.N</string>
-            <string>[Onion].Petiole.Live.N</string>
             <string>[Onion].Leaf.Live.NConc</string>
             <string>[Onion].Root.Live.NConc</string>
           </VariableNames>
@@ -1952,6 +2058,69 @@ namespace Models
         <Axis>
           <Type>Left</Type>
           <Title>Bulb Biomass (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>LAI</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16711936</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Onion.Leaf.Live.Wt</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Observed</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16776961</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>SD1_observed</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Onion.LeafLAI</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Leaf Biomass (g/m2)</Title>
           <Inverted>false</Inverted>
           <Minimum>NaN</Minimum>
           <Maximum>NaN</Maximum>

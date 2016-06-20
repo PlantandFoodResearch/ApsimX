@@ -9,6 +9,7 @@ namespace UserInterface.Interfaces
     using System.Collections.Generic;
     using System.Runtime.Serialization;
     using EventArguments;
+    using System.Drawing;
 
     /// <summary>A structure for holding info about an item in the treeview.</summary>
     public class NodeDescriptionArgs : EventArgs
@@ -189,61 +190,24 @@ namespace UserInterface.Interfaces
         /// </summary>
         void AddRightHandView(object Control);
 
-        /// <summary>
-        /// Ask about saving.
-        /// </summary>
-        /// <returns>-1, 0, 1</returns>
-        Int32 AskToSave();
+        /// <summary>Get a screen shot of the right hand panel.</summary>
+        Image GetScreenshotOfRightHandPanel();
 
         /// <summary>
-        /// A helper function that asks user for a folder.
+        /// Get whatever text is currently on the clipboard
         /// </summary>
-        /// <returns>Returns the selected folder or null if action cancelled by user.</returns>
-        string AskUserForFolder(string prompt);
-        
-        /// <summary>
-        /// A helper function that asks user for a file.
-        /// </summary>
-        /// <returns>Returns the selected file or null if action cancelled by user.</returns>
-        string AskUserForFile(string prompt);
+        /// <returns></returns>
+        string GetClipboardText();
 
         /// <summary>
-        /// Add a status message. A message of null will clear the status message.
+        /// Place text on the clipboard
         /// </summary>
-        /// <param name="Message"></param>
-        void ShowMessage(string Message, Models.DataStore.ErrorLevel errorLevel);
-
-        /// <summary>
-        /// A helper function that asks user for a SaveAs name and returns their new choice.
-        /// </summary>
-        string SaveAs(string OldFilename);
-
-        /// <summary>
-        /// Change the name of the tab.
-        /// </summary>
-        void ChangeTabText(string NewTabName);
-
-        /// <summary>
-        /// Turn on or off the 2nd explorer view.
-        /// </summary>
-        void ToggleSecondExplorerViewVisible();
+        /// <param name="text"></param>
+        void SetClipboardText(string text);
 
         /// <summary>
         /// Gets or sets the width of the tree view.
         /// </summary>
         Int32 TreeWidth { get; set; }
-
-        /// <summary>
-        /// Close down APSIMX user interface.
-        /// </summary>
-        void Close();
-
-        /// <summary>
-        /// Show progress bar with the specified percent.
-        /// </summary>
-        /// <param name="percent"></param>
-        void ShowProgress(int percent);
     }
-
-
 }
