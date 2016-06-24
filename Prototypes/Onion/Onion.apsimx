@@ -56,14 +56,14 @@
           </VariableReference>
           <Start>Germination</Start>
           <End>PreEmerge</End>
-          <ShootLag>100</ShootLag>
+          <ShootLag>500</ShootLag>
           <ShootRate>0.7</ShootRate>
         </EmergingPhase>
         <GenericPhase>
           <Name>Emerging</Name>
           <Constant>
             <Name>Target</Name>
-            <Value>50</Value>
+            <Value>500</Value>
           </Constant>
           <VariableReference>
             <Name>ThermalTime</Name>
@@ -225,16 +225,16 @@
             <Name>VariableReference</Name>
             <VariableName>[Phenology].ThermalTime.Value</VariableName>
           </VariableReference>
-          <StartStageName>BulbStart</StartStageName>
+          <StartStageName>Topdown</StartStageName>
           <EndStageName>Maturity</EndStageName>
         </AccumulateFunction>
         <AccumulateFunction>
-          <Name>AccumulateFunction</Name>
-          <Constant>
-            <Name>Constant</Name>
-            <Value>1</Value>
-          </Constant>
-          <StartStageName>PreEmerge</StartStageName>
+          <Name>BulbGrowthATT</Name>
+          <VariableReference>
+            <Name>VariableReference</Name>
+            <VariableName>[Phenology].ThermalTime.Value</VariableName>
+          </VariableReference>
+          <StartStageName>BulbStart</StartStageName>
           <EndStageName>Maturity</EndStageName>
         </AccumulateFunction>
       </Phenology>
@@ -273,7 +273,7 @@
                     <Name>DL</Name>
                     <VariableReference>
                       <Name>pop</Name>
-                      <VariableName>[Structure].Density.Value</VariableName>
+                      <VariableName>[Plant].Population</VariableName>
                     </VariableReference>
                     <Constant>
                       <Name>Linit</Name>
@@ -312,7 +312,7 @@
                             <Name>Lmax</Name>
                             <VariableReference>
                               <Name>pop</Name>
-                              <VariableName>[Structure].Density.Value</VariableName>
+                              <VariableName>[Plant].Population</VariableName>
                             </VariableReference>
                             <VariableReference>
                               <Name>lpot</Name>
@@ -335,10 +335,6 @@
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>BulbGrowth</Name>
-            <Constant>
-              <Name>Zero</Name>
-              <Value>0</Value>
-            </Constant>
             <SubtractFunction>
               <Name>LaiFunction</Name>
               <AddFunction>
@@ -353,7 +349,7 @@
                     <Name>DL</Name>
                     <VariableReference>
                       <Name>pop</Name>
-                      <VariableName>[Structure].Density.Value</VariableName>
+                      <VariableName>[Plant].Population</VariableName>
                     </VariableReference>
                     <Constant>
                       <Name>Linit</Name>
@@ -364,7 +360,7 @@
                     <Name>NG</Name>
                     <VariableReference>
                       <Name>Agrowth</Name>
-                      <VariableName>[Leaf].AS1.Value</VariableName>
+                      <VariableName>[Leaf].AS2.Value</VariableName>
                     </VariableReference>
                     <VariableReference>
                       <Name>gprime</Name>
@@ -392,11 +388,11 @@
                             <Name>Lmax</Name>
                             <VariableReference>
                               <Name>pop</Name>
-                              <VariableName>[Structure].Density.Value</VariableName>
+                              <VariableName>[Plant].Population</VariableName>
                             </VariableReference>
                             <VariableReference>
                               <Name>lpot</Name>
-                              <VariableName>[Leaf].Lpot.Value</VariableName>
+                              <VariableName>[Leaf].Lpotx.Value</VariableName>
                             </VariableReference>
                           </MultiplyFunction>
                         </DivideFunction>
@@ -415,81 +411,94 @@
           </PhaseLookupValue>
           <PhaseLookupValue>
             <Name>TDown</Name>
-            <Constant>
-              <Name>Zero</Name>
-              <Value>0</Value>
-            </Constant>
-            <SubtractFunction>
-              <Name>LaiFunction</Name>
-              <AddFunction>
-                <Name>AddFunction</Name>
-                <VariableReference>
-                  <Name>PrevLAI</Name>
-                  <VariableName>[Leaf].LAI</VariableName>
-                </VariableReference>
+            <MultiplyFunction>
+              <Name>MultiplyFunction</Name>
+              <SubtractFunction>
+                <Name>LaiFunction</Name>
                 <AddFunction>
-                  <Name>NewGrowth</Name>
-                  <MultiplyFunction>
-                    <Name>DL</Name>
-                    <VariableReference>
-                      <Name>pop</Name>
-                      <VariableName>[Structure].Density.Value</VariableName>
-                    </VariableReference>
-                    <Constant>
-                      <Name>Linit</Name>
-                      <Value>0.0005</Value>
-                    </Constant>
-                  </MultiplyFunction>
-                  <MultiplyFunction>
-                    <Name>NG</Name>
-                    <VariableReference>
-                      <Name>Agrowth</Name>
-                      <VariableName>[Leaf].AS1.Value</VariableName>
-                    </VariableReference>
-                    <VariableReference>
-                      <Name>gprime</Name>
-                      <VariableName>[Leaf].TPrime</VariableName>
-                    </VariableReference>
+                  <Name>AddFunction</Name>
+                  <VariableReference>
+                    <Name>PrevLAI</Name>
+                    <VariableName>[Leaf].LAI</VariableName>
+                  </VariableReference>
+                  <AddFunction>
+                    <Name>NewGrowth</Name>
                     <MultiplyFunction>
-                      <Name>growth</Name>
+                      <Name>DL</Name>
                       <VariableReference>
-                        <Name>PrevLAI</Name>
-                        <VariableName>[Leaf].LAI</VariableName>
+                        <Name>pop</Name>
+                        <VariableName>[Plant].Population</VariableName>
                       </VariableReference>
-                      <SubtractFunction>
-                        <Name>ng</Name>
-                        <Constant>
-                          <Name>One</Name>
-                          <Value>1</Value>
-                        </Constant>
-                        <DivideFunction>
-                          <Name>pg</Name>
-                          <VariableReference>
-                            <Name>PrevLAI</Name>
-                            <VariableName>[Leaf].LAI</VariableName>
-                          </VariableReference>
-                          <MultiplyFunction>
-                            <Name>Lmax</Name>
-                            <VariableReference>
-                              <Name>pop</Name>
-                              <VariableName>[Structure].Density.Value</VariableName>
-                            </VariableReference>
-                            <VariableReference>
-                              <Name>lpot</Name>
-                              <VariableName>[Leaf].Lpot.Value</VariableName>
-                            </VariableReference>
-                          </MultiplyFunction>
-                        </DivideFunction>
-                      </SubtractFunction>
+                      <Constant>
+                        <Name>Linit</Name>
+                        <Value>0.0005</Value>
+                      </Constant>
                     </MultiplyFunction>
-                  </MultiplyFunction>
+                    <MultiplyFunction>
+                      <Name>NG</Name>
+                      <VariableReference>
+                        <Name>Agrowth</Name>
+                        <VariableName>[Leaf].AS1.Value</VariableName>
+                      </VariableReference>
+                      <VariableReference>
+                        <Name>gprime</Name>
+                        <VariableName>[Leaf].TPrime.Value</VariableName>
+                      </VariableReference>
+                      <MultiplyFunction>
+                        <Name>growth</Name>
+                        <VariableReference>
+                          <Name>PrevLAI</Name>
+                          <VariableName>[Leaf].LAI</VariableName>
+                        </VariableReference>
+                        <SubtractFunction>
+                          <Name>ng</Name>
+                          <Constant>
+                            <Name>One</Name>
+                            <Value>1</Value>
+                          </Constant>
+                          <DivideFunction>
+                            <Name>pg</Name>
+                            <VariableReference>
+                              <Name>PrevLAI</Name>
+                              <VariableName>[Leaf].LAI</VariableName>
+                            </VariableReference>
+                            <MultiplyFunction>
+                              <Name>Lmax</Name>
+                              <VariableReference>
+                                <Name>pop</Name>
+                                <VariableName>[Plant].Population</VariableName>
+                              </VariableReference>
+                              <VariableReference>
+                                <Name>lpot</Name>
+                                <VariableName>[Leaf].Lpot.Value</VariableName>
+                              </VariableReference>
+                            </MultiplyFunction>
+                          </DivideFunction>
+                        </SubtractFunction>
+                      </MultiplyFunction>
+                    </MultiplyFunction>
+                  </AddFunction>
                 </AddFunction>
-              </AddFunction>
-              <Constant>
-                <Name>Senesce</Name>
-                <Value>0</Value>
-              </Constant>
-            </SubtractFunction>
+              </SubtractFunction>
+              <SubtractFunction>
+                <Name>SubtractFunction</Name>
+                <Constant>
+                  <Name>One</Name>
+                  <Value>1</Value>
+                </Constant>
+                <DivideFunction>
+                  <Name>DivideFunction</Name>
+                  <VariableReference>
+                    <Name>VariableReference</Name>
+                    <VariableName>[Phenology].TopDownATT.Value</VariableName>
+                  </VariableReference>
+                  <VariableReference>
+                    <Name>VariableReference1</Name>
+                    <VariableName>[Phenology].TopDown.Target.Value</VariableName>
+                  </VariableReference>
+                </DivideFunction>
+              </SubtractFunction>
+            </MultiplyFunction>
             <Start>Topdown</Start>
             <End>Maturity</End>
           </PhaseLookupValue>
@@ -541,7 +550,7 @@
           <Name>Photosynthesis</Name>
           <Constant>
             <Name>RUE</Name>
-            <Value>2.2</Value>
+            <Value>1.1</Value>
           </Constant>
           <RUECO2Function>
             <Name>FCO2</Name>
@@ -605,7 +614,7 @@
                 <double>0.75</double>
               </Y>
             </XYPairs>
-            <MaximumTemperatureWeighting>0.75</MaximumTemperatureWeighting>
+            <MaximumTemperatureWeighting>1</MaximumTemperatureWeighting>
           </WeightedTemperatureFunction>
         </RUEModel>
         <Constant>
@@ -617,6 +626,10 @@
           <Constant>
             <Name>Potential</Name>
             <Value>0.41</Value>
+          </Constant>
+          <Constant>
+            <Name>One</Name>
+            <Value>1</Value>
           </Constant>
         </MultiplyFunction>
         <PartitionFractionDemandFunction>
@@ -643,18 +656,39 @@
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>BulbGrowth</Name>
-              <Constant>
-                <Name>Zero</Name>
-                <Value>0.4</Value>
-              </Constant>
+              <MaximumFunction>
+                <Name>MaximumFunction</Name>
+                <Constant>
+                  <Name>Zero</Name>
+                  <Value>0</Value>
+                </Constant>
+                <SubtractFunction>
+                  <Name>SubtractFunction</Name>
+                  <Constant>
+                    <Name>Constant</Name>
+                    <Value>0.38</Value>
+                  </Constant>
+                  <MultiplyFunction>
+                    <Name>MultiplyFunction</Name>
+                    <Constant>
+                      <Name>Constant</Name>
+                      <Value>0.006</Value>
+                    </Constant>
+                    <VariableReference>
+                      <Name>VariableReference</Name>
+                      <VariableName>[Phenology].BulbGrowthATT.Value</VariableName>
+                    </VariableReference>
+                  </MultiplyFunction>
+                </SubtractFunction>
+              </MaximumFunction>
               <Start>BulbStart</Start>
               <End>Topdown</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>TDown</Name>
               <Constant>
-                <Name>Zero</Name>
-                <Value>0.4</Value>
+                <Name>nearall</Name>
+                <Value>0</Value>
               </Constant>
               <Start>Topdown</Start>
               <End>Maturity</End>
@@ -696,7 +730,7 @@
               <Name>PowerFunction</Name>
               <VariableReference>
                 <Name>TT</Name>
-                <VariableName>[Phenology].ThermalTime.Value</VariableName>
+                <VariableName>[Leaf].TX.Value</VariableName>
               </VariableReference>
               <Exponent>0.96</Exponent>
             </PowerFunction>
@@ -711,7 +745,7 @@
               <Name>PowerFunction</Name>
               <VariableReference>
                 <Name>TT</Name>
-                <VariableName>[Phenology].ThermalTime.Value</VariableName>
+                <VariableName>[Leaf].TX.Value</VariableName>
               </VariableReference>
               <Exponent>1</Exponent>
             </PowerFunction>
@@ -719,7 +753,7 @@
               <Name>PowerFunction1</Name>
               <VariableReference>
                 <Name>TT</Name>
-                <VariableName>[Phenology].ThermalTime.Value</VariableName>
+                <VariableName>[Leaf].TX.Value</VariableName>
               </VariableReference>
               <Exponent>0.96</Exponent>
             </PowerFunction>
@@ -758,7 +792,7 @@
         <MaximumFunction>
           <Name>RadnInt</Name>
           <ExponentialFunction>
-            <Name>RadnInt</Name>
+            <Name>RadnIntDir</Name>
             <VariableReference>
               <Name>VariableReference</Name>
               <VariableName>[Leaf].LAI</VariableName>
@@ -768,10 +802,71 @@
             <C>-0.41</C>
           </ExponentialFunction>
           <Constant>
-            <Name>Zero</Name>
+            <Name>Constant</Name>
             <Value>0</Value>
           </Constant>
+          <MultiplyFunction>
+            <Name>MultiplyFunction</Name>
+            <ExponentialFunction>
+              <Name>RadnIntDir</Name>
+              <VariableReference>
+                <Name>VariableReference</Name>
+                <VariableName>[Leaf].LAI</VariableName>
+              </VariableReference>
+              <A>1</A>
+              <B>-1</B>
+              <C>-0.41</C>
+            </ExponentialFunction>
+            <VariableReference>
+              <Name>DailyRad</Name>
+              <VariableName>[Weather].Radn</VariableName>
+            </VariableReference>
+          </MultiplyFunction>
         </MaximumFunction>
+        <AirTemperatureFunction>
+          <Name>TX</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>5</double>
+              <double>27</double>
+              <double>35</double>
+              <double>40</double>
+            </X>
+            <Y>
+              <double>0</double>
+              <double>1</double>
+              <double>1.4</double>
+              <double>1.8</double>
+            </Y>
+          </XYPairs>
+        </AirTemperatureFunction>
+        <AddFunction>
+          <Name>RadnInt2</Name>
+          <MultiplyFunction>
+            <Name>RadnInt</Name>
+            <ExponentialFunction>
+              <Name>RadnIntDir</Name>
+              <VariableReference>
+                <Name>VariableReference</Name>
+                <VariableName>[Leaf].LAI</VariableName>
+              </VariableReference>
+              <A>1</A>
+              <B>-1</B>
+              <C>-0.41</C>
+            </ExponentialFunction>
+            <ExponentialFunction>
+              <Name>RadnIntDir1</Name>
+              <VariableReference>
+                <Name>VariableReference</Name>
+                <VariableName>[Leaf].LAI</VariableName>
+              </VariableReference>
+              <A>1</A>
+              <B>-1</B>
+              <C>-0.33</C>
+            </ExponentialFunction>
+          </MultiplyFunction>
+        </AddFunction>
         <BiomassYesterday>0</BiomassYesterday>
         <CohortsInitialised>false</CohortsInitialised>
         <PlantAppearedLeafNo>0</PlantAppearedLeafNo>
@@ -841,15 +936,7 @@
             <Name>Memo</Name>
             <MemoText><![CDATA[]]></MemoText>
           </Memo>
-          <Constant>
-            <Name>Density</Name>
-            <Memo>
-              <Name>Memo</Name>
-              <MemoText><![CDATA[]]></MemoText>
-            </Memo>
-            <Value>20</Value>
-          </Constant>
-          <Value>20</Value>
+          <Value>30</Value>
         </Constant>
         <Constant>
           <Name>DensityPot</Name>
@@ -1040,7 +1127,7 @@
           <Name>RootFrontVelocity</Name>
           <Value>10</Value>
         </Constant>
-        <InitialDM>5</InitialDM>
+        <InitialDM>0.01</InitialDM>
         <SpecificRootLength>40000</SpecificRootLength>
         <NuptakeSupply>0</NuptakeSupply>
       </Root>
@@ -1096,28 +1183,49 @@
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>Emergence</Name>
-              <Constant>
-                <Name>C</Name>
-                <Value>0</Value>
-              </Constant>
+              <SubtractFunction>
+                <Name>SubtractFunction</Name>
+                <Constant>
+                  <Name>C</Name>
+                  <Value>0.9</Value>
+                </Constant>
+                <VariableReference>
+                  <Name>LBG</Name>
+                  <VariableName>[Leaf].DMDemandFunction.PartitionFraction.Emergence.Value</VariableName>
+                </VariableReference>
+              </SubtractFunction>
               <Start>PreEmerge</Start>
               <End>BulbStart</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>BulbGrowth</Name>
-              <Constant>
-                <Name>C</Name>
-                <Value>0.6</Value>
-              </Constant>
+              <SubtractFunction>
+                <Name>SubtractFunction</Name>
+                <Constant>
+                  <Name>C</Name>
+                  <Value>0.9</Value>
+                </Constant>
+                <VariableReference>
+                  <Name>LBG</Name>
+                  <VariableName>[Leaf].DMDemandFunction.PartitionFraction.BulbGrowth.Value</VariableName>
+                </VariableReference>
+              </SubtractFunction>
               <Start>BulbStart</Start>
               <End>Topdown</End>
             </PhaseLookupValue>
             <PhaseLookupValue>
               <Name>TDown</Name>
-              <Constant>
-                <Name>C</Name>
-                <Value>0.6</Value>
-              </Constant>
+              <SubtractFunction>
+                <Name>SubtractFunction</Name>
+                <Constant>
+                  <Name>C</Name>
+                  <Value>0.9</Value>
+                </Constant>
+                <VariableReference>
+                  <Name>LBG</Name>
+                  <VariableName>[Leaf].DMDemandFunction.PartitionFraction.TDown.Value</VariableName>
+                </VariableReference>
+              </SubtractFunction>
               <Start>Topdown</Start>
               <End>Maturity</End>
             </PhaseLookupValue>
@@ -1191,8 +1299,12 @@
           <Operations>
             <Name>SowRate</Name>
             <Operation>
-              <Date>2000-08-17T00:00:00</Date>
+              <Date>2000-08-17</Date>
               <Action>[Onion].Sow(population:15, cultivar:"LongKeeper", depth:10, rowSpacing:700);</Action>
+            </Operation>
+            <Operation>
+              <Date>0001-01-01</Date>
+              <Action>= 15</Action>
             </Operation>
           </Operations>
           <Specifications>
@@ -1204,8 +1316,12 @@
           <Operations>
             <Name>SowRate</Name>
             <Operation>
-              <Date>2000-08-17T00:00:00</Date>
+              <Date>2000-08-17</Date>
               <Action>[Onion].Sow(population:30, cultivar:"LongKeeper", depth:10, rowSpacing:700);</Action>
+            </Operation>
+            <Operation>
+              <Date>0001-01-01</Date>
+              <Action>= 30</Action>
             </Operation>
           </Operations>
           <Specifications>
@@ -1549,7 +1665,7 @@
         <Operations>
           <Name>SowRate</Name>
           <Operation>
-            <Date>2000-08-17T00:00:00</Date>
+            <Date>2000-08-17</Date>
             <Action>[Onion].Sow(population:60, cultivar:"LongKeeper", depth:10, rowSpacing:700);</Action>
           </Operation>
         </Operations>
@@ -1588,115 +1704,11 @@
           <StandingExtinctCoeff>0.5</StandingExtinctCoeff>
           <FractionFaecesAdded>0.5</FractionFaecesAdded>
         </SurfaceOrganicMatter>
-        <Report>
-          <Name>Report</Name>
-          <ExperimentFactorNames />
-          <ExperimentFactorValues />
-          <VariableNames>
-            <string>[Clock].Today</string>
-            <string>[Onion].Leaf.Fw</string>
-            <string>[Onion].Leaf.Fn</string>
-            <string>[Onion].Phenology.CurrentPhaseName</string>
-            <string>[Onion].Phenology.Stage</string>
-            <string>[Onion].Phenology.ThermalTime.Value</string>
-            <string>[Onion].Phenology.Photoperiod.Value</string>
-            <string>[Onion].Phenology.AccumulatedThermalTime.Value</string>
-            <string>[Onion].Phenology.PhotoThermal.Value</string>
-            <string>[Onion].Phenology.TopDownATT.Value</string>
-            <string>[Onion].Leaf.Live.Wt</string>
-            <string>[Onion].Total.Wt</string>
-            <string>[Onion].Bulb.Live.Wt</string>
-            <string>[Onion].Leaf.LAI</string>
-            <string>[Onion].Structure.MainStemNodeNo</string>
-            <string>[Onion].Leaf.PlantAppearedLeafNo</string>
-            <string>[Onion].Leaf.PlantAppearedGreenLeafNo</string>
-            <string>[Onion].Leaf.PlantsenescedLeafNo</string>
-            <string>[Onion].Leaf.CoverGreen</string>
-            <string>[Onion].Leaf.CohortParameters.MaxArea.Value</string>
-            <string>[Phenology].Photoperiod.Value</string>
-            <string>[Onion].AboveGround.Wt</string>
-            <string>[Onion].Leaf.Photosynthesis.RadnInt.Value</string>
-            <string>[Onion].Leaf.Photosynthesis.RUEact.Value</string>
-            <string>[ExtraVariables].Script.AccumPlantN</string>
-            <string>[Onion].Leaf.Live.N</string>
-            <string>[Onion].Root.Live.N</string>
-            <string>[Onion].Bulb.Live.N</string>
-            <string>[Onion].Leaf.Live.NConc</string>
-            <string>[Onion].Root.Live.NConc</string>
-          </VariableNames>
-          <EventNames>
-            <string>[Clock].DoReport</string>
-          </EventNames>
-        </Report>
         <Operations>
           <Name>Irrigation_and_Fertiliser</Name>
           <Operation>
-            <Date>2014-11-16T00:00:00</Date>
-            <Action>[Fertiliser].Apply(50, Fertiliser.Types.UreaN, 0);</Action>
-          </Operation>
-          <Operation>
-            <Date>2014-11-28T00:00:00</Date>
-            <Action>[Fertiliser].Apply(50, Fertiliser.Types.UreaN, 0); </Action>
-          </Operation>
-          <Operation>
-            <Date>2014-12-24T00:00:00</Date>
-            <Action>[Fertiliser].Apply(50, Fertiliser.Types.UreaN, 0); </Action>
-          </Operation>
-          <Operation>
-            <Date>2015-04-15T00:00:00</Date>
-            <Action>[Fertiliser].Apply(50, Fertiliser.Types.UreaN, 0); </Action>
-          </Operation>
-          <Operation>
-            <Date>2014-11-14T00:00:00</Date>
-            <Action>[Irrigation].Apply(10);</Action>
-          </Operation>
-          <Operation>
-            <Date>2014-11-24T00:00:00</Date>
-            <Action>[Irrigation].Apply(10);</Action>
-          </Operation>
-          <Operation>
-            <Date>2014-12-10T00:00:00</Date>
-            <Action>[Irrigation].Apply(10);</Action>
-          </Operation>
-          <Operation>
-            <Date>2014-12-24T00:00:00</Date>
-            <Action>[Irrigation].Apply(10);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-01-06T00:00:00</Date>
-            <Action>[Irrigation].Apply(15);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-01-13T00:00:00</Date>
-            <Action>[Irrigation].Apply(25);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-02-04T00:00:00</Date>
-            <Action>[Irrigation].Apply(30);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-02-10T00:00:00</Date>
-            <Action>[Irrigation].Apply(10);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-02-20T00:00:00</Date>
-            <Action>[Irrigation].Apply(30);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-03-02T00:00:00</Date>
-            <Action>[Irrigation].Apply(30);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-03-10T00:00:00</Date>
-            <Action>[Irrigation].Apply(30);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-04-07T00:00:00</Date>
-            <Action>[Irrigation].Apply(35);</Action>
-          </Operation>
-          <Operation>
-            <Date>2015-04-15T00:00:00</Date>
-            <Action>[Irrigation].Apply(10);</Action>
+            <Date>2000-08-16</Date>
+            <Action>[Fertiliser].Apply(250, Fertiliser.Types.UreaN, 0);</Action>
           </Operation>
         </Operations>
         <Manager>
@@ -1880,6 +1892,55 @@ namespace Models
       <SoilArbitrator>
         <Name>Soil Arbitrator</Name>
       </SoilArbitrator>
+      <Report>
+        <Name>Report</Name>
+        <ExperimentFactorNames />
+        <ExperimentFactorValues />
+        <VariableNames>
+          <string>[Clock].Today</string>
+          <string>[Phenology].Photoperiod.Value</string>
+          <string>[Phenology].AccumulatedThermalTime.Value</string>
+          <string>[Phenology].TopDownATT.Value</string>
+          <string>[Leaf].DMDemandFunction.PartitionFraction.Value</string>
+          <string>[Bulb].DMDemandFunction.PartitionFraction.Value</string>
+          <string>[Onion].Leaf.Fw</string>
+          <string>[Onion].Leaf.Fn</string>
+          <string>[Onion].Leaf.PhotoSynthesis.Value</string>
+          <string>[Onion].Leaf.RadnInt.Value</string>
+          <string>[Weather].Radn</string>
+          <string>[Onion].Phenology.CurrentPhaseName</string>
+          <string>[Onion].Phenology.Stage</string>
+          <string>[Onion].Phenology.ThermalTime.Value</string>
+          <string>[Onion].Phenology.Photoperiod.Value</string>
+          <string>[Onion].Phenology.AccumulatedThermalTime.Value</string>
+          <string>[Onion].Phenology.PhotoThermal.Value</string>
+          <string>[Onion].Phenology.TopDownATT.Value</string>
+          <string>[Onion].Leaf.Live.Wt</string>
+          <string>[Onion].Root.Live.Wt</string>
+          <string>[Onion].Total.Wt</string>
+          <string>[Onion].Bulb.Live.Wt</string>
+          <string>[Onion].Leaf.LAI</string>
+          <string>[Onion].Structure.MainStemNodeNo</string>
+          <string>[Onion].Leaf.PlantAppearedLeafNo</string>
+          <string>[Onion].Leaf.PlantAppearedGreenLeafNo</string>
+          <string>[Onion].Leaf.PlantsenescedLeafNo</string>
+          <string>[Onion].Leaf.CoverGreen</string>
+          <string>[Onion].Leaf.CohortParameters.MaxArea.Value</string>
+          <string>[Phenology].Photoperiod.Value</string>
+          <string>[Onion].AboveGround.Wt</string>
+          <string>[Onion].Leaf.Photosynthesis.RadnInt.Value</string>
+          <string>[Onion].Leaf.Photosynthesis.RUEact.Value</string>
+          <string>[ExtraVariables].Script.AccumPlantN</string>
+          <string>[Onion].Leaf.Live.N</string>
+          <string>[Onion].Root.Live.N</string>
+          <string>[Onion].Bulb.Live.N</string>
+          <string>[Onion].Leaf.Live.NConc</string>
+          <string>[Onion].Root.Live.NConc</string>
+        </VariableNames>
+        <EventNames>
+          <string>[Clock].DoReport</string>
+        </EventNames>
+      </Report>
       <Area>0</Area>
       <Slope>0</Slope>
     </Simulation>
@@ -2091,7 +2152,7 @@ namespace Models
           <LineThickness>Normal</LineThickness>
           <TableName>Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Onion.Leaf.Live.Wt</YFieldName>
+          <YFieldName>Onion.Leaf.LAI</YFieldName>
           <ShowInLegend>true</ShowInLegend>
           <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
@@ -2113,6 +2174,217 @@ namespace Models
           <TableName>SD1_observed</TableName>
           <XFieldName>Clock.Today</XFieldName>
           <YFieldName>Onion.LeafLAI</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Leaf Biomass (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+    </Folder>
+    <Folder>
+      <Name>Folder</Name>
+      <Graph>
+        <Name>Graph</Name>
+        <Series>
+          <Name>Series</Name>
+          <Type>Bar</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>0</ColourArgb>
+          <FactorIndexToVaryColours>-1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Onion.Phenology.Stage</YFieldName>
+          <ShowInLegend>false</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Left</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>false</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Graph1</Name>
+        <Series>
+          <Name>Series</Name>
+          <Type>Bar</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>0</ColourArgb>
+          <FactorIndexToVaryColours>-1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Onion.Leaf.RadnInt.Value</YFieldName>
+          <ShowInLegend>false</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Left</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>false</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>LAI</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16711936</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Onion.Phenology.AccumulatedThermalTime.Value</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Simulated1</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16711936</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Onion.Phenology.TopDownATT.Value</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Leaf Biomass (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Partition</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-11094807</ColourArgb>
+          <FactorIndexToVaryColours>-1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Leaf.DMDemandFunction.PartitionFraction.Value</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Simulated1</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16736653</ColourArgb>
+          <FactorIndexToVaryColours>-1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>Plus</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Bulb.DMDemandFunction.PartitionFraction.Value</YFieldName>
           <ShowInLegend>true</ShowInLegend>
           <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
