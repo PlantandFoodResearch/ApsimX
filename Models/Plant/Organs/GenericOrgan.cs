@@ -63,6 +63,10 @@ namespace Models.PMF.Organs
         /// <summary>The n retranslocation factor</summary>
         [Link(IsOptional = true)]
         [Units("/d")]
+        IFunction DMReallocationFactor = null;
+        /// <summary>The n retranslocation factor</summary>
+        [Link(IsOptional = true)]
+        [Units("/d")]
         IFunction NRetranslocationFactor = null;
         /// <summary>The nitrogen demand switch</summary>
         [Link(IsOptional = true)]
@@ -199,15 +203,25 @@ namespace Models.PMF.Organs
         {
             get
             {
+                BiomassSupplyType Supply = new BiomassSupplyType();
+                Supply.Fixation = 0;
+                Supply.Reallocation = 0;
+                Supply.Retranslocation = 0;
+
+                // Calculate Reallocation Supply.
+                double _DMReallocationFactor = 0;
+                if (DMReallocationFactor != null) //Default of zero means N reallocation is truned off
+                    _DMReallocationFactor = DMReallocationFactor.Value;
+                Supply.Reallocation = SenescenceRate * StartLive.NonStructuralN * _DMReallocationFactor;
+
                 double _DMRetranslocationFactor = 0;
                 if (DMRetranslocationFactor != null) //Default of 0 means retranslocation is always truned off!!!!
-                    _DMRetranslocationFactor = DMRetranslocationFactor.Value;
-                return new BiomassSupplyType
                 {
-                    Fixation = 0,
-                    Retranslocation = StartLive.NonStructuralWt * _DMRetranslocationFactor,
-                    Reallocation = 0
-                };
+                    _DMRetranslocationFactor = DMRetranslocationFactor.Value;
+                    Supply.Retranslocation = StartLive.NonStructuralWt * _DMRetranslocationFactor;
+                }
+
+                return Supply;
             }
         }
         /// <summary>Gets or sets the n demand.</summary>

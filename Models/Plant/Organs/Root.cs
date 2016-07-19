@@ -91,7 +91,7 @@ namespace Models.PMF.Organs
         /// <summary>Gets or sets the length of the specific root.</summary>
         /// <value>The length of the specific root.</value>
         public double SpecificRootLength { get; set; }
-        
+
         /// <summary>The nitrogen demand switch</summary>
         [Link]
         IFunction NitrogenDemandSwitch = null;
@@ -228,7 +228,7 @@ namespace Models.PMF.Organs
         }
 
         #endregion
-        
+
         #region Class Properties
         /// <summary>Gets a value indicating whether this instance is growing.</summary>
         /// <value>
@@ -327,7 +327,7 @@ namespace Models.PMF.Organs
                 _SenescenceRate = 0;
                 if (SenescenceRate != null) //Default of zero means no senescence
                     _SenescenceRate = SenescenceRate.Value;
-           
+
                 /*  if (Live.Wt == 0)
                   {
                       //determine how many layers to put initial DM into.
@@ -526,35 +526,35 @@ namespace Models.PMF.Organs
         /// <summary>Called when crop is ending</summary>
         public override void DoPlantEnding()
         {
-            
-                FOMLayerLayerType[] FOMLayers = new FOMLayerLayerType[Soil.Thickness.Length];
 
-                for (int layer = 0; layer < Soil.Thickness.Length; layer++)
-                {
-                    double DM = (LayerLive[layer].Wt + LayerDead[layer].Wt) * 10.0;
-                    double N = (LayerLive[layer].N + LayerDead[layer].N) * 10.0;
+            FOMLayerLayerType[] FOMLayers = new FOMLayerLayerType[Soil.Thickness.Length];
 
-                    FOMType fom = new FOMType();
-                    fom.amount = (float)DM;
-                    fom.N = (float)N;
-                    fom.C = (float)(0.40 * DM);
-                    fom.P = 0;
-                    fom.AshAlk = 0;
+            for (int layer = 0; layer < Soil.Thickness.Length; layer++)
+            {
+                double DM = (LayerLive[layer].Wt + LayerDead[layer].Wt) * 10.0;
+                double N = (LayerLive[layer].N + LayerDead[layer].N) * 10.0;
 
-                    FOMLayerLayerType Layer = new FOMLayerLayerType();
-                    Layer.FOM = fom;
-                    Layer.CNR = 0;
-                    Layer.LabileP = 0;
+                FOMType fom = new FOMType();
+                fom.amount = (float)DM;
+                fom.N = (float)N;
+                fom.C = (float)(0.40 * DM);
+                fom.P = 0;
+                fom.AshAlk = 0;
 
-                    FOMLayers[layer] = Layer;
-                }
-                FOMLayerType FomLayer = new FOMLayerType();
-                FomLayer.Type = Plant.CropType;
-                FomLayer.Layer = FOMLayers;
-                IncorpFOM.Invoke(FomLayer);
+                FOMLayerLayerType Layer = new FOMLayerLayerType();
+                Layer.FOM = fom;
+                Layer.CNR = 0;
+                Layer.LabileP = 0;
 
-                Clear();
-       }
+                FOMLayers[layer] = Layer;
+            }
+            FOMLayerType FomLayer = new FOMLayerType();
+            FomLayer.Type = Plant.CropType;
+            FomLayer.Layer = FOMLayers;
+            IncorpFOM.Invoke(FomLayer);
+
+            Clear();
+        }
 
         /// <summary>Called when crop is ending</summary>
         /// <param name="sender">The sender.</param>
@@ -594,7 +594,7 @@ namespace Models.PMF.Organs
             get
             {
                 double Demand = 0;
-                if ((isGrowing)&&(PartitionFraction != null))
+                if ((isGrowing) && (PartitionFraction != null))
                     Demand = Arbitrator.DMSupply * PartitionFraction.Value;
                 TotalDMDemand = Demand;//  The is not really necessary as total demand is always not calculated on a layer basis so doesn't need summing.  However it may some day
                 return new BiomassPoolType { Structural = Demand };
@@ -614,7 +614,7 @@ namespace Models.PMF.Organs
             {
                 if (Uptake == null)
                     throw new Exception("No water and N uptakes supplied to root. Is Soil Arbitrator included in the simulation?");
-           
+
                 if (Depth <= 0)
                     return; //cannot allocate growth where no length
 
@@ -677,7 +677,7 @@ namespace Models.PMF.Organs
             {
                 TotalDMAllocated = value.Structural;
                 DMAllocated = new double[Soil.Thickness.Length];
-            
+
                 // Calculate Root Activity Values for water and nitrogen
                 double[] RAw = new double[Soil.Thickness.Length];
                 double[] RAn = new double[Soil.Thickness.Length];
@@ -724,7 +724,7 @@ namespace Models.PMF.Organs
                     }
                     else if (value.Structural > 0)
                         throw new Exception("Error trying to partition root biomass");
-                        
+
                 }
             }
         }
@@ -738,7 +738,7 @@ namespace Models.PMF.Organs
             {
                 StructuralNDemand = new double[Soil.Thickness.Length];
                 NonStructuralNDemand = new double[Soil.Thickness.Length];
-            
+
                 //Calculate N demand based on amount of N needed to bring root N content in each layer up to maximum
                 double _NitrogenDemandSwitch = 1;
                 if (NitrogenDemandSwitch != null) //Default of 1 means demand is always truned on!!!!
@@ -747,7 +747,7 @@ namespace Models.PMF.Organs
                 foreach (Biomass Layer in LayerLive)
                 {
                     i += 1;
-                    StructuralNDemand[i] = Layer.PotentialDMAllocation * MinNconc *  _NitrogenDemandSwitch;
+                    StructuralNDemand[i] = Layer.PotentialDMAllocation * MinNconc * _NitrogenDemandSwitch;
                     double NDeficit = Math.Max(0.0, MaxNconc * (Layer.Wt + Layer.PotentialDMAllocation) - (Layer.N + StructuralNDemand[i]));
                     NonStructuralNDemand[i] = Math.Max(0, NDeficit - StructuralNDemand[i]) * _NitrogenDemandSwitch;
                 }
@@ -772,7 +772,7 @@ namespace Models.PMF.Organs
                     double NSupply = (Math.Min(MathUtilities.Sum(no3supply), MaxDailyNUptake.Value) + Math.Min(MathUtilities.Sum(nh4supply), MaxDailyNUptake.Value)) * kgha2gsm;
                     NuptakeSupply = NSupply;
                     return new BiomassSupplyType { Uptake = NSupply };
-                    
+
                 }
                 else
                     return new BiomassSupplyType();
@@ -783,7 +783,7 @@ namespace Models.PMF.Organs
         /// <value>The water supply.</value>
         public override double[] NO3NSupply(List<ZoneWaterAndN> zones)
         {
-             
+
             // Model can only handle one root zone at present
             ZoneWaterAndN MyZone = new ZoneWaterAndN();
             Zone ParentZone = Apsim.Parent(this, typeof(Zone)) as Zone;
@@ -799,13 +799,13 @@ namespace Models.PMF.Organs
             double[] no3ppm = new double[Soil.Thickness.Length];
 
             double NO3uptake = 0;
-           
+
             for (int layer = 0; layer < Soil.Thickness.Length; layer++)
             {
                 if (LayerLive[layer].Wt > 0)
                 {
                     double RWC = 0;
-					RWC = (Soil.Water[layer] - Soil.SoilWater.LL15mm[layer]) / (Soil.SoilWater.DULmm[layer] - Soil.SoilWater.LL15mm[layer]);
+                    RWC = (Soil.Water[layer] - Soil.SoilWater.LL15mm[layer]) / (Soil.SoilWater.DULmm[layer] - Soil.SoilWater.LL15mm[layer]);
                     RWC = Math.Max(0.0, Math.Min(RWC, 1.0));
                     double kno3 = KNO3.ValueForX(LengthDensity[layer]);
                     double SWAF = NUptakeSWFactor.ValueForX(RWC);
@@ -851,7 +851,7 @@ namespace Models.PMF.Organs
                     double SWAF = NUptakeSWFactor.ValueForX(RWC);
                     NH4ppm[layer] = NH4Supply[layer] * (100.0 / (Soil.BD[layer] * Soil.Thickness[layer]));
                     NH4Supply[layer] = Math.Min(NH4[layer] * knh4 * NH4ppm[layer] * SWAF, (MaxDailyNUptake.Value - NH4uptake));
-                    NH4uptake += NH4Supply[layer]; 
+                    NH4uptake += NH4Supply[layer];
                 }
                 else
                 {
@@ -878,8 +878,8 @@ namespace Models.PMF.Organs
                 TotalNAllocated = value.Structural + value.NonStructural;
                 double surpluss = TotalNAllocated - TotalNDemand;
                 if (surpluss > 0.000000001)
-                     { throw new Exception("N Allocation to roots exceeds Demand"); }
-                
+                { throw new Exception("N Allocation to roots exceeds Demand"); }
+
                 double NAllocated = 0;
                 int i = -1;
                 foreach (Biomass Layer in LayerLive)
@@ -913,7 +913,7 @@ namespace Models.PMF.Organs
                 if (MaximumNConc != null)
                     return MaximumNConc.Value;
                 else
-                    return 0.01; 
+                    return 0.01;
             }
         }
         /// <summary>Gets or sets the minimum nconc.</summary>
@@ -970,14 +970,54 @@ namespace Models.PMF.Organs
         {
             get { return Uptake == null ? 0.0 : -MathUtilities.Sum(Uptake); }
         }
-        
+
         /// <summary>Gets or sets the water uptake.</summary>
         /// <value>The water uptake.</value>
         [Units("kg/ha")]
         public override double NUptake
         {
-            get {return NitUptake == null ? 0.0 : -MathUtilities.Sum(NitUptake);}
+            get { return NitUptake == null ? 0.0 : -MathUtilities.Sum(NitUptake); }
         }
+
+
+        /// <summary> Gets the ratio of actual avaible water to total</summary>
+        /// <value> the ratio</value> 
+        [Units("mm")]
+        public double PAWPC
+        {
+            
+            get {
+                SoilWater SW = Soil.SoilWater;
+
+
+                //if onlny one crop then this is it - handle multple later
+                //string cropname = Soil.CropNames[0];
+                double TotTodepth = 0;
+                int L = LayerIndex(Depth)+1;
+                for (int l = 0; l < L; l++)
+                    TotTodepth += SW.DULmm[l] - SW.LL15mm[l];
+
+                //double TotTodepth = MathUtilities.Sum(SW.SWmm, 0, L, 0);
+                if (TotTodepth <= 0)
+                    return 1;
+                //double AVToDepth = MathUtilities.Sum(SW.SW, 0, L, 0)*100;
+
+                double AVToDepth = 0;
+                for (int l = 0; l < L; l++)
+                    AVToDepth += SW.SWmm[l];
+                if (AVToDepth <= 0)
+                    return 1;
+
+                /* 
+               double TotTodepth = MathUtilities.Sum(Soil.PAWCmmAtWaterThickness,0,L,0);
+               if (TotTodepth <= 0)
+                   return 1;
+               double AVToDepth = MathUtilities.Sum(Soil.PAWmmAtWaterThickness(cropname),0, L, 0);
+               */
+                return AVToDepth / TotTodepth;
+            }
+        }
+
         #endregion
 
         #region Event handlers

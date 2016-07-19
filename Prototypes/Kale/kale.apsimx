@@ -130,7 +130,7 @@
           <Start>Germination</Start>
           <End>PreEmerge</End>
           <ShootLag>1</ShootLag>
-          <ShootRate>20</ShootRate>
+          <ShootRate>40</ShootRate>
         </EmergingPhase>
         <GenericPhase>
           <Name>Emerging</Name>
@@ -352,10 +352,6 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
             <Value>1.6</Value>
           </Constant>
           <Constant>
-            <Name>FN</Name>
-            <Value>1</Value>
-          </Constant>
-          <Constant>
             <Name>FVPD</Name>
             <Value>1</Value>
           </Constant>
@@ -365,18 +361,20 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
               <Name>XYPairs</Name>
               <X>
                 <double>0</double>
+                <double>10</double>
                 <double>18</double>
                 <double>26</double>
-                <double>45</double>
+                <double>38</double>
               </X>
               <Y>
                 <double>0.1</double>
                 <double>1</double>
                 <double>1</double>
-                <double>0.1</double>
+                <double>1</double>
+                <double>0</double>
               </Y>
             </XYPairs>
-            <MaximumTemperatureWeighting>0.75</MaximumTemperatureWeighting>
+            <MaximumTemperatureWeighting>1</MaximumTemperatureWeighting>
           </WeightedTemperatureFunction>
           <LinearInterpolationFunction>
             <Name>FW</Name>
@@ -384,7 +382,7 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
               <Name>XYPairs</Name>
               <X>
                 <double>0</double>
-                <double>0.4</double>
+                <double>1</double>
                 <double>1.5</double>
               </X>
               <Y>
@@ -407,6 +405,23 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
             <Name>RUEact</Name>
             <VariableName>[RUEModel].RueAct</VariableName>
           </VariableReference>
+          <LinearInterpolationFunction>
+            <Name>FN</Name>
+            <XYPairs>
+              <Name>XYPairs</Name>
+              <X>
+                <double>0</double>
+                <double>1</double>
+                <double>1.5</double>
+              </X>
+              <Y>
+                <double>0</double>
+                <double>1</double>
+                <double>1</double>
+              </Y>
+            </XYPairs>
+            <XProperty>[Leaf].Fn</XProperty>
+          </LinearInterpolationFunction>
         </RUEModel>
         <LinearInterpolationFunction>
           <Name>FrostFraction</Name>
@@ -572,16 +587,20 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
               <Name>XYPairs</Name>
               <X>
                 <double>0</double>
+                <double>0.25</double>
+                <double>0.5</double>
                 <double>0.75</double>
-                <double>1.5</double>
+                <double>1</double>
               </X>
               <Y>
                 <double>0</double>
-                <double>1</double>
+                <double>0.1</double>
+                <double>0.5</double>
+                <double>0.8</double>
                 <double>1</double>
               </Y>
             </XYPairs>
-            <XProperty>[Kale].WaterSupplyDemandRatio</XProperty>
+            <XProperty>[Root].PAWPC</XProperty>
           </LinearInterpolationFunction>
           <Constant>
             <Name>MinimumNConc</Name>
@@ -589,7 +608,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           </Constant>
           <Constant>
             <Name>CriticalNConc</Name>
-            <Value>0.02</Value>
+            <Value>0.03</Value>
           </Constant>
           <Constant>
             <Name>MaximumNConc</Name>
@@ -609,7 +628,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           </Constant>
           <Constant>
             <Name>DMReallocationFactor</Name>
-            <Value>0.8</Value>
+            <Value>0.9</Value>
           </Constant>
           <Constant>
             <Name>NonStructuralFraction</Name>
@@ -691,15 +710,128 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
         <_ExpandedNodeNo>0</_ExpandedNodeNo>
         <DeadNodesYesterday>0</DeadNodesYesterday>
         <MaxCover>1</MaxCover>
-        <Albedo>0</Albedo>
-        <Gsmax>0</Gsmax>
-        <R50>200</R50>
+        <Albedo>0.2</Albedo>
+        <Gsmax>0.015</Gsmax>
+        <R50>150</R50>
         <FRGR>0</FRGR>
         <PotentialEP>0</PotentialEP>
-        <KDead>0.03</KDead>
+        <KDead>0.3</KDead>
         <MaximumMainStemLeafNumber>80</MaximumMainStemLeafNumber>
         <FractionDied>0</FractionDied>
       </Leaf>
+      <GenericAboveGroundOrgan>
+        <Name>Stem</Name>
+        <Constant>
+          <Name>StructuralFraction</Name>
+          <Value>0.95</Value>
+        </Constant>
+        <Constant>
+          <Name>MaximumNConc</Name>
+          <Value>0.015</Value>
+        </Constant>
+        <Constant>
+          <Name>MinimumNConc</Name>
+          <Value>0.01</Value>
+        </Constant>
+        <PhaseBasedSwitch>
+          <Name>NitrogenDemandSwitch</Name>
+          <Start>Germination</Start>
+          <End>Maturity</End>
+        </PhaseBasedSwitch>
+        <Constant>
+          <Name>NRetranslocationFactor</Name>
+          <Value>0.1</Value>
+        </Constant>
+        <Constant>
+          <Name>DMRetranslocationFactor</Name>
+          <Value>0.05</Value>
+        </Constant>
+        <Biomass>
+          <Name>Live</Name>
+        </Biomass>
+        <Biomass>
+          <Name>Dead</Name>
+        </Biomass>
+        <Constant>
+          <Name>DMSinkCapacity</Name>
+          <Value>1</Value>
+        </Constant>
+        <PartitionFractionDemandFunction>
+          <Name>DMDemandFunction</Name>
+          <LinearInterpolationFunction>
+            <Name>PartitionFraction</Name>
+            <XYPairs>
+              <Name>XYPairs</Name>
+              <X>
+                <double>1</double>
+                <double>6</double>
+                <double>12</double>
+                <double>30</double>
+                <double>51</double>
+              </X>
+              <Y>
+                <double>0.4</double>
+                <double>0.8</double>
+                <double>0.9</double>
+                <double>0.9</double>
+                <double>0.9</double>
+              </Y>
+            </XYPairs>
+            <Memo>
+              <Name>Memo</Name>
+              <MemoText><![CDATA[Allocation determined by Node number]]></MemoText>
+            </Memo>
+            <XProperty>[Structure].MainStemNodeNo</XProperty>
+          </LinearInterpolationFunction>
+          <PhaseLookup>
+            <Name>PartitionFraction11</Name>
+            <PhaseLookupValue>
+              <Name>EarlyDMdemand</Name>
+              <AllometricDemandFunction>
+                <Name>AllometricDemandFunction</Name>
+                <Const>4</Const>
+                <Power>2.5</Power>
+                <XProperty>[Leaf].LAI</XProperty>
+                <YProperty>[Stem].Live.Wt</YProperty>
+              </AllometricDemandFunction>
+              <Start>Emergence</Start>
+              <End>Vegetative</End>
+            </PhaseLookupValue>
+            <PhaseLookupValue>
+              <Name>Maturity</Name>
+              <Constant>
+                <Name>Constant</Name>
+                <Value>0.85</Value>
+              </Constant>
+              <Start>Vegetative</Start>
+              <End>Maturity</End>
+            </PhaseLookupValue>
+          </PhaseLookup>
+        </PartitionFractionDemandFunction>
+        <Folder>
+          <Name>BiomassRemovalDefaults</Name>
+          <OrganBiomassRemovalType>
+            <Name>Harvest</Name>
+            <FractionRemoved>0.5</FractionRemoved>
+            <FractionToResidue>0.1</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Cut</Name>
+            <FractionRemoved>0.8</FractionRemoved>
+            <FractionToResidue>0</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Prune</Name>
+            <FractionRemoved>0</FractionRemoved>
+            <FractionToResidue>0.6</FractionToResidue>
+          </OrganBiomassRemovalType>
+          <OrganBiomassRemovalType>
+            <Name>Graze</Name>
+            <FractionRemoved>0.6</FractionRemoved>
+            <FractionToResidue>0.2</FractionToResidue>
+          </OrganBiomassRemovalType>
+        </Folder>
+      </GenericAboveGroundOrgan>
       <Root>
         <Name>Root</Name>
         <Constant>
@@ -800,7 +932,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           </Propertys>
         </CompositeBiomass>
         <Constant>
-          <Name>MaxDailyNUptake</Name>
+          <Name>MaxDailyNUptakeConst</Name>
           <Value>7.5</Value>
         </Constant>
         <Constant>
@@ -875,99 +1007,42 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           </XYPairs>
           <XProperty>[Root].RWC</XProperty>
         </LinearInterpolationFunction>
+        <LinearInterpolationFunction>
+          <Name>MaxDailyNUptake</Name>
+          <XYPairs>
+            <Name>XYPairs</Name>
+            <X>
+              <double>0</double>
+              <double>2</double>
+              <double>4</double>
+              <double>6</double>
+              <double>8</double>
+              <double>16</double>
+              <double>50</double>
+              <double>50</double>
+            </X>
+            <Y>
+              <double>0.5</double>
+              <double>2.5</double>
+              <double>5</double>
+              <double>7.5</double>
+              <double>7.5</double>
+              <double>7.5</double>
+              <double>0</double>
+              <double>0</double>
+            </Y>
+          </XYPairs>
+          <Memo>
+            <Name>Memo</Name>
+            <MemoText><![CDATA[Pattern of max leaf area assumed from sugar beet: Milford et al. 1985
+Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoText>
+          </Memo>
+          <XProperty>[Structure].MainStemNodeNo</XProperty>
+        </LinearInterpolationFunction>
         <InitialDM>5</InitialDM>
         <SpecificRootLength>40000</SpecificRootLength>
         <NuptakeSupply>0</NuptakeSupply>
       </Root>
-      <GenericAboveGroundOrgan>
-        <Name>Stem</Name>
-        <Constant>
-          <Name>StructuralFraction</Name>
-          <Value>0.95</Value>
-        </Constant>
-        <Constant>
-          <Name>MaximumNConc</Name>
-          <Value>0.011</Value>
-        </Constant>
-        <Constant>
-          <Name>MinimumNConc</Name>
-          <Value>0.01</Value>
-        </Constant>
-        <PhaseBasedSwitch>
-          <Name>NitrogenDemandSwitch</Name>
-          <Start>Germination</Start>
-          <End>Maturity</End>
-        </PhaseBasedSwitch>
-        <Constant>
-          <Name>NRetranslocationFactor</Name>
-          <Value>0.05</Value>
-        </Constant>
-        <Constant>
-          <Name>DMRetranslocationFactor</Name>
-          <Value>0.05</Value>
-        </Constant>
-        <Biomass>
-          <Name>Live</Name>
-        </Biomass>
-        <Biomass>
-          <Name>Dead</Name>
-        </Biomass>
-        <Constant>
-          <Name>DMSinkCapacity</Name>
-          <Value>1</Value>
-        </Constant>
-        <PartitionFractionDemandFunction>
-          <Name>DMDemandFunction</Name>
-          <LinearInterpolationFunction>
-            <Name>PartitionFraction</Name>
-            <XYPairs>
-              <Name>XYPairs</Name>
-              <X>
-                <double>1</double>
-                <double>6</double>
-                <double>15</double>
-                <double>30</double>
-                <double>51</double>
-              </X>
-              <Y>
-                <double>0.3</double>
-                <double>0.3</double>
-                <double>0.8</double>
-                <double>0.8</double>
-                <double>0.8</double>
-              </Y>
-            </XYPairs>
-            <Memo>
-              <Name>Memo</Name>
-              <MemoText><![CDATA[Allocation determined by Node number]]></MemoText>
-            </Memo>
-            <XProperty>[Structure].MainStemNodeNo</XProperty>
-          </LinearInterpolationFunction>
-        </PartitionFractionDemandFunction>
-        <Folder>
-          <Name>BiomassRemovalDefaults</Name>
-          <OrganBiomassRemovalType>
-            <Name>Harvest</Name>
-            <FractionRemoved>0.5</FractionRemoved>
-            <FractionToResidue>0.1</FractionToResidue>
-          </OrganBiomassRemovalType>
-          <OrganBiomassRemovalType>
-            <Name>Cut</Name>
-            <FractionRemoved>0.8</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
-          </OrganBiomassRemovalType>
-          <OrganBiomassRemovalType>
-            <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.6</FractionToResidue>
-          </OrganBiomassRemovalType>
-          <OrganBiomassRemovalType>
-            <Name>Graze</Name>
-            <FractionRemoved>0.6</FractionRemoved>
-            <FractionToResidue>0.2</FractionToResidue>
-          </OrganBiomassRemovalType>
-        </Folder>
-      </GenericAboveGroundOrgan>
       <CompositeBiomass>
         <Name>AboveGround</Name>
         <Propertys>
@@ -1017,21 +1092,31 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
   <DataStore>
     <Name>DataStore</Name>
     <Input>
-      <Name>Input</Name>
-      <ErrorMessage>Please select a file to use.</ErrorMessage>
+      <Name>Kale_calib</Name>
+      <ErrorMessage>The process cannot access the file 'C:\ApsimX\Prototypes\Kale\Observed\kale_observed.prn' because it is being used by another process.</ErrorMessage>
       <FileName>Observed\kale_observed.prn</FileName>
+    </Input>
+    <Input>
+      <Name>Ashley_Dean</Name>
+      <ErrorMessage>The process cannot access the file 'C:\ApsimX\Prototypes\Kale\Observed\kale_observed.prn' because it is being used by another process.</ErrorMessage>
+      <FileName>Observed\Ashley_DEAN Seq.txt</FileName>
+    </Input>
+    <Input>
+      <Name>Ashley_Dean_LAI</Name>
+      <ErrorMessage>The process cannot access the file 'C:\ApsimX\Prototypes\Kale\Observed\kale_observed.prn' because it is being used by another process.</ErrorMessage>
+      <FileName>Observed\Ashley_DEAN LAI.txt</FileName>
     </Input>
     <AutoExport>false</AutoExport>
     <MaximumResultsPerPage>0</MaximumResultsPerPage>
   </DataStore>
   <Experiment>
-    <Name>Kale_</Name>
+    <Name>Kale</Name>
     <Factors>
       <Name>Factors</Name>
       <Factor>
-        <Name>1Oct06_500</Name>
+        <Name>_Sown_1Oct06</Name>
         <Operations>
-          <Name>_500</Name>
+          <Name>S1</Name>
           <Operation>
             <Date>2006-10-06</Date>
             <Action>[Kale].Sow(population:45, cultivar:"Grunner", depth:10, rowSpacing:150);</Action>
@@ -1039,6 +1124,165 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
         </Operations>
         <Specifications>
           <string>[SowDateCv]</string>
+        </Specifications>
+      </Factor>
+      <Factor>
+        <Name>_Fert_</Name>
+        <Operations>
+          <Name>500</Name>
+          <Operation>
+            <Date>2006-10-24</Date>
+            <Action>[Fertiliser].Apply(100, Fertiliser.Types.UreaN, 0);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-30</Date>
+            <Action>[Fertiliser].Apply(200, Fertiliser.Types.UreaN, 0); </Action>
+          </Operation>
+          <Operation>
+            <Date>2006-12-29</Date>
+            <Action>[Fertiliser].Apply(300, Fertiliser.Types.UreaN, 0); </Action>
+          </Operation>
+          <Operation>
+            <Date>2006-10-18</Date>
+            <Action>[Irrigation].Apply(5);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-05</Date>
+            <Action>[Irrigation].Apply(10);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-24</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-12-19</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-01-15</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-02-02</Date>
+            <Action>[Irrigation].Apply(30);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-02-19</Date>
+            <Action>[Irrigation].Apply(60);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-03-13</Date>
+            <Action>[Irrigation].Apply(30);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-04-05</Date>
+            <Action>[Irrigation].Apply(40);</Action>
+          </Operation>
+        </Operations>
+        <Operations>
+          <Name>150</Name>
+          <Operation>
+            <Date>2006-10-24</Date>
+            <Action>[Fertiliser].Apply(50, Fertiliser.Types.UreaN, 0);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-30</Date>
+            <Action>[Fertiliser].Apply(50, Fertiliser.Types.UreaN, 0); </Action>
+          </Operation>
+          <Operation>
+            <Date>2006-12-29</Date>
+            <Action>[Fertiliser].Apply(50, Fertiliser.Types.UreaN, 0); </Action>
+          </Operation>
+          <Operation>
+            <Date>2006-10-18</Date>
+            <Action>[Irrigation].Apply(5);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-05</Date>
+            <Action>[Irrigation].Apply(10);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-24</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-12-19</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-01-15</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-02-02</Date>
+            <Action>[Irrigation].Apply(30);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-02-19</Date>
+            <Action>[Irrigation].Apply(60);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-03-13</Date>
+            <Action>[Irrigation].Apply(30);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-04-05</Date>
+            <Action>[Irrigation].Apply(40);</Action>
+          </Operation>
+        </Operations>
+        <Operations>
+          <Name>nil</Name>
+          <Operation>
+            <Date>2006-10-24</Date>
+            <Action>[Fertiliser].Apply(0, Fertiliser.Types.UreaN, 0);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-30</Date>
+            <Action>[Fertiliser].Apply(0, Fertiliser.Types.UreaN, 0); </Action>
+          </Operation>
+          <Operation>
+            <Date>2006-12-29</Date>
+            <Action>[Fertiliser].Apply(0, Fertiliser.Types.UreaN, 0); </Action>
+          </Operation>
+          <Operation>
+            <Date>2006-10-18</Date>
+            <Action>[Irrigation].Apply(5);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-05</Date>
+            <Action>[Irrigation].Apply(10);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-11-24</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2006-12-19</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-01-15</Date>
+            <Action>[Irrigation].Apply(25);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-02-02</Date>
+            <Action>[Irrigation].Apply(30);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-02-19</Date>
+            <Action>[Irrigation].Apply(60);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-03-13</Date>
+            <Action>[Irrigation].Apply(30);</Action>
+          </Operation>
+          <Operation>
+            <Date>2007-04-05</Date>
+            <Action>[Irrigation].Apply(40);</Action>
+          </Operation>
+        </Operations>
+        <Specifications>
+          <string>[Irrigation_and_Fertiliser]</string>
         </Specifications>
       </Factor>
     </Factors>
@@ -1093,10 +1337,10 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
             <SoilCrop>
               <Name>KaleSoil</Name>
               <LL>
-                <double>0.13</double>
-                <double>0.13</double>
-                <double>0.1</double>
                 <double>0.08</double>
+                <double>0.07</double>
+                <double>0.07</double>
+                <double>0.09</double>
                 <double>0.11</double>
                 <double>0.11</double>
               </LL>
@@ -1304,31 +1548,31 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           <Sample>
             <Name>Sample</Name>
             <Thickness>
-              <double>100</double>
-              <double>200</double>
+              <double>150</double>
+              <double>150</double>
               <double>300</double>
               <double>300</double>
               <double>300</double>
               <double>300</double>
             </Thickness>
             <NO3>
-              <double>217</double>
-              <double>30</double>
+              <double>68</double>
+              <double>74</double>
+              <double>26</double>
               <double>5</double>
-              <double>5</double>
-              <double>0</double>
-              <double>0</double>
+              <double>3</double>
+              <double>2</double>
             </NO3>
             <NH4>
-              <double>0</double>
-              <double>0</double>
-              <double>0</double>
-              <double>0</double>
-              <double>0</double>
-              <double>0</double>
+              <double>0.1</double>
+              <double>0.1</double>
+              <double>0.1</double>
+              <double>0.1</double>
+              <double>0.1</double>
+              <double>0.1</double>
             </NH4>
             <NO3Units>kgha</NO3Units>
-            <NH4Units>ppm</NH4Units>
+            <NH4Units>kgha</NH4Units>
             <SWUnits>Volumetric</SWUnits>
             <OCUnits>Total</OCUnits>
             <PHUnits>Water</PHUnits>
@@ -1413,7 +1657,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           <FractionFaecesAdded>0.5</FractionFaecesAdded>
         </SurfaceOrganicMatter>
         <Report>
-          <Name>Report</Name>
+          <Name>Kale_Calib_Report</Name>
           <ExperimentFactorNames />
           <ExperimentFactorValues />
           <VariableNames>
@@ -1425,6 +1669,8 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
             <string>[Kale].Phenology.ThermalTime.Value</string>
             <string>[Kale].Phenology.AccumulatedThermalTime.Value</string>
             <string>[Kale].Leaf.Live.Wt</string>
+            <string>[Kale].Leaf.Dead.Wt</string>
+            <string>[Kale].TotalDead.Wt</string>
             <string>[Kale].Total.Wt</string>
             <string>[Kale].Stem.Live.Wt</string>
             <string>[Kale].Leaf.LAI</string>
@@ -1445,6 +1691,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
             <string>[Kale].AboveGround.N</string>
             <string>[Kale].Leaf.Live.NConc</string>
             <string>[Kale].Root.Live.NConc</string>
+            <string>[Kale].Leaf.Fn</string>
           </VariableNames>
           <EventNames>
             <string>[Clock].DoReport</string>
@@ -1752,27 +1999,6 @@ namespace Models
           <Cumulative>false</Cumulative>
           <CumulativeX>false</CumulativeX>
         </Series>
-        <Series>
-          <Name>Observed</Name>
-          <Type>Scatter</Type>
-          <XAxis>Bottom</XAxis>
-          <YAxis>Left</YAxis>
-          <ColourArgb>-16776961</ColourArgb>
-          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
-          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
-          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
-          <Marker>Diamond</Marker>
-          <MarkerSize>Normal</MarkerSize>
-          <Line>None</Line>
-          <LineThickness>Normal</LineThickness>
-          <TableName>FRNLObserved</TableName>
-          <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Phenology.Stage</YFieldName>
-          <ShowInLegend>false</ShowInLegend>
-          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
-          <Cumulative>false</Cumulative>
-          <CumulativeX>false</CumulativeX>
-        </Series>
         <Axis>
           <Type>Left</Type>
           <Title>Stage</Title>
@@ -1886,7 +2112,7 @@ namespace Models
           <Type>Scatter</Type>
           <XAxis>Bottom</XAxis>
           <YAxis>Left</YAxis>
-          <ColourArgb>-16776961</ColourArgb>
+          <ColourArgb>-11094807</ColourArgb>
           <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
           <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
           <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
@@ -1894,21 +2120,43 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>Solid</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Kale_Calib_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
           <YFieldName>Kale.Leaf.LAI</YFieldName>
           <ShowInLegend>true</ShowInLegend>
           <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
           <CumulativeX>false</CumulativeX>
-          <Filter />
+          <Filter>[_Fert_] = 'nil' </Filter>
+        </Series>
+        <Series>
+          <Name>Simulated1</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-1663232</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Kale_Calib_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.LAI</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+          <Filter>[_Fert_] = '150' </Filter>
         </Series>
         <Series>
           <Name>Observed</Name>
           <Type>Scatter</Type>
           <XAxis>Bottom</XAxis>
           <YAxis>Left</YAxis>
-          <ColourArgb>-16776961</ColourArgb>
+          <ColourArgb>-16736653</ColourArgb>
           <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
           <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
           <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
@@ -1916,7 +2164,7 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>None</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Input</TableName>
+          <TableName>Kale_calib</TableName>
           <XFieldName>Date</XFieldName>
           <YFieldName>LAI</YFieldName>
           <ShowInLegend>true</ShowInLegend>
@@ -1924,6 +2172,28 @@ namespace Models
           <Cumulative>false</Cumulative>
           <CumulativeX>false</CumulativeX>
           <Filter />
+        </Series>
+        <Series>
+          <Name>Simulated11</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-1663232</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Kale_Calib_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.LAI</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+          <Filter>[_Fert_] = '500' </Filter>
         </Series>
         <Axis>
           <Type>Left</Type>
@@ -2004,9 +2274,9 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>Solid</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Kale_Calib_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.AboveGround.Wt</YFieldName>
+          <YFieldName>Kale.Total.Wt</YFieldName>
           <ShowInLegend>true</ShowInLegend>
           <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
@@ -2025,7 +2295,7 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>None</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Input</TableName>
+          <TableName>Kale_calib</TableName>
           <XFieldName>Date</XFieldName>
           <YFieldName>TopsGreenWt</YFieldName>
           <ShowInLegend>true</ShowInLegend>
@@ -2067,7 +2337,7 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>Solid</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Kale_Calib_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
           <YFieldName>Kale.Leaf.Live.Wt</YFieldName>
           <ShowInLegend>true</ShowInLegend>
@@ -2088,7 +2358,7 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>None</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Input</TableName>
+          <TableName>Kale_calib</TableName>
           <XFieldName>Date</XFieldName>
           <YFieldName>LeafGreenWt</YFieldName>
           <ShowInLegend>true</ShowInLegend>
@@ -2130,7 +2400,7 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>Solid</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Kale_Calib_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
           <YFieldName>Kale.Stem.Live.Wt</YFieldName>
           <ShowInLegend>true</ShowInLegend>
@@ -2151,7 +2421,7 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>None</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Input</TableName>
+          <TableName>Kale_calib</TableName>
           <XFieldName>Date</XFieldName>
           <YFieldName>StemGreenWt</YFieldName>
           <ShowInLegend>true</ShowInLegend>
@@ -2162,6 +2432,1764 @@ namespace Models
         <Axis>
           <Type>Left</Type>
           <Title>Stem Biomass (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Dead</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16711936</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Kale_Calib_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.Dead.Wt</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Leaf Biomass (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+    </Folder>
+    <Folder>
+      <Name>N_Uptake</Name>
+      <Graph>
+        <Name>AboveGround_N</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16777216</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.AboveGround.N</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Obs</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-2793984</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Kale_calib</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>TopsGreenN</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>AboveGroundN (kg/ha)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>0</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Stem_N</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16777216</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Kale_Calib_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Stem.Live.N</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Obs</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16777216</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Kale_calib</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>StemGreenN</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Stem_N (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Leaf_N</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16777216</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Kale_Calib_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.Live.N</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Obs</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16777216</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Kale_calib</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>LeafGreenN</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Leaf_N (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>4</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+    </Folder>
+    <Folder>
+      <Name>Folder</Name>
+      <Graph>
+        <Name>LeafFN</Name>
+        <Series>
+          <Name>Series</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-11094807</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Small</MarkerSize>
+          <Line>Dot</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.Fn</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>true</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+          <Filter />
+        </Series>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Left</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>false</IncludeInDocumentation>
+      </Graph>
+    </Folder>
+  </Experiment>
+  <Experiment>
+    <Name>Ashley_Dean_2013_</Name>
+    <Factors>
+      <Name>Factors</Name>
+      <Factor>
+        <Name>Irrigation_</Name>
+        <Operations>
+          <Name>Full_</Name>
+          <Operation>
+            <Date>2013-11-21</Date>
+            <Action> [Irrigation].Apply(15 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-11-25</Date>
+            <Action> [Irrigation].Apply(15 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-02</Date>
+            <Action> [Irrigation].Apply(15 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-05</Date>
+            <Action> [Irrigation].Apply(15.8 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-09</Date>
+            <Action> [Irrigation].Apply(10 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-12</Date>
+            <Action> [Irrigation].Apply(14 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-16</Date>
+            <Action> [Irrigation].Apply(20 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-23</Date>
+            <Action> [Irrigation].Apply(14.5 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-06</Date>
+            <Action> [Irrigation].Apply(29 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-09</Date>
+            <Action> [Irrigation].Apply(23 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-13</Date>
+            <Action> [Irrigation].Apply(21 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-16</Date>
+            <Action> [Irrigation].Apply(24 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-20</Date>
+            <Action> [Irrigation].Apply(28 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-23</Date>
+            <Action> [Irrigation].Apply(21 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-27</Date>
+            <Action> [Irrigation].Apply(10 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-30</Date>
+            <Action> [Irrigation].Apply(25 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-03</Date>
+            <Action> [Irrigation].Apply(19.0 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-06</Date>
+            <Action> [Irrigation].Apply(17 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-10</Date>
+            <Action> [Irrigation].Apply(21 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-13</Date>
+            <Action> [Irrigation].Apply(9 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-17</Date>
+            <Action> [Irrigation].Apply(19.5 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-20</Date>
+            <Action> [Irrigation].Apply(20 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-27</Date>
+            <Action> [Irrigation].Apply(20 );</Action>
+          </Operation>
+        </Operations>
+        <Operations>
+          <Name>Nil_</Name>
+        </Operations>
+        <Specifications>
+          <string>[Irrigation_]</string>
+        </Specifications>
+      </Factor>
+      <Factor>
+        <Name>Fertiliser_</Name>
+        <Operations>
+          <Name>300</Name>
+          <Operation>
+            <Date>2013-11-19</Date>
+            <Action> [Fertiliser].Apply( 217.4,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-16</Date>
+            <Action> [Fertiliser].Apply( 217.4,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-20</Date>
+            <Action> [Fertiliser].Apply( 217.4,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+        </Operations>
+        <Operations>
+          <Name>150</Name>
+          <Operation>
+            <Date>2013-11-19</Date>
+            <Action> [Fertiliser].Apply( 108.7,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-16</Date>
+            <Action> [Fertiliser].Apply( 108.7,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-20</Date>
+            <Action> [Fertiliser].Apply( 108.7,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+        </Operations>
+        <Operations>
+          <Name>75</Name>
+          <Operation>
+            <Date>2013-11-19</Date>
+            <Action> [Fertiliser].Apply( 54.35,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-16</Date>
+            <Action> [Fertiliser].Apply( 54.35,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-20</Date>
+            <Action> [Fertiliser].Apply( 54.35,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+        </Operations>
+        <Operations>
+          <Name>0</Name>
+        </Operations>
+        <Specifications>
+          <string>[Fertiliser_]</string>
+        </Specifications>
+      </Factor>
+    </Factors>
+    <Simulation>
+      <Name>AD_Base</Name>
+      <Clock>
+        <Name>clock</Name>
+        <StartDate>2013-09-01T00:00:00</StartDate>
+        <EndDate>2014-06-30T00:00:00</EndDate>
+      </Clock>
+      <Summary>
+        <Name>summaryfile</Name>
+      </Summary>
+      <Weather>
+        <Name>Weather</Name>
+        <FileName>C:\apsim_dev\Data\MetFiles\lincoln.met</FileName>
+        <ExcelWorkSheetName />
+      </Weather>
+      <Zone>
+        <Name>paddock</Name>
+        <Soil>
+          <Name>AshleyDean</Name>
+          <Analysis>
+            <Name>Analysis</Name>
+            <Thickness>
+              <double>100</double>
+              <double>200</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+            </Thickness>
+            <PH>
+              <double>6.6</double>
+              <double>6.2</double>
+              <double>5.7</double>
+              <double>5.5</double>
+              <double>5.5</double>
+              <double>5.5</double>
+            </PH>
+            <PHUnits>Water</PHUnits>
+            <BoronUnits>HotWater</BoronUnits>
+          </Analysis>
+          <InitialWater>
+            <Name>Initial water</Name>
+            <PercentMethod>EvenlyDistributed</PercentMethod>
+            <FractionFull>1</FractionFull>
+            <DepthWetSoil>NaN</DepthWetSoil>
+            <RelativeTo>KaleSoil</RelativeTo>
+          </InitialWater>
+          <Water>
+            <Name>Water</Name>
+            <SoilCrop>
+              <Name>KaleSoil</Name>
+              <LL>
+                <double>0.08</double>
+                <double>0.07</double>
+                <double>0.07</double>
+                <double>0.09</double>
+                <double>0.11</double>
+                <double>0.11</double>
+              </LL>
+              <KL>
+                <double>0.06</double>
+                <double>0.06</double>
+                <double>0.06</double>
+                <double>0.06</double>
+                <double>0.06</double>
+                <double>0.06</double>
+              </KL>
+              <XF>
+                <double>1</double>
+                <double>1</double>
+                <double>1</double>
+                <double>1</double>
+                <double>1</double>
+                <double>1</double>
+              </XF>
+            </SoilCrop>
+            <Thickness>
+              <double>100</double>
+              <double>150</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+            </Thickness>
+            <BD>
+              <double>1.17</double>
+              <double>1.1</double>
+              <double>0.7</double>
+              <double>0.455</double>
+              <double>0.25</double>
+              <double>0.25</double>
+            </BD>
+            <AirDry>
+              <double>0.05</double>
+              <double>0.05</double>
+              <double>0.05</double>
+              <double>0.05</double>
+              <double>0.05</double>
+              <double>0.05</double>
+            </AirDry>
+            <LL15>
+              <double>0.06</double>
+              <double>0.06</double>
+              <double>0.06</double>
+              <double>0.06</double>
+              <double>0.06</double>
+              <double>0.06</double>
+            </LL15>
+            <DUL>
+              <double>0.3</double>
+              <double>0.25</double>
+              <double>0.15</double>
+              <double>0.14</double>
+              <double>0.13</double>
+              <double>0.12</double>
+            </DUL>
+            <SAT>
+              <double>0.42</double>
+              <double>0.37</double>
+              <double>0.22</double>
+              <double>0.21</double>
+              <double>0.2</double>
+              <double>0.18</double>
+            </SAT>
+            <KS>
+              <double>4832</double>
+              <double>389</double>
+              <double>16</double>
+              <double>16</double>
+              <double>98</double>
+            </KS>
+          </Water>
+          <SoilWater>
+            <Name>SoilWater</Name>
+            <residueinterception>0</residueinterception>
+            <SummerDate>1-Nov</SummerDate>
+            <SummerU>9</SummerU>
+            <SummerCona>4.4</SummerCona>
+            <WinterDate>1-Apr</WinterDate>
+            <WinterU>9</WinterU>
+            <WinterCona>4.4</WinterCona>
+            <DiffusConst>88</DiffusConst>
+            <DiffusSlope>35.4</DiffusSlope>
+            <Salb>0.18</Salb>
+            <CN2Bare>68</CN2Bare>
+            <CNRed>20</CNRed>
+            <CNCov>0.8</CNCov>
+            <slope>NaN</slope>
+            <discharge_width>NaN</discharge_width>
+            <catchment_area>NaN</catchment_area>
+            <max_pond>0</max_pond>
+            <Thickness>
+              <double>100</double>
+              <double>200</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+            </Thickness>
+            <SWCON>
+              <double>0.55</double>
+              <double>0.55</double>
+              <double>0.55</double>
+              <double>0.55</double>
+              <double>0.55</double>
+              <double>0.55</double>
+            </SWCON>
+          </SoilWater>
+          <SoilNitrogen>
+            <Name>SoilNitrogen</Name>
+            <fom_type>
+              <string>default</string>
+              <string>manure</string>
+              <string>mucuna</string>
+              <string>lablab</string>
+              <string>shemp</string>
+              <string>stable</string>
+            </fom_type>
+            <fract_carb>
+              <double>0.2</double>
+              <double>0.3</double>
+              <double>0.54</double>
+              <double>0.57</double>
+              <double>0.45</double>
+              <double>0</double>
+            </fract_carb>
+            <fract_cell>
+              <double>0.7</double>
+              <double>0.3</double>
+              <double>0.37</double>
+              <double>0.37</double>
+              <double>0.47</double>
+              <double>0.1</double>
+            </fract_cell>
+            <fract_lign>
+              <double>0.1</double>
+              <double>0.4</double>
+              <double>0.09</double>
+              <double>0.06</double>
+              <double>0.08</double>
+              <double>0.9</double>
+            </fract_lign>
+            <wfpsN2N2O_x>
+              <double>22</double>
+              <double>88</double>
+            </wfpsN2N2O_x>
+            <wfpsN2N2O_y>
+              <double>0.1</double>
+              <double>1</double>
+            </wfpsN2N2O_y>
+          </SoilNitrogen>
+          <SoilOrganicMatter>
+            <Name>SoilOrganicMatter</Name>
+            <RootCN>30</RootCN>
+            <RootWt>3000</RootWt>
+            <SoilCN>11.5</SoilCN>
+            <EnrACoeff>7.4</EnrACoeff>
+            <EnrBCoeff>0.2</EnrBCoeff>
+            <Thickness>
+              <double>100</double>
+              <double>200</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+            </Thickness>
+            <Depth>
+              <string>0-10</string>
+              <string>10-30</string>
+              <string>30-60</string>
+              <string>60-90</string>
+              <string>90-120</string>
+              <string>120-150</string>
+            </Depth>
+            <OC>
+              <double>1.82</double>
+              <double>1.47</double>
+              <double>1.2</double>
+              <double>1.03</double>
+              <double>0.47</double>
+              <double>0.47</double>
+            </OC>
+            <FBiom>
+              <double>0.025</double>
+              <double>0.025</double>
+              <double>0.015</double>
+              <double>0.01</double>
+              <double>0.01</double>
+              <double>0.01</double>
+            </FBiom>
+            <FInert>
+              <double>0.3</double>
+              <double>0.4</double>
+              <double>0.75</double>
+              <double>0.9</double>
+              <double>0.96</double>
+              <double>0.96</double>
+            </FInert>
+            <OCUnits>Total</OCUnits>
+          </SoilOrganicMatter>
+          <Sample>
+            <Name>Sample</Name>
+            <Thickness>
+              <double>150</double>
+              <double>150</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+              <double>300</double>
+            </Thickness>
+            <NO3>
+              <double>78</double>
+              <double>58</double>
+              <double>5</double>
+              <double>5</double>
+              <double>5</double>
+              <double>5</double>
+            </NO3>
+            <NH4>
+              <double>0.1</double>
+              <double>0.1</double>
+              <double>0.1</double>
+              <double>0.1</double>
+              <double>0.1</double>
+              <double>0.1</double>
+            </NH4>
+            <NO3Units>kgha</NO3Units>
+            <NH4Units>kgha</NH4Units>
+            <SWUnits>Volumetric</SWUnits>
+            <OCUnits>Total</OCUnits>
+            <PHUnits>Water</PHUnits>
+          </Sample>
+          <RecordNumber>0</RecordNumber>
+          <SoilType />
+          <Site />
+          <NearestTown />
+          <Region />
+          <NaturalVegetation />
+          <Latitude>0</Latitude>
+          <Longitude>0</Longitude>
+        </Soil>
+        <Plant>
+          <Name>Kale</Name>
+        </Plant>
+        <MicroClimate>
+          <Name>MicroClimate</Name>
+          <a_interception>0</a_interception>
+          <b_interception>1</b_interception>
+          <c_interception>0</c_interception>
+          <d_interception>0</d_interception>
+          <soil_albedo>0.23</soil_albedo>
+          <air_pressure>1010</air_pressure>
+          <soil_emissivity>0.96</soil_emissivity>
+          <sun_angle>15</sun_angle>
+          <soil_heat_flux_fraction>0.4</soil_heat_flux_fraction>
+          <night_interception_fraction>0.5</night_interception_fraction>
+          <windspeed_default>3</windspeed_default>
+          <refheight>2</refheight>
+          <albedo>0.26</albedo>
+          <emissivity>0.96</emissivity>
+          <gsmax>0.01</gsmax>
+          <r50>200</r50>
+        </MicroClimate>
+        <Irrigation>
+          <Name>Irrigation</Name>
+        </Irrigation>
+        <Fertiliser>
+          <Name>fertiliser</Name>
+        </Fertiliser>
+        <Operations>
+          <Name>SowDateCv</Name>
+          <Operation>
+            <Date>2013-10-26</Date>
+            <Action>[Kale].Sow(population:75, cultivar:"Grunner", depth:9, rowSpacing:150);</Action>
+          </Operation>
+        </Operations>
+        <SurfaceOrganicMatter>
+          <Name>surface organic matter</Name>
+          <ResidueTypes>
+            <Name>ResidueTypesList</Name>
+            <LoadFromResource>ResidueTypes</LoadFromResource>
+          </ResidueTypes>
+          <Pools>
+            <Pool>
+              <PoolName>wheat</PoolName>
+              <ResidueType>wheat</ResidueType>
+              <Mass>0</Mass>
+              <CNRatio>80</CNRatio>
+              <CPRatio>NaN</CPRatio>
+              <StandingFraction>0</StandingFraction>
+            </Pool>
+          </Pools>
+          <PoolName>wheat</PoolName>
+          <type>wheat</type>
+          <mass>0</mass>
+          <standing_fraction>0</standing_fraction>
+          <cpr />
+          <cnr>80</cnr>
+          <CriticalResidueWeight>2000</CriticalResidueWeight>
+          <OptimumDecompTemp>20</OptimumDecompTemp>
+          <MaxCumulativeEOS>20</MaxCumulativeEOS>
+          <CNRatioDecompCoeff>0.277</CNRatioDecompCoeff>
+          <CNRatioDecompThreshold>25</CNRatioDecompThreshold>
+          <TotalLeachRain>25</TotalLeachRain>
+          <MinRainToLeach>10</MinRainToLeach>
+          <CriticalMinimumOrganicC>0.004</CriticalMinimumOrganicC>
+          <DefaultCPRatio>0</DefaultCPRatio>
+          <DefaultStandingFraction>0</DefaultStandingFraction>
+          <StandingExtinctCoeff>0.5</StandingExtinctCoeff>
+          <FractionFaecesAdded>0.5</FractionFaecesAdded>
+        </SurfaceOrganicMatter>
+        <Report>
+          <Name>Ashley_Dean_Report</Name>
+          <ExperimentFactorNames />
+          <ExperimentFactorValues />
+          <VariableNames>
+            <string>[Clock].Today</string>
+            <string>[Kale].Leaf.Fw</string>
+            <string>[Kale].Leaf.Fn</string>
+            <string>[Kale].Phenology.CurrentPhaseName</string>
+            <string>[Kale].Phenology.Stage</string>
+            <string>[Kale].Phenology.ThermalTime.Value</string>
+            <string>[Kale].Phenology.AccumulatedThermalTime.Value</string>
+            <string>[Kale].Leaf.Live.Wt</string>
+            <string>[Kale].Leaf.Dead.Wt</string>
+            <string>[Kale].TotalDead.Wt</string>
+            <string>[Kale].Total.Wt</string>
+            <string>[Kale].Stem.Live.Wt</string>
+            <string>[Kale].Leaf.LAI</string>
+            <string>[Kale].Structure.MainStemNodeNo</string>
+            <string>[Kale].Leaf.PlantAppearedLeafNo</string>
+            <string>[Kale].Leaf.PlantAppearedGreenLeafNo</string>
+            <string>[Kale].Leaf.PlantsenescedLeafNo</string>
+            <string>[Kale].Leaf.CoverGreen</string>
+            <string>[Kale].Leaf.CohortParameters.MaxArea.Value</string>
+            <string>[Phenology].Photoperiod.Value</string>
+            <string>[Kale].AboveGround.Wt</string>
+            <string>[Kale].Leaf.Photosynthesis.RadnInt.Value</string>
+            <string>[Kale].Leaf.Photosynthesis.RUEact.Value</string>
+            <string>[ExtraVariables].Script.AccumPlantN</string>
+            <string>[Kale].Leaf.Live.N</string>
+            <string>[Kale].Root.Live.N</string>
+            <string>[Kale].Stem.Live.N</string>
+            <string>[Kale].AboveGround.N</string>
+            <string>[Kale].Leaf.Live.NConc</string>
+            <string>[Kale].Root.Live.NConc</string>
+            <string>[Kale].Leaf.Fn</string>
+            <string>[Kale].WaterSupplyDemandRatio</string>
+            <string>[Kale].Root.WaterUptake</string>
+            <string>[Kale].Leaf.WaterDemand</string>
+            <string>[Kale].Leaf.PotentialEP</string>
+            <string>[Script].SoilWaterDeficit</string>
+            <string>[Root].Depth</string>
+            <string>[Root].PAWPC</string>
+          </VariableNames>
+          <EventNames>
+            <string>[Clock].DoReport</string>
+          </EventNames>
+        </Report>
+        <Operations>
+          <Name>Irrigation_</Name>
+          <Operation>
+            <Date>2013-11-21</Date>
+            <Action> [Irrigation].Apply(15 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-11-25</Date>
+            <Action> [Irrigation].Apply(15 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-02</Date>
+            <Action> [Irrigation].Apply(15 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-05</Date>
+            <Action> [Irrigation].Apply(15.8 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-09</Date>
+            <Action> [Irrigation].Apply(10 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-12</Date>
+            <Action> [Irrigation].Apply(14 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-16</Date>
+            <Action> [Irrigation].Apply(20 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-23</Date>
+            <Action> [Irrigation].Apply(14.5 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-06</Date>
+            <Action> [Irrigation].Apply(29 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-09</Date>
+            <Action> [Irrigation].Apply(23 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-13</Date>
+            <Action> [Irrigation].Apply(21 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-16</Date>
+            <Action> [Irrigation].Apply(24 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-20</Date>
+            <Action> [Irrigation].Apply(28 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-23</Date>
+            <Action> [Irrigation].Apply(21 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-27</Date>
+            <Action> [Irrigation].Apply(10 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-30</Date>
+            <Action> [Irrigation].Apply(25 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-03</Date>
+            <Action> [Irrigation].Apply(19.0 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-06</Date>
+            <Action> [Irrigation].Apply(17 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-10</Date>
+            <Action> [Irrigation].Apply(21 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-13</Date>
+            <Action> [Irrigation].Apply(9 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-17</Date>
+            <Action> [Irrigation].Apply(19.5 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-20</Date>
+            <Action> [Irrigation].Apply(20 );</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-02-27</Date>
+            <Action> [Irrigation].Apply(20 );</Action>
+          </Operation>
+        </Operations>
+        <Operations>
+          <Name>Fertiliser_</Name>
+          <Operation>
+            <Date>2013-11-19</Date>
+            <Action> [Fertiliser].Apply( 217.4,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+          <Operation>
+            <Date>2013-12-16</Date>
+            <Action> [Fertiliser].Apply( 217.4,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+          <Operation>
+            <Date>2014-01-20</Date>
+            <Action> [Fertiliser].Apply( 217.4,Fertiliser.Types.UreaN,0)</Action>
+          </Operation>
+        </Operations>
+        <Manager>
+          <Name>ExtraVariables</Name>
+          <Script />
+          <Code><![CDATA[using System;
+using Models.Core;
+using System.Collections.Generic;
+using System.Text;
+using Models.Soils;
+using Models.PMF;
+using Models;
+using System.Xml.Serialization;
+using APSIM.Shared.Utilities;
+
+namespace Models
+{
+	[Serializable] 
+	public class Script : Model
+	{
+		[Link] Clock Clock;
+		[Link] Soils.Soil Soil;
+		[Link] Models.SurfaceOM.SurfaceOrganicMatter SOM;
+		[Link] Weather Met;
+		[Link] Fertiliser Fert;
+		[Link] Irrigation Irrig;
+		[Link] Plant Kale;
+		[Link] Zone zone;
+					
+		[XmlIgnore] public bool InitialDay { get; set; }
+		
+		[XmlIgnore] public double AccumPlantN { get; set; }
+		[XmlIgnore] public double AccumMineralisation { get; set; }
+		[XmlIgnore] public double AccumDenit { get; set; }
+		[XmlIgnore] public double AccumFert { get; set; }
+		[XmlIgnore] public double AccumLeach { get; set; }
+		[XmlIgnore] public double AccumDetach { get; set; }
+		[XmlIgnore] public double DeltaSoilOMN { get; set; }
+		[XmlIgnore] public double DeltaSurfaceOMN { get; set; }
+		[XmlIgnore] public double DeltaSoilMineralN { get; set; }
+		[XmlIgnore] public double SoilNitrogenContent { get; set; }
+		
+		
+		
+		[XmlIgnore] public double AccumEO { get; set; }
+		[XmlIgnore] public double AccumEP { get; set; }
+		[XmlIgnore] public double AccumES { get; set; }
+		[XmlIgnore] public double AccumDrainage { get; set; }
+		[XmlIgnore] public double AccumRunoff { get; set; }
+		[XmlIgnore] public double AccumOutflowLat { get; set; }
+		[XmlIgnore] public double AccumIrrigation { get; set; }
+		[XmlIgnore] public double AccumRainfall { get; set; }
+		[XmlIgnore] public double SoilWaterDeficit { get; set; }
+	
+		[XmlIgnore] public double  InitialSoilOMN { get; set; }
+		[XmlIgnore] public double  InitialSurfaceOMN { get; set; }
+		[XmlIgnore] public double  InitialMineralN { get; set; }
+		
+		
+		[XmlIgnore] public double SWC { get; set; }
+		[XmlIgnore] public double DUL { get; set; }
+		[XmlIgnore] public double OutFlowLat { get; set; }
+
+		[XmlIgnore] public double FomN { get; set; }
+		[XmlIgnore] public double BiomN { get; set; }
+		[XmlIgnore] public double HumN { get; set; }
+		[XmlIgnore] public double OrganicN { get; set; }
+		[XmlIgnore] public double NO3N { get; set; }
+		[XmlIgnore] public double NH4N { get; set; }
+		[XmlIgnore] public double UreaN { get; set; }
+		[XmlIgnore] public double MineralN { get; set; }
+		[XmlIgnore] public double DltNMinRes { get; set; }
+		[XmlIgnore] public double DltNMinTot { get; set; }
+		[XmlIgnore] public double ResidueWt{ get; set; }
+		
+		
+		[EventSubscribe("Commencing")]
+		private void OnSimulationCommencing(object sender, EventArgs e)
+		{
+			InitialDay = true;
+		}
+		
+		[EventSubscribe("DoManagement")]
+		private void OnDoManagement(object sender, EventArgs e)
+		{
+			//!!!!!! Nitrogen balance components !!!!!!
+			FomN = MathUtilities.Sum(Soil.SoilNitrogen.FOMN);
+			HumN = MathUtilities.Sum(Soil.SoilNitrogen.HumicN);
+			BiomN = MathUtilities.Sum(Soil.SoilNitrogen.MicrobialN);
+			OrganicN = FomN + HumN + BiomN;
+			NO3N = MathUtilities.Sum(Soil.NO3N);
+			NH4N = MathUtilities.Sum(Soil.NH4N);
+			UreaN = MathUtilities.Sum(Soil.SoilNitrogen.urea);
+			MineralN = NO3N + NH4N + UreaN; 
+			DltNMinRes = MathUtilities.Sum(Soil.SoilNitrogen.dlt_n_min_res);
+			DltNMinTot = MathUtilities.Sum(Soil.SoilNitrogen.MineralisedN);
+		
+			//Residue components//
+			ResidueWt = SOM.Wt;
+			//MathUtilities.Sum(SOM.dlt_SurfaceOM_wt);	Failed:)
+			
+			int layers = Soil.Thickness.Length;
+			if (InitialDay == true)
+			{
+				InitialSurfaceOMN = SOM.N;
+				InitialSoilOMN = OrganicN;
+				InitialMineralN = MineralN;
+				InitialDay = false;
+			}
+			DeltaSurfaceOMN = SOM.N - InitialSurfaceOMN;
+			//AccumLeach = AccumLeach + Soil.SoilWater.LeachNH4 + Soil.SoilWater.LeachNO3 + Soil.SoilWater.LeachUrea; //Fails
+			AccumLeach = AccumLeach + Soil.SoilWater.LeachNO3;
+			AccumMineralisation += MathUtilities.Sum(Soil.SoilNitrogen.MineralisedN);
+			AccumDenit -= MathUtilities.Sum(Soil.SoilNitrogen.Denitrification);
+			AccumPlantN += (double)zone.Get("Kale.Root.NUptake");
+			DeltaSoilOMN = OrganicN - InitialSoilOMN;
+			DeltaSoilMineralN = MineralN - InitialMineralN;
+			SoilNitrogenContent = MineralN;
+	
+			
+			
+			//!!!!!! Water balance components !!!!!!
+			//!!!!!!^^^^^^^^^^^^^^^^^^^^^^^^^^!!!!!!
+
+			AccumRainfall += Met.Rain;
+			//AccumEP -= (double)zone.Get("[Kale].Stover.Transpiration");
+			AccumEP -= (double)zone.Get("Kale.Root.WaterUptake");
+			SoilWaterDeficit = (DUL - SWC);
+			double OutFlowLat = MathUtilities.Sum(Soil.SoilWater.outflow_lat);
+			AccumOutflowLat -= OutFlowLat;
+		}
+		
+		[EventSubscribe("DoManagementCalculations")]
+		private void OnDoManagementCalculations(object sender, EventArgs e)
+		{
+			FomN = MathUtilities.Sum(Soil.SoilNitrogen.FOMN);
+			HumN = MathUtilities.Sum(Soil.SoilNitrogen.HumicN);
+			BiomN = MathUtilities.Sum(Soil.SoilNitrogen.MicrobialN);
+			AccumFert += Fert.NitrogenApplied;
+			AccumIrrigation += Irrig.IrrigationApplied;
+			
+			
+			AccumEO -= Soil.SoilWater.Eo;
+			AccumES -= Soil.SoilWater.Es; 
+			AccumDrainage += Soil.SoilWater.Drainage;
+			AccumRunoff -= Soil.SoilWater.Runoff;
+			SWC = MathUtilities.Sum(Soil.SoilWater.SWmm);
+			DUL = MathUtilities.Sum(Soil.SoilWater.DULmm);
+		}
+		
+		[EventSubscribe("PlantEnding")]
+		private void OnPlantEnding(object sender, EventArgs e)
+		{
+			AccumFert = 0;
+			AccumIrrigation = 0;
+			
+			
+			AccumEO = 0;
+			AccumES = 0;
+			AccumDrainage = 0;
+			AccumRunoff = 0;
+			
+			AccumLeach = 0;
+			AccumMineralisation = 0;
+			AccumDenit = 0;
+			AccumPlantN = 0;
+			
+			AccumRainfall = 0;
+			AccumEP = 0;
+			AccumOutflowLat = 0;
+			
+		}
+	}
+}
+	  
+]]></Code>
+        </Manager>
+        <Area>1</Area>
+        <Slope>0</Slope>
+      </Zone>
+      <SoilArbitrator>
+        <Name>Soil Arbitrator</Name>
+      </SoilArbitrator>
+      <Area>0</Area>
+      <Slope>0</Slope>
+    </Simulation>
+    <Folder>
+      <Name>PhenologyGraphs</Name>
+      <Graph>
+        <Name>TT</Name>
+        <Series>
+          <Name>TT</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16711936</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Phenology.AccumulatedThermalTime.Value</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Thermal-time (oCd)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>false</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Stage</Name>
+        <Series>
+          <Name>Predicted</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16776961</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Phenology.Stage</YFieldName>
+          <ShowInLegend>false</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Stage</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+    </Folder>
+    <Folder>
+      <Name>LeafGraphs</Name>
+      <Graph>
+        <Name>LeafNo</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-65536</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Structure.MainStemNodeNo</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Leaves per plant (n)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>GreenLeafNo</Name>
+        <Series>
+          <Name>GreenLeaves_Sim</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-2793984</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Small</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.PlantAppearedGreenLeafNo</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Green leaves per plant (n)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>LAI</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-11094807</ColourArgb>
+          <FactorIndexToVaryColours>1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.LAI</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+          <Filter />
+        </Series>
+        <Series>
+          <Name>Observed</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16736653</ColourArgb>
+          <FactorIndexToVaryColours>1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_LAI</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>lai</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+          <Filter />
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>LAI (m2/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>LightInterception</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16776961</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.CoverGreen</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Fractional Intercepted solar radiation (0-1)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>1</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>LAI1</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-11094807</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.LAI</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+          <Filter />
+        </Series>
+        <Series>
+          <Name>Observed</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16736653</ColourArgb>
+          <FactorIndexToVaryColours>1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_LAI</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>lai</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>true</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+          <Filter>[Water] = 'Full'</Filter>
+        </Series>
+        <Series>
+          <Name>Observed1</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16736653</ColourArgb>
+          <FactorIndexToVaryColours>1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_LAI</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>lai</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>true</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+          <Filter>[Water] = 'Nil'</Filter>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>LAI (m2/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+    </Folder>
+    <Folder>
+      <Name>BiomassGraphs</Name>
+      <Graph>
+        <Name>Total</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-65281</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Total.Wt</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Observed</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-1663232</ColourArgb>
+          <FactorIndexToVaryColours>-1</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>biomass</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Crop Biomass (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Leaf</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16711936</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.Live.Wt</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Observed</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16776961</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>leaf</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Leaf Biomass (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Stem</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16711936</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Stem.Live.Wt</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Series>
+          <Name>Observed</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16776961</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>FilledCircle</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>None</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean</TableName>
+          <XFieldName>Date</XFieldName>
+          <YFieldName>stem</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Stem Biomass (g/m2)</Title>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Bottom</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <LegendPosition>TopLeft</LegendPosition>
+        <DisabledSeries />
+        <IncludeInDocumentation>true</IncludeInDocumentation>
+      </Graph>
+      <Graph>
+        <Name>Dead</Name>
+        <Series>
+          <Name>Simulated</Name>
+          <Type>Scatter</Type>
+          <XAxis>Bottom</XAxis>
+          <YAxis>Left</YAxis>
+          <ColourArgb>-16711936</ColourArgb>
+          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
+          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
+          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
+          <Marker>None</Marker>
+          <MarkerSize>Normal</MarkerSize>
+          <Line>Solid</Line>
+          <LineThickness>Normal</LineThickness>
+          <TableName>Ashley_Dean_Report</TableName>
+          <XFieldName>Clock.Today</XFieldName>
+          <YFieldName>Kale.Leaf.Dead.Wt</YFieldName>
+          <ShowInLegend>true</ShowInLegend>
+          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <Cumulative>false</Cumulative>
+          <CumulativeX>false</CumulativeX>
+        </Series>
+        <Axis>
+          <Type>Left</Type>
+          <Title>Leaf Biomass (g/m2)</Title>
           <Inverted>false</Inverted>
           <Minimum>NaN</Minimum>
           <Maximum>NaN</Maximum>
@@ -2372,59 +4400,31 @@ namespace Models
       </Graph>
     </Folder>
     <Folder>
-      <Name>Biomass_Riv_SD2_SD4</Name>
+      <Name>Folder</Name>
       <Graph>
-        <Name>AboveGroundWt</Name>
+        <Name>LeafFN</Name>
         <Series>
-          <Name>Simulated</Name>
+          <Name>Series</Name>
           <Type>Scatter</Type>
           <XAxis>Bottom</XAxis>
           <YAxis>Left</YAxis>
-          <ColourArgb>-65281</ColourArgb>
+          <ColourArgb>-11094807</ColourArgb>
           <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
           <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
           <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
           <Marker>None</Marker>
-          <MarkerSize>Normal</MarkerSize>
-          <Line>Solid</Line>
+          <MarkerSize>Small</MarkerSize>
+          <Line>Dot</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Ashley_Dean_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.AboveGround.Wt</YFieldName>
+          <YFieldName>Kale.Leaf.Fn</YFieldName>
           <ShowInLegend>true</ShowInLegend>
-          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <IncludeSeriesNameInLegend>true</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
           <CumulativeX>false</CumulativeX>
+          <Filter />
         </Series>
-        <Series>
-          <Name>Observed</Name>
-          <Type>Scatter</Type>
-          <XAxis>Bottom</XAxis>
-          <YAxis>Left</YAxis>
-          <ColourArgb>-16776961</ColourArgb>
-          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
-          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
-          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
-          <Marker>FilledCircle</Marker>
-          <MarkerSize>Normal</MarkerSize>
-          <Line>None</Line>
-          <LineThickness>Normal</LineThickness>
-          <TableName>FRNLObserved</TableName>
-          <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Total.Wt</YFieldName>
-          <ShowInLegend>true</ShowInLegend>
-          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
-          <Cumulative>false</Cumulative>
-          <CumulativeX>false</CumulativeX>
-        </Series>
-        <Axis>
-          <Type>Left</Type>
-          <Title>Crop Biomass (g/m2)</Title>
-          <Inverted>false</Inverted>
-          <Minimum>NaN</Minimum>
-          <Maximum>NaN</Maximum>
-          <Interval>NaN</Interval>
-        </Axis>
         <Axis>
           <Type>Bottom</Type>
           <Inverted>false</Inverted>
@@ -2432,69 +4432,41 @@ namespace Models
           <Maximum>NaN</Maximum>
           <Interval>NaN</Interval>
         </Axis>
+        <Axis>
+          <Type>Left</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
         <LegendPosition>TopLeft</LegendPosition>
-        <DisabledSeries>
-          <string>CvRiv_Sep</string>
-          <string>CvRiv_Nov</string>
-          <string>CvBri_Sep</string>
-          <string>CvBri_Oct</string>
-          <string>CvBri_Nov</string>
-          <string>CvBri_Dec</string>
-        </DisabledSeries>
-        <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DisabledSeries />
+        <IncludeInDocumentation>false</IncludeInDocumentation>
       </Graph>
       <Graph>
-        <Name>Stem</Name>
+        <Name>LeafFW</Name>
         <Series>
-          <Name>Simulated</Name>
+          <Name>Series</Name>
           <Type>Scatter</Type>
           <XAxis>Bottom</XAxis>
           <YAxis>Left</YAxis>
-          <ColourArgb>-16711936</ColourArgb>
+          <ColourArgb>-11094807</ColourArgb>
           <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
           <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
           <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
           <Marker>None</Marker>
-          <MarkerSize>Normal</MarkerSize>
-          <Line>Solid</Line>
+          <MarkerSize>Small</MarkerSize>
+          <Line>Dot</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Ashley_Dean_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Stem.Live.Wt</YFieldName>
+          <YFieldName>Kale.Leaf.Fw</YFieldName>
           <ShowInLegend>true</ShowInLegend>
-          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
+          <IncludeSeriesNameInLegend>true</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
           <CumulativeX>false</CumulativeX>
+          <Filter />
         </Series>
-        <Series>
-          <Name>Observed</Name>
-          <Type>Scatter</Type>
-          <XAxis>Bottom</XAxis>
-          <YAxis>Left</YAxis>
-          <ColourArgb>-16776961</ColourArgb>
-          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
-          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
-          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
-          <Marker>FilledCircle</Marker>
-          <MarkerSize>Normal</MarkerSize>
-          <Line>None</Line>
-          <LineThickness>Normal</LineThickness>
-          <TableName>FRNLObserved</TableName>
-          <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Stem.Live.Wt</YFieldName>
-          <ShowInLegend>true</ShowInLegend>
-          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
-          <Cumulative>false</Cumulative>
-          <CumulativeX>false</CumulativeX>
-        </Series>
-        <Axis>
-          <Type>Left</Type>
-          <Title>Stem Biomass (g/m2)</Title>
-          <Inverted>false</Inverted>
-          <Minimum>NaN</Minimum>
-          <Maximum>NaN</Maximum>
-          <Interval>NaN</Interval>
-        </Axis>
         <Axis>
           <Type>Bottom</Type>
           <Inverted>false</Inverted>
@@ -2502,25 +4474,25 @@ namespace Models
           <Maximum>NaN</Maximum>
           <Interval>NaN</Interval>
         </Axis>
+        <Axis>
+          <Type>Left</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
         <LegendPosition>TopLeft</LegendPosition>
-        <DisabledSeries>
-          <string>CvRiv_Sep</string>
-          <string>CvRiv_Nov</string>
-          <string>CvBri_Sep</string>
-          <string>CvBri_Oct</string>
-          <string>CvBri_Nov</string>
-          <string>CvBri_Dec</string>
-        </DisabledSeries>
-        <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DisabledSeries />
+        <IncludeInDocumentation>false</IncludeInDocumentation>
       </Graph>
       <Graph>
-        <Name>Leaf</Name>
+        <Name>Graph</Name>
         <Series>
-          <Name>Simulated</Name>
+          <Name>Series</Name>
           <Type>Scatter</Type>
           <XAxis>Bottom</XAxis>
           <YAxis>Left</YAxis>
-          <ColourArgb>-16711936</ColourArgb>
+          <ColourArgb>0</ColourArgb>
           <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
           <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
           <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
@@ -2528,113 +4500,35 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>Solid</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Ashley_Dean_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Leaf.Live.Wt</YFieldName>
+          <YFieldName>Script.SoilWaterDeficit</YFieldName>
           <ShowInLegend>true</ShowInLegend>
           <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
           <CumulativeX>false</CumulativeX>
         </Series>
         <Series>
-          <Name>Observed</Name>
+          <Name>Series1</Name>
           <Type>Scatter</Type>
           <XAxis>Bottom</XAxis>
-          <YAxis>Left</YAxis>
-          <ColourArgb>-16776961</ColourArgb>
-          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
-          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
-          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
-          <Marker>FilledCircle</Marker>
-          <MarkerSize>Normal</MarkerSize>
-          <Line>None</Line>
-          <LineThickness>Normal</LineThickness>
-          <TableName>FRNLObserved</TableName>
-          <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Leaf.Live.Wt</YFieldName>
-          <ShowInLegend>true</ShowInLegend>
-          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
-          <Cumulative>false</Cumulative>
-          <CumulativeX>false</CumulativeX>
-        </Series>
-        <Axis>
-          <Type>Left</Type>
-          <Title>Leaf Biomass (g/m2)</Title>
-          <Inverted>false</Inverted>
-          <Minimum>NaN</Minimum>
-          <Maximum>NaN</Maximum>
-          <Interval>NaN</Interval>
-        </Axis>
-        <Axis>
-          <Type>Bottom</Type>
-          <Inverted>false</Inverted>
-          <Minimum>NaN</Minimum>
-          <Maximum>NaN</Maximum>
-          <Interval>NaN</Interval>
-        </Axis>
-        <LegendPosition>TopLeft</LegendPosition>
-        <DisabledSeries>
-          <string>CvRiv_Sep</string>
-          <string>CvRiv_Nov</string>
-          <string>CvBri_Sep</string>
-          <string>CvBri_Oct</string>
-          <string>CvBri_Nov</string>
-          <string>CvBri_Dec</string>
-        </DisabledSeries>
-        <IncludeInDocumentation>true</IncludeInDocumentation>
-      </Graph>
-      <Graph>
-        <Name>LAI</Name>
-        <Series>
-          <Name>Simulated</Name>
-          <Type>Scatter</Type>
-          <XAxis>Bottom</XAxis>
-          <YAxis>Left</YAxis>
-          <ColourArgb>-16776961</ColourArgb>
+          <YAxis>Right</YAxis>
+          <ColourArgb>-16747854</ColourArgb>
           <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
           <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
           <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
           <Marker>None</Marker>
           <MarkerSize>Normal</MarkerSize>
-          <Line>Solid</Line>
+          <Line>Dot</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Ashley_Dean_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Leaf.LAI</YFieldName>
+          <YFieldName>Root.PAWPC</YFieldName>
           <ShowInLegend>true</ShowInLegend>
           <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
           <CumulativeX>false</CumulativeX>
         </Series>
-        <Series>
-          <Name>Observed</Name>
-          <Type>Scatter</Type>
-          <XAxis>Bottom</XAxis>
-          <YAxis>Left</YAxis>
-          <ColourArgb>-16776961</ColourArgb>
-          <FactorIndexToVaryColours>0</FactorIndexToVaryColours>
-          <FactorIndexToVaryMarkers>-1</FactorIndexToVaryMarkers>
-          <FactorIndexToVaryLines>-1</FactorIndexToVaryLines>
-          <Marker>FilledCircle</Marker>
-          <MarkerSize>Normal</MarkerSize>
-          <Line>None</Line>
-          <LineThickness>Normal</LineThickness>
-          <TableName>FRNLObserved</TableName>
-          <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Leaf.LAI</YFieldName>
-          <ShowInLegend>true</ShowInLegend>
-          <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
-          <Cumulative>false</Cumulative>
-          <CumulativeX>false</CumulativeX>
-        </Series>
-        <Axis>
-          <Type>Left</Type>
-          <Title>Petiole Biomass (g/m2)</Title>
-          <Inverted>false</Inverted>
-          <Minimum>NaN</Minimum>
-          <Maximum>NaN</Maximum>
-          <Interval>1</Interval>
-        </Axis>
         <Axis>
           <Type>Bottom</Type>
           <Inverted>false</Inverted>
@@ -2642,16 +4536,23 @@ namespace Models
           <Maximum>NaN</Maximum>
           <Interval>NaN</Interval>
         </Axis>
+        <Axis>
+          <Type>Left</Type>
+          <Inverted>false</Inverted>
+          <Minimum>NaN</Minimum>
+          <Maximum>NaN</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
+        <Axis>
+          <Type>Right</Type>
+          <Inverted>false</Inverted>
+          <Minimum>0</Minimum>
+          <Maximum>2</Maximum>
+          <Interval>NaN</Interval>
+        </Axis>
         <LegendPosition>TopLeft</LegendPosition>
-        <DisabledSeries>
-          <string>CvRiv_Sep</string>
-          <string>CvRiv_Nov</string>
-          <string>CvBri_Sep</string>
-          <string>CvBri_Oct</string>
-          <string>CvBri_Nov</string>
-          <string>CvBri_Dec</string>
-        </DisabledSeries>
-        <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DisabledSeries />
+        <IncludeInDocumentation>false</IncludeInDocumentation>
       </Graph>
     </Folder>
   </Experiment>
