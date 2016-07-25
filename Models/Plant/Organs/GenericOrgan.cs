@@ -210,9 +210,9 @@ namespace Models.PMF.Organs
 
                 // Calculate Reallocation Supply.
                 double _DMReallocationFactor = 0;
-                if (DMReallocationFactor != null) //Default of zero means N reallocation is truned off
+                if (DMReallocationFactor != null) //Default of zero means Dm reallocation is truned off
                     _DMReallocationFactor = DMReallocationFactor.Value;
-                Supply.Reallocation = SenescenceRate * StartLive.NonStructuralN * _DMReallocationFactor;
+                Supply.Reallocation = SenescenceRate * StartLive.NonStructuralWt * _DMReallocationFactor;
 
                 double _DMRetranslocationFactor = 0;
                 if (DMRetranslocationFactor != null) //Default of 0 means retranslocation is always truned off!!!!
