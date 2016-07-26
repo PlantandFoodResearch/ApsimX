@@ -17,13 +17,10 @@ namespace Models.Core
     /// new ones, deleting components. The user interface talks to an instance of this class.
     /// </summary>
     [Serializable]
-    public class Simulations : Model, JobManager.IRunnable
+    public class Simulations : Model
     {
         /// <summary>The _ file name</summary>
         private string _FileName;
-
-        /// <summary>The job manager</summary>
-        JobManager jobManager;
 
         /// <summary>Gets or sets the width of the explorer.</summary>
         /// <value>The width of the explorer.</value>
@@ -112,8 +109,7 @@ namespace Models.Core
                     }
                 }
             }
-            else
-                throw new Exception("Simulations.Read() failed. Invalid simulation file.\n");
+
             return simulations;
         }
 
@@ -152,7 +148,7 @@ namespace Models.Core
 
         /// <summary>Call Loaded event in specified model and all children</summary>
         /// <param name="model">The model.</param>
-        private static void CallOnLoaded(IModel model)
+        public static void CallOnLoaded(IModel model)
         {
             // Call OnLoaded in all models.
             Apsim.CallEventHandler(model, "Loaded", null);
@@ -203,45 +199,6 @@ namespace Models.Core
         /// <summary>Constructor, private to stop developers using it. Use Simulations.Read instead.</summary>
         private Simulations() { }
 
-        /// <summary>Find all simulations under the specified parent model.</summary>
-        /// <param name="parent">The parent.</param>
-        /// <returns></returns>
-        public static Simulation[] FindAllSimulationsToRun(Model parent)
-        {
-            List<Simulation> simulations = new List<Simulation>();
-
-            if (parent is Experiment)
-                simulations.AddRange((parent as Experiment).Create());
-            else if (parent is Simulation)
-            {
-                Simulation clonedSim = Apsim.Clone(parent) as Simulation;
-                CallOnLoaded(clonedSim);
-                simulations.Add(clonedSim);
-            }
-            else
-            {
-                // Look for simulations.
-                foreach (Model model in Apsim.ChildrenRecursively(parent))
-                {
-                    if (model is Experiment)
-                        simulations.AddRange((model as Experiment).Create());
-                    else if (model is Simulation && !(model.Parent is Experiment))
-                    {
-                        Simulation clonedSim = Apsim.Clone(model) as Simulation;
-                        CallOnLoaded(clonedSim);
-                        simulations.Add(clonedSim);
-                    }
-                }
-            }
-            // Make sure each simulation has it's filename set correctly.
-            foreach (Simulation simulation in simulations)
-            {
-                if (simulation.FileName == null)
-                    simulation.FileName = RootSimulations(parent).FileName;
-            }
-            return simulations.ToArray();
-        }
-
         /// <summary>Find all simulation names that are going to be run.</summary>
         /// <returns></returns>
         public string[] FindAllSimulationNames()
@@ -277,162 +234,6 @@ namespace Models.Core
                     (simulation as Simulation).FileName = FileName;
         }
 
-        /// <summary>Roots the simulations.</summary>
-        /// <param name="model">The model.</param>
-        /// <returns></returns>
-        private static Simulations RootSimulations(Model model)
-        {
-            Model m = model;
-            while (m != null && m.Parent != null && !(m is Simulations))
-                m = m.Parent as Model;
-
-            return m as Simulations;
-        }
-
-        /// <summary>
-        /// Allows the GUI to specify a simulation to run. It then calls
-        /// 'Run' below to run this simulation.
-        /// </summary>
-        /// <value>The simulation to run.</value>
-        [XmlIgnore]
-        public Model SimulationToRun { get; set; }
-
-        /// <summary>The number to run</summary>
-        private int NumToRun;
-        /// <summary>The number completed</summary>
-        private int NumCompleted;
-
-        /// <summary>Run all simulations.</summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void Run(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-            this.ErrorMessage = null;
-
-            // Get a reference to the JobManager so that we can add jobs to it.
-            jobManager = e.Argument as JobManager;
-
-            // Get a reference to our child DataStore.
-            DataStore store = Apsim.Child(this, typeof(DataStore)) as DataStore;
-
-            // Remove old simulation data.
-            store.RemoveUnwantedSimulations(this);
-
-            Simulation[] simulationsToRun;
-            if (SimulationToRun == null)
-            {
-                // As we are going to run all simulations, we can delete all tables in the DataStore. This
-                // will clean up order of columns in the tables and removed unused ones.
-                store.DeleteAllTables();
-
-                store.Disconnect();
-
-                simulationsToRun = Simulations.FindAllSimulationsToRun(this);
-            }
-            else
-                simulationsToRun = Simulations.FindAllSimulationsToRun(SimulationToRun);
-
-            MakeSubstitutions(simulationsToRun);
-
-            NumToRun = simulationsToRun.Length;
-            NumCompleted = 0;
-
-            if (NumToRun == 1)
-            {
-                // Skip running in another thread.
-                simulationsToRun[0].Commencing -= OnSimulationCommencing;
-                simulationsToRun[0].Commencing += OnSimulationCommencing;
-                simulationsToRun[0].Run(null, null);
-            }
-            else
-            {
-                foreach (Simulation simulation in simulationsToRun)
-                {
-                    simulation.Commencing -= OnSimulationCommencing;
-                    simulation.Commencing += OnSimulationCommencing;
-                    jobManager.AddJob(simulation);
-                }
-            }
-        }
-
-        /// <summary>Make model substitutions if necessary.</summary>
-        /// <param name="simulations">The simulations to make substitutions in.</param>
-        private void MakeSubstitutions(Simulation[] simulations)
-        {
-            IModel replacements = Apsim.Child(this, "Replacements");
-            if (replacements != null)
-            {
-                foreach (IModel replacement in replacements.Children)
-                {
-                    foreach (Simulation simulation in simulations)
-                    {
-                        foreach (IModel match in Apsim.FindAll(simulation, replacement.GetType()))
-                        {
-                            if (match.Name.Equals(replacement.Name, StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                // Do replacement.
-                                IModel newModel = Apsim.Clone(replacement);
-                                int index = match.Parent.Children.IndexOf(match as Model);
-                                match.Parent.Children.Insert(index, newModel as Model);
-                                newModel.Parent = match.Parent;
-                                match.Parent.Children.Remove(match as Model);
-                                CallOnLoaded(newModel);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>This gets called everytime a simulation commences.</summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void OnSimulationCommencing(object sender, EventArgs e)
-        {
-            // We trap the commencing event so that we can then subscribe to 
-            // the completed event. If we subscibe to the completed event
-            // before the simulation starts then our completed event will be
-            // called before all other models. We want to be last so that we
-            // can invoke the 'AllCompleted' event.
-            (sender as Simulation).Completed += OnSimulationCompleted;
-        }
-
-        /// <summary>
-        /// This gets called everytime a simulation completes. When all are done then
-        /// invoke each model's OnAllCompleted method.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void OnSimulationCompleted(object sender, EventArgs e)
-        {
-            Simulation simulation = sender as Simulation;
-            bool RunAllCompleted = false;
-            lock (this)
-            {
-                NumCompleted++;
-                RunAllCompleted = NumCompleted == NumToRun;
-                if (simulation.ErrorMessage != null)
-                {
-                    if (ErrorMessage == null)
-                        ErrorMessage += "Errors were found in these simulations:\r\n";
-                    ErrorMessage += simulation.Name + "\r\n";
-                }
-            }
-            if (RunAllCompleted)
-            {
-                CallAllCompleted();
-                simulation.Commencing -= OnSimulationCommencing;
-            }
-        }
-
-        /// <summary>Call the all completed event in all models.</summary>
-        public void CallAllCompleted()
-        {
-            object[] args = new object[] { this, new EventArgs() };
-            foreach (Model model in Apsim.ChildrenRecursively(this))
-                Apsim.CallEventHandler(model, "AllCompleted", args);
-        }
-
         /// <summary>Documents the specified model.</summary>
         /// <param name="modelNameToDocument">The model name to document.</param>
         /// <param name="tags">The auto doc tags.</param>
@@ -445,6 +246,14 @@ namespace Models.Core
                 // Find the model of the right name.
                 IModel modelToDocument = Apsim.Find(simulation, modelNameToDocument);
 
+                // If not found then find a model of the specified type.
+                if (modelToDocument == null)
+                    modelToDocument = Apsim.Get(simulation, "[" + modelNameToDocument + "]") as IModel;
+
+                // If still not found throw an error.
+                if (modelToDocument == null)
+                    throw new ApsimXException(this, "Could not find a model of the name " + modelNameToDocument + ". Simulation file name must match the name of the node to document.");
+
                 // Get the path of the model (relative to parentSimulation) to document so that 
                 // when replacements happen below we will point to the replacement model not the 
                 // one passed into this method.
@@ -455,7 +264,7 @@ namespace Models.Core
                 Simulation clonedSimulation = Apsim.Clone(simulation) as Simulation;
 
                 // Make any substitutions.
-                MakeSubstitutions(new Simulation[] { clonedSimulation });
+                Runner.MakeSubstitutions(this, new List<Simulation> { clonedSimulation });
 
                 // Now use the path to get the model we want to document.
                 modelToDocument = Apsim.Get(clonedSimulation, pathOfModelToDocument) as IModel;

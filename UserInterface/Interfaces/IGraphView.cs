@@ -8,7 +8,6 @@ namespace UserInterface.Interfaces
     using System;
     using System.Collections;
     using System.Drawing;
-    using System.Windows.Forms;
     using Models.Graph;
     using EventArguments;
 
@@ -57,7 +56,7 @@ namespace UserInterface.Interfaces
         /// Show the specified editor.
         /// </summary>
         /// <param name="editor">Show the specified series editor</param>
-        void ShowEditorPanel(UserControl editor);
+        void ShowEditorPanel(object editorObj);
 
         /// <summary>
         /// Clear the graph of everything.
@@ -85,6 +84,9 @@ namespace UserInterface.Interfaces
         /// <param name="colour">The series color</param>
         /// <param name="lineType">The type of series line</param>
         /// <param name="markerType">The type of series markers</param>
+        /// <param name="lineThickness">The line thickness</param>
+        /// <param name="markerSize">The size of the marker</param>
+        /// <param name="showInLegend">Show in legend?</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed.")]
         void DrawLineAndMarkers(
              string title, 
@@ -95,7 +97,9 @@ namespace UserInterface.Interfaces
              Color colour,
              Models.Graph.LineType lineType,
              Models.Graph.MarkerType markerType,
-            bool showInLegend);
+             Models.Graph.LineThicknessType lineThickness,
+             Models.Graph.MarkerSizeType markerSize,
+             bool showInLegend);
 
         /// <summary>
         /// Draw a bar series with the specified arguments.
@@ -200,6 +204,11 @@ namespace UserInterface.Interfaces
         /// <param name="bitmap">Bitmap to write to</param>
         /// <param name="legendOutside">Put legend outside of graph?</param>
         void Export(Bitmap bitmap, bool legendOutside);
+
+        /// <summary>
+        /// Export the graph to the clipboard
+        /// </summary>
+        void ExportToClipboard();
 
         /// <summary>
         /// Add an action (on context menu) on the memo.

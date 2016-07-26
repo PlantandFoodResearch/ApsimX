@@ -86,15 +86,20 @@ namespace Models
                 {
                     // Create a instance of a job that will go find .apsimx files. Then
                     // pass the job to a job runner.
-                    RunDirectoryOfApsimFiles runApsim = new RunDirectoryOfApsimFiles();
-                    runApsim.FileSpec = fileName;
-                    runApsim.DoRecurse = args.Contains("/Recurse");
+                    JobManager.IRunnable job;
+                    if (fileName.Contains('*') || fileName.Contains('?'))
+                        job = Runner.ForFolder(fileName, args.Contains("/Recurse"), args.Contains("/RunTests"));
+                    else
+                        job = Runner.ForFile(fileName, args.Contains("/RunTests"));
                     JobManager jobManager = new JobManager();
-                    jobManager.AddJob(runApsim);
+                    jobManager.AddJob(job);
                     jobManager.Start(waitUntilFinished: true);
 
                     if (jobManager.SomeHadErrors)
+                    {
+                        Console.WriteLine(job.ErrorMessage);
                         exitCode = 1;
+                    }
                     else
                         exitCode = 0;
                 }
@@ -123,9 +128,10 @@ namespace Models
             Simulations simulations = Simulations.Read(fileName);
 
             // Don't use JobManager - just run the simulations.
-            Simulation[] simulationsToRun = Simulations.FindAllSimulationsToRun(simulations);
-            foreach (Simulation simulation in simulationsToRun) 
-                simulation.Run(null, null);
+            JobManager.IRunnable simulationsToRun = Runner.ForSimulations(simulations, simulations, false);
+            JobManager jobManager = new JobManager();
+            jobManager.AddJob(simulationsToRun);
+            jobManager.Run();
         }
 
         /// <summary>
@@ -257,97 +263,5 @@ namespace Models
             }
         }
 
-        /// <summary>
-        /// This runnable class finds .apsimx files on the 'fileSpec' passed into
-        /// the constructor. If 'recurse' is true then it will also recursively
-        /// look for files in sub directories.
-        /// </summary>
-        [Serializable]
-        private class RunDirectoryOfApsimFiles : JobManager.IRunnable
-        {
-            /// <summary>Gets a value indicating whether this job is completed. Set by JobManager.</summary>
-            public bool IsCompleted { get; set; }
-
-            /// <summary>Gets the error message. Can be null if no error. Set by JobManager.</summary>
-            public string ErrorMessage { get; set; }
-
-            /// <summary>Gets a value indicating whether this instance is computationally time consuming.</summary>
-            public bool IsComputationallyTimeConsuming { get { return true; } }
-
-            /// <summary>
-            /// Gets or sets the filespec that we will look for
-            /// </summary>
-            public string FileSpec { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether we search recursively for files matching 
-            /// </summary>
-            public bool DoRecurse { get; set; }
-
-            /// <summary>Gets or sets the jobs.</summary>
-            /// <value>The jobs.</value>
-            private List<Simulations> jobs = new List<Simulations>();
-
-            public bool JobsRanOK()
-            {
-                foreach (Simulations simulations in jobs)
-                {
-                    if (simulations.ErrorMessage != null)
-                        return false;
-                }
-
-                return true;
-            }
-
-            /// <summary>
-            /// Run this job.
-            /// </summary>
-            /// <param name="sender">A system telling us to go </param>
-            /// <param name="e">Arguments to same </param>
-            public void Run(object sender, System.ComponentModel.DoWorkEventArgs e)
-            {
-                // Extract the path from the filespec. If non specified then assume
-                // current working directory.
-                string path = Path.GetDirectoryName(this.FileSpec);
-                if (path == null | path == "")
-                {
-                    path = Directory.GetCurrentDirectory();
-                }
-
-                List<string> files  = Directory.GetFiles(
-                    path, 
-                    Path.GetFileName(this.FileSpec), 
-                    this.DoRecurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).ToList();
-
-                // See above. FIXME!
-                files.RemoveAll(s => s.Contains("UnitTests"));
-
-                // Get a reference to the JobManager so that we can add jobs to it.
-                JobManager jobManager = e.Argument as JobManager;
-
-                // For each .apsimx file - read it in and create a job for each simulation it contains.
-                string errors = string.Empty;
-                foreach (string apsimxFileName in files)
-                {
-                    Simulations simulations = Simulations.Read(apsimxFileName);
-                    if (simulations.LoadErrors.Count == 0)
-                    {
-                        jobs.Add(simulations);
-                        jobManager.AddJob(simulations);
-                    }
-                    else
-                    {
-                        foreach (Exception err in simulations.LoadErrors)
-                        {
-                            errors += err.Message + "\r\n";
-                            errors += err.StackTrace + "\r\n";
-                        }
-                    }                    
-                }
-
-                if (errors != string.Empty)
-                    ErrorMessage = errors;
-            }
-        }
     }
 }

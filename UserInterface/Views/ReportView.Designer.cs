@@ -29,13 +29,13 @@
         private void InitializeComponent()
         {
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.VariableEditor = new EditorView();
+            this.VariableEditor = new Views.EditorView();
             this.label2 = new System.Windows.Forms.Label();
-            this.FrequencyEditor = new EditorView();
+            this.FrequencyEditor = new Views.EditorView();
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.GridView = new GridView();
+            this.dataStoreView1 = new Views.DataStoreView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -63,24 +63,20 @@
             this.splitContainer1.Panel2.Controls.Add(this.FrequencyEditor);
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Size = new System.Drawing.Size(592, 455);
-            this.splitContainer1.SplitterDistance = 299;
+            this.splitContainer1.SplitterDistance = 298;
             this.splitContainer1.TabIndex = 7;
             // 
             // VariableEditor
             // 
             this.VariableEditor.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
             this.VariableEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.VariableEditor.IntelliSenseChars = ".";
             this.VariableEditor.Lines = new string[] {
-        "textEditorControl1",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""};
+        "textEditorControl1"};
             this.VariableEditor.Location = new System.Drawing.Point(0, 13);
+            this.VariableEditor.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.VariableEditor.Name = "VariableEditor";
-            this.VariableEditor.Size = new System.Drawing.Size(592, 286);
+            this.VariableEditor.Size = new System.Drawing.Size(592, 285);
             this.VariableEditor.TabIndex = 8;
             // 
             // label2
@@ -97,18 +93,13 @@
             // 
             this.FrequencyEditor.AutoValidate = System.Windows.Forms.AutoValidate.EnableAllowFocusChange;
             this.FrequencyEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.FrequencyEditor.IntelliSenseChars = ".";
             this.FrequencyEditor.Lines = new string[] {
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
         ""};
             this.FrequencyEditor.Location = new System.Drawing.Point(0, 13);
+            this.FrequencyEditor.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.FrequencyEditor.Name = "FrequencyEditor";
-            this.FrequencyEditor.Size = new System.Drawing.Size(592, 139);
+            this.FrequencyEditor.Size = new System.Drawing.Size(592, 140);
             this.FrequencyEditor.TabIndex = 7;
             // 
             // label1
@@ -123,8 +114,8 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
@@ -134,35 +125,29 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.GridView);
+            this.tabPage1.Controls.Add(this.dataStoreView1);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.tabPage1.Size = new System.Drawing.Size(598, 461);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Data";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // GridView
+            // dataStoreView1
             // 
-            this.GridView.AutoFilterOn = false;
-            this.GridView.DataSource = null;
-            this.GridView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.GridView.GetCurrentCell = null;
-            this.GridView.Location = new System.Drawing.Point(3, 3);
-            this.GridView.Name = "GridView";
-            this.GridView.NumericFormat = null;
-            this.GridView.ReadOnly = false;
-            this.GridView.RowCount = 0;
-            this.GridView.Size = new System.Drawing.Size(592, 455);
-            this.GridView.TabIndex = 0;
+            this.dataStoreView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dataStoreView1.Location = new System.Drawing.Point(3, 3);
+            this.dataStoreView1.Name = "dataStoreView1";
+            this.dataStoreView1.Size = new System.Drawing.Size(592, 455);
+            this.dataStoreView1.TabIndex = 0;
             // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.splitContainer1);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.tabPage2.Size = new System.Drawing.Size(598, 461);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Properties";
@@ -197,9 +182,7 @@
         private EditorView VariableEditor;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
-        private GridView GridView;
         private System.Windows.Forms.TabPage tabPage2;
-
-
+        private DataStoreView dataStoreView1;
     }
 }

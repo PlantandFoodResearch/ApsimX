@@ -92,10 +92,20 @@ namespace UserInterface.Views
         /// </summary>
         public event EventHandler<EventArguments.HoverPointArgs> OnHoverOverPoint;
 
+        /// <summary>Invoked when the user single clicks on the graph</summary>
+        public event EventHandler SingleClick;
+
         /// <summary>
         /// Left margin in pixels.
         /// </summary>
         public int LeftRightPadding { get; set; }
+
+        /// <summary>Gets or sets a value indicating if the legend is visible.</summary>
+        public bool IsLegendVisible
+        {
+            get { return this.plot1.Model.IsLegendVisible; }
+            set { this.plot1.Model.IsLegendVisible = value; }
+        }
 
         /// <summary>
         /// Clear the graph of everything.
@@ -105,6 +115,9 @@ namespace UserInterface.Views
             this.plot1.Model.Series.Clear();
             this.plot1.Model.Axes.Clear();
             this.plot1.Model.Annotations.Clear();
+
+            //modLMC - 11/05/2016 - Need to clear the chart title as well
+            this.FormatTitle("");
 
         }
 
@@ -129,10 +142,19 @@ namespace UserInterface.Views
             this.plot1.Model.LegendBackground = OxyColors.White;
 
             if (this.LeftRightPadding != 0)
-                this.plot1.Model.Padding = new OxyThickness(0, 0, this.LeftRightPadding, 0);
+                this.plot1.Model.Padding = new OxyThickness(10, 10, this.LeftRightPadding, 10);
 
             foreach (OxyPlot.Axes.Axis axis in this.plot1.Model.Axes)
                 this.FormatAxisTickLabels(axis);
+
+            this.plot1.Model.LegendFontSize = FontSize;
+
+            foreach (OxyPlot.Annotations.Annotation annotation in this.plot1.Model.Annotations)
+            {
+                TextAnnotation textAnnotation = annotation as TextAnnotation;
+                if (textAnnotation != null)
+                    textAnnotation.FontSize = FontSize;
+            }
 
             this.plot1.Model.InvalidatePlot(true);
         }
@@ -148,6 +170,9 @@ namespace UserInterface.Views
         /// <param name="colour">The series color</param>
         /// <param name="lineType">The type of series line</param>
         /// <param name="markerType">The type of series markers</param>
+        /// <param name="lineThickness">The line thickness</param>
+        /// <param name="markerSize">The size of the marker</param>
+        /// <param name="showInLegend">Show in legend?</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed.")]
         public void DrawLineAndMarkers(
              string title,
@@ -158,6 +183,8 @@ namespace UserInterface.Views
              Color colour,
              Models.Graph.LineType lineType,
              Models.Graph.MarkerType markerType,
+             Models.Graph.LineThicknessType lineThickness,
+             Models.Graph.MarkerSizeType markerSize,
              bool showOnLegend)
         {
             if (x != null && y != null)
@@ -166,6 +193,8 @@ namespace UserInterface.Views
                 series.OnHoverOverPoint += OnHoverOverPoint;
                 if (showOnLegend)
                     series.Title = title;
+                else
+                    series.ToolTip = title;
                 series.Color = ConverterExtensions.ToOxyColor(colour);
                 series.ItemsSource = this.PopulateDataPointSeries(x, y, xAxisType, yAxisType);
                 series.XAxisKey = xAxisType.ToString();
@@ -185,7 +214,13 @@ namespace UserInterface.Views
                 if (Enum.TryParse<LineStyle>(lineType.ToString(), out oxyLineType))
                 {
                     series.LineStyle = oxyLineType;
+                    if (series.LineStyle == LineStyle.None)
+                        series.Color = OxyColors.Transparent;
                 }
+
+                // Line thickness
+                if (lineThickness == LineThicknessType.Thin)
+                    series.StrokeThickness = 0.5;
                 
                 // Marker type.
                 OxyPlot.MarkerType type;
@@ -194,7 +229,11 @@ namespace UserInterface.Views
                     series.MarkerType = type;
                 }
 
-                series.MarkerSize = 7.0;
+                if (markerSize == MarkerSizeType.Normal)
+                    series.MarkerSize = 7.0;
+                else
+                    series.MarkerSize = 5.0;
+
                 series.MarkerStroke = ConverterExtensions.ToOxyColor(colour);
                 if (filled)
                 {
@@ -225,15 +264,18 @@ namespace UserInterface.Views
             Color colour,
             bool showOnLegend)
         {
-            ColumnXYSeries series = new ColumnXYSeries();
-            if (showOnLegend)
-                series.Title = title;
-            series.FillColor = ConverterExtensions.ToOxyColor(colour);
-            series.StrokeColor = ConverterExtensions.ToOxyColor(colour);
-            series.ItemsSource = this.PopulateDataPointSeries(x, y, xAxisType, yAxisType);
-            series.XAxisKey = xAxisType.ToString();
-            series.YAxisKey = yAxisType.ToString();
-            this.plot1.Model.Series.Add(series);
+            if (x != null && y != null)
+            {
+                ColumnXYSeries series = new ColumnXYSeries();
+                if (showOnLegend)
+                    series.Title = title;
+                series.FillColor = ConverterExtensions.ToOxyColor(colour);
+                series.StrokeColor = ConverterExtensions.ToOxyColor(colour);
+                series.ItemsSource = this.PopulateDataPointSeries(x, y, xAxisType, yAxisType);
+                series.XAxisKey = xAxisType.ToString();
+                series.YAxisKey = yAxisType.ToString();
+                this.plot1.Model.Series.Add(series);
+            }
         }
 
         /// <summary>
@@ -411,19 +453,23 @@ namespace UserInterface.Views
         /// Show the specified editor.
         /// </summary>
         /// <param name="editor">The editor to show</param>
-        public void ShowEditorPanel(UserControl editor)
+        public void ShowEditorPanel(object editorObj)
         {
-            if (this.bottomPanel.Controls.Count > 1)
+            UserControl editor = editorObj as UserControl;
+            if (editor != null)
             {
-                this.bottomPanel.Controls.RemoveAt(1);
-            }
+                if (this.bottomPanel.Controls.Count > 1)
+                {
+                    this.bottomPanel.Controls.RemoveAt(1);
+                }
 
-            this.bottomPanel.Controls.Add(editor);
-            this.bottomPanel.Visible = true;
-            this.bottomPanel.Height = editor.Height;
-            this.splitter.Visible = true;
-            editor.Dock = DockStyle.Fill;
-            editor.SendToBack();
+                this.bottomPanel.Controls.Add(editor);
+                this.bottomPanel.Visible = true;
+                this.bottomPanel.Height = editor.Height;
+                this.splitter.Visible = true;
+                editor.Dock = DockStyle.Fill;
+                editor.SendToBack();
+            }
         }
 
         /// <summary>
@@ -436,24 +482,16 @@ namespace UserInterface.Views
             this.plot1.Dock = DockStyle.None;
             this.plot1.Width = bitmap.Width;
             this.plot1.Height = bitmap.Height;
-
-            LegendPosition savedLegendPosition = LegendPosition.RightTop;
-            if (legendOutside)
-            {
-                savedLegendPosition = this.plot1.Model.LegendPosition;
-                this.plot1.Model.LegendPlacement = LegendPlacement.Outside;
-                this.plot1.Model.LegendPosition = LegendPosition.RightTop;
-            }
-
             this.plot1.DrawToBitmap(bitmap, new Rectangle(0, 0, bitmap.Width, bitmap.Height));
-
-            if (legendOutside)
-            {
-                this.plot1.Model.LegendPlacement = LegendPlacement.Inside;
-                this.plot1.Model.LegendPosition = savedLegendPosition;
-            }
-
             this.plot1.Dock = DockStyle.Fill;
+        }
+
+        public void ExportToClipboard()
+        {
+            // Set the clipboard text.
+            Bitmap bitmap = new Bitmap(800, 600);
+            Export(bitmap, false);
+            Clipboard.SetImage(bitmap);
         }
 
         /// <summary>
@@ -494,7 +532,7 @@ namespace UserInterface.Views
         /// <param name="axis">The axis to format</param>
         private void FormatAxisTickLabels(OxyPlot.Axes.Axis axis)
         {
-            axis.IntervalLength = 100;
+            //axis.IntervalLength = 100;
 
             if (axis is DateTimeAxis)
             {
@@ -508,8 +546,16 @@ namespace UserInterface.Views
                     dateAxis.IntervalType = DateTimeIntervalType.Months;
                     dateAxis.StringFormat = "dd-MMM";
                 }
+                else if (numDays <= 720)
+                {
+                    dateAxis.IntervalType = DateTimeIntervalType.Months;
+                    dateAxis.StringFormat = "MMM-yyyy";
+                }
                 else
+                {
                     dateAxis.IntervalType = DateTimeIntervalType.Years;
+                    dateAxis.StringFormat = "yyyy";
+                }
             }
 
             if (axis is LinearAxis && 
@@ -581,11 +627,16 @@ namespace UserInterface.Views
                 do
                 {
                     DateTime d = Convert.ToDateTime(enumerator.Current);
-                    dataPointValues.Add(DateTimeAxis.ToDouble(d));
-                    if (d < smallestDate)
-                        smallestDate = d;
-                    if (d > largestDate)
-                        largestDate = d;
+                    if (d != DateTime.MinValue)
+                    {
+                        dataPointValues.Add(DateTimeAxis.ToDouble(d));
+                        if (d < smallestDate)
+                            smallestDate = d;
+                        if (d > largestDate)
+                            largestDate = d;
+                    }
+                    else
+                        dataPointValues.Add(double.NaN);
                 }
                 while (enumerator.MoveNext());
             }
@@ -854,6 +905,15 @@ namespace UserInterface.Views
         public void SetMargins(int margin)
         {
             this.plot1.Model.Padding = new OxyThickness(margin, margin, margin, margin);
+        }
+
+        /// <summary>Graph has been clicked.</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClick(object sender, EventArgs e)
+        {
+            if (SingleClick != null)
+                SingleClick.Invoke(this, e);
         }
     }
 }

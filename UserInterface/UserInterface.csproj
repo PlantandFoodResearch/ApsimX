@@ -51,13 +51,57 @@
   <PropertyGroup>
     <ApplicationIcon>ApsimLogo.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugAnyCPU|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\DebugAnyCPU\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugAnyCPU|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DebugAnyCPU\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClosedXML, Version=0.75.0.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ClosedXML.0.75.0\lib\net40-client\ClosedXML.dll</HintPath>
     </Reference>
-    <Reference Include="DocumentFormat.OpenXml">
-      <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
+    <Reference Include="GMap.NET.Core, Version=1.7.0.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
+      <HintPath>..\packages\GMap.NET.WindowsForms.1.7.1\lib\net40\GMap.NET.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GMap.NET.WindowsForms, Version=1.7.0.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
+      <HintPath>..\packages\GMap.NET.WindowsForms.1.7.1\lib\net40\GMap.NET.WindowsForms.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.4.9\lib\Net40\HtmlAgilityPack.dll</HintPath>
@@ -153,19 +197,16 @@
       <DependentUpon>UpgradeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Interfaces\ISupplementView.cs" />
+    <Compile Include="Presenters\AddModelPresenter.cs" />
     <Compile Include="Presenters\FolderPresenter.cs" />
-    <Compile Include="Presenters\StaticForestrySystemPresenter.cs" />
+    <Compile Include="Presenters\MapPresenter.cs" />
+    <Compile Include="Presenters\TreeProxyPresenter.cs" />
     <Compile Include="Presenters\XYPairsPresenter.cs" />
     <Compile Include="Presenters\SupplementPresenter.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Service References\BuildService\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Utility\ColumnXYSeries.cs" />
@@ -174,18 +215,11 @@
     <Compile Include="Utility\FindAndReplaceForm.designer.cs">
       <DependentUpon>FindAndReplaceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FormInsertHyperlink.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FormInsertHyperlink.designer.cs">
-      <DependentUpon>FormInsertHyperlink.cs</DependentUpon>
-    </Compile>
     <Compile Include="Interfaces\ICultivarView.cs" />
     <Compile Include="Interfaces\IGridCell.cs" />
     <Compile Include="Interfaces\IGridColumn.cs" />
     <Compile Include="Interfaces\IGridView.cs" />
     <Compile Include="Interfaces\ISeriesView.cs" />
-    <Compile Include="Interfaces\IDataStoreView.cs" />
     <Compile Include="Interfaces\IInitialWaterView.cs">
       <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
     </Compile>
@@ -209,8 +243,7 @@
     <Compile Include="Presenters\SeriesPresenter.cs" />
     <Compile Include="Menus\ContextMenu.cs" />
     <Compile Include="Presenters\MetDataPresenter.cs" />
-    <Compile Include="Presenters\TabbedExplorerPresenter.cs" />
-    <Compile Include="Presenters\TestPresenter.cs" />
+    <Compile Include="Presenters\MainPresenter.cs" />
     <Compile Include="Presenters\ExplorerPresenter.cs" />
     <Compile Include="Presenters\AxisPresenter.cs" />
     <Compile Include="Presenters\DataStorePresenter.cs" />
@@ -222,17 +255,65 @@
     <Compile Include="Utility\DataGridViewAutoFilterTextBoxColumn.cs" />
     <Compile Include="Utility\Excel.cs" />
     <Compile Include="Utility\LineSeriesWithTracker.cs" />
+    <Compile Include="Views\ButtonView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\ButtonView.Designer.cs">
+      <DependentUpon>ButtonView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CheckBoxView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\CheckBoxView.Designer.cs">
+      <DependentUpon>CheckBoxView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ColourDropDownView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\ColourDropDownView.Designer.cs">
+      <DependentUpon>ColourDropDownView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ListBoxView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\ListBoxView.Designer.cs">
+      <DependentUpon>ListBoxView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EditBoxView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\EditBoxView.Designer.cs">
+      <DependentUpon>EditBoxView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DropDownView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\DropDownView.Designer.cs">
+      <DependentUpon>DropDownView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\FolderView.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Views\FolderView.Designer.cs">
       <DependentUpon>FolderView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\StaticForestrySystemView.cs">
+    <Compile Include="Views\ListButtonView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Views\StaticForestrySystemView.Designer.cs">
-      <DependentUpon>StaticForestrySystemView.cs</DependentUpon>
+    <Compile Include="Views\ListButtonView.Designer.cs">
+      <DependentUpon>ListButtonView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MapView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\MapView.Designer.cs">
+      <DependentUpon>MapView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TreeProxyView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\TreeProxyView.Designer.cs">
+      <DependentUpon>TreeProxyView.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\XYPairsView.cs">
       <SubType>UserControl</SubType>
@@ -247,12 +328,6 @@
       <DependentUpon>EditorView.cs</DependentUpon>
     </Compile>
     <Compile Include="Utility\Graph.cs" />
-    <Compile Include="Views\CultivarView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Views\CultivarView.Designer.cs">
-      <DependentUpon>CultivarView.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\InitialWaterView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -283,12 +358,6 @@
     </Compile>
     <Compile Include="Views\SupplementView.Designer.cs">
       <DependentUpon>SupplementView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TestView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Views\TestView.Designer.cs">
-      <DependentUpon>TestView.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\TitleView.cs">
       <SubType>UserControl</SubType>
@@ -359,12 +428,6 @@
       <DependentUpon>ExplorerView.cs</DependentUpon>
     </Compile>
     <Compile Include="Interfaces\ICommand.cs" />
-    <Compile Include="MainForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Views\GridView.cs">
@@ -381,11 +444,11 @@
     <Compile Include="Views\DataStoreView.Designer.cs">
       <DependentUpon>DataStoreView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\TabbedExplorerView.cs">
-      <SubType>UserControl</SubType>
+    <Compile Include="Views\MainView.cs">
+      <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\TabbedExplorerView.Designer.cs">
-      <DependentUpon>TabbedExplorerView.cs</DependentUpon>
+    <Compile Include="Views\MainView.Designer.cs">
+      <DependentUpon>MainView.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\TabbedMetDataView.cs">
       <SubType>UserControl</SubType>
@@ -399,24 +462,41 @@
     <EmbeddedResource Include="Utility\FindAndReplaceForm.resx">
       <DependentUpon>FindAndReplaceForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FormInsertHyperlink.resx">
-      <DependentUpon>FormInsertHyperlink.cs</DependentUpon>
-      <SubType>Designer</SubType>
+    <EmbeddedResource Include="Views\ButtonView.resx">
+      <DependentUpon>ButtonView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\CheckBoxView.resx">
+      <DependentUpon>CheckBoxView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ColourDropDownView.resx">
+      <DependentUpon>ColourDropDownView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ListBoxView.resx">
+      <DependentUpon>ListBoxView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\EditBoxView.resx">
+      <DependentUpon>EditBoxView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\DropDownView.resx">
+      <DependentUpon>DropDownView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\FolderView.resx">
       <DependentUpon>FolderView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\StaticForestrySystemView.resx">
-      <DependentUpon>StaticForestrySystemView.cs</DependentUpon>
+    <EmbeddedResource Include="Views\ListButtonView.resx">
+      <DependentUpon>ListButtonView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\MapView.resx">
+      <DependentUpon>MapView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\TreeProxyView.resx">
+      <DependentUpon>TreeProxyView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\XYPairsView.resx">
       <DependentUpon>XYPairsView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\EditorView.resx">
       <DependentUpon>EditorView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\CultivarView.resx">
-      <DependentUpon>CultivarView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\InitialWaterView.resx">
       <DependentUpon>InitialWaterView.cs</DependentUpon>
@@ -432,9 +512,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\SupplementView.resx">
       <DependentUpon>SupplementView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\TestView.resx">
-      <DependentUpon>TestView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\TitleView.resx">
       <DependentUpon>TitleView.cs</DependentUpon>
@@ -453,10 +530,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\ExplorerView.resx">
       <DependentUpon>ExplorerView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -481,8 +554,8 @@
     <EmbeddedResource Include="Views\DataStoreView.resx">
       <DependentUpon>DataStoreView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\TabbedExplorerView.resx">
-      <DependentUpon>TabbedExplorerView.cs</DependentUpon>
+    <EmbeddedResource Include="Views\MainView.resx">
+      <DependentUpon>MainView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\TabbedMetDataView.resx">
       <DependentUpon>TabbedMetDataView.cs</DependentUpon>
@@ -499,19 +572,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Service References\BuildService\Builds.wsdl" />
-    <None Include="Service References\BuildService\Builds.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\BuildService\Builds1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\BuildService\Builds2.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\BuildService\UserInterface.BuildService.Upgrade.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Toolboxes\ManagementToolbox.apsimx" />
@@ -673,17 +733,25 @@
     <EmbeddedResource Include="Resources\TreeViewImages\FactorValue.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\BuildService\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Service References\BuildService\configuration.svcinfo" />
-    <None Include="Service References\BuildService\configuration91.svcinfo" />
-    <None Include="Service References\BuildService\Builds.disco" />
+    <EmbeddedResource Include="Resources\LargeImages\Chicory.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\Chicory.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\GenericBelowGroundOrgan.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\SimpleLeaf.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\Stock.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\Supplement.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\Chickpea.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\CultivarFolder.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\Map.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\MovingAverageFunction.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\OrganBiomassRemovalType.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\SCRUM.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\Alias.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\LocalMicroClimate.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\TreeProxy.png" />
     <EmbeddedResource Include="Resources\TreeViewImages\Regression.png" />
     <EmbeddedResource Include="Resources\TreeViewImages\CircularZone.png" />
     <EmbeddedResource Include="Resources\TreeViewImages\RectangularZone.png" />
-    <EmbeddedResource Include="Resources\TreeViewImages\StaticForestrySystem.png" />
+    <EmbeddedResource Include="Resources\TreeViewImages\AgroforestrySystem.png" />
     <EmbeddedResource Include="Resources\TreeViewImages\FieldPea.png" />
     <EmbeddedResource Include="Resources\TreeViewImages\NodeNumberPhase.png" />
     <EmbeddedResource Include="Resources\TreeViewImages\SoilArbitrator.png" />
@@ -780,6 +848,35 @@
     <EmbeddedResource Include="Resources\PresenterPictures\CircularZone.png" />
     <EmbeddedResource Include="Resources\PresenterPictures\RectangularZone.png" />
     <EmbeddedResource Include="Resources\MenuImages\Upgrade.png" />
+    <EmbeddedResource Include="Resources\AIBanner.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Wheat.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Pasture.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Canola.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Canopy.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Chickpea.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Cotton.png" />
+    <EmbeddedResource Include="Resources\LargeImages\forestry.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Bean.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Grass.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Horsegram.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Lucerne.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Lupin.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Maize.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Millet.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Oats.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Oilpalm.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Peanut.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Potato.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Rice.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Slurp.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Sorghum.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Soybean.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Sugar.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Swim.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Arbitrator.png" />
+    <EmbeddedResource Include="Resources\LargeImages\BiomassRemoval.png" />
+    <EmbeddedResource Include="Resources\LargeImages\EGrandis.png" />
+    <EmbeddedResource Include="Resources\LargeImages\Fieldpea.png" />
     <Content Include="Resources\success.wav" />
   </ItemGroup>
   <ItemGroup>
@@ -803,12 +900,6 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\BuildService\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

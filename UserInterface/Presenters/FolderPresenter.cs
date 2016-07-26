@@ -5,12 +5,10 @@
 // -----------------------------------------------------------------------
 namespace UserInterface.Presenters
 {
-    using System;
+    using System.Collections.Generic;
+    using Models.Core;
     using Models.Graph;
     using Views;
-    using Models.Core;
-    using System.Collections.Generic;
-    using System.Windows.Forms;
 
     /// <summary>
     /// This presenter connects an instance of a folder model with a 
@@ -18,6 +16,8 @@ namespace UserInterface.Presenters
     /// </summary>
     public class FolderPresenter : IPresenter
     {
+        private List<GraphPresenter> presenters = new List<GraphPresenter>();
+
         /// <summary>
         /// Attach the specified Model and View.
         /// </summary>
@@ -28,13 +28,14 @@ namespace UserInterface.Presenters
         {
             IModel folder = model as IModel;
 
-            List<UserControl> views = new List<UserControl>();
+            List<GraphView> views = new List<GraphView>();
 
             foreach (Graph graph in Apsim.Children(folder, typeof(Graph)))
             {
                 GraphView graphView = new GraphView();
                 GraphPresenter presenter = new GraphPresenter();
                 presenter.Attach(graph, graphView, explorerPresenter);
+                presenters.Add(presenter);
                 views.Add(graphView);
             }
 
@@ -47,6 +48,10 @@ namespace UserInterface.Presenters
         /// </summary>
         public void Detach()
         {
+            foreach (GraphPresenter presenter in presenters)
+                presenter.Detach();
+
+            presenters.Clear();
         }
 
     }

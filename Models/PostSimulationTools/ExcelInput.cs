@@ -19,7 +19,7 @@ namespace Models.PostSimulationTools
     [Serializable]
     [ViewName("UserInterface.Views.GridView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
-    [ValidParent(typeof(DataStore))]
+    [ValidParent(ParentType=typeof(DataStore))]
     public class ExcelInput : Model, IPostSimulationTool
     {
         private string _filename;
@@ -27,7 +27,7 @@ namespace Models.PostSimulationTools
         /// <summary>
         /// Gets or sets the file name to read from.
         /// </summary>
-        [Description("EXCEL file name")]
+        [Description("EXCEL file name (must be .xlsx)")]
         [Display(DisplayType=DisplayAttribute.DisplayTypeEnum.FileName)]
         public string FileName
         {
@@ -45,6 +45,10 @@ namespace Models.PostSimulationTools
                     this._filename = value;
             }
         }
+
+        /// <summary>Gets or sets the texture metadata.</summary>
+        /// <value>The texture metadata.</value>
+        public string[] FileNameMetadata { get; set; }
 
         /// <summary>
         /// Gets or sets the list of EXCEL sheet names to read from.
@@ -90,10 +94,7 @@ namespace Models.PostSimulationTools
                 // Create a reader.
                 IExcelDataReader excelReader;
                 if (Path.GetExtension(fullFileName).Equals(".xls", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    // Reading from a binary Excel file ('97-2003 format; *.xls)
-                    excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
-                }
+                    throw new Exception("EXCEL file must be in .xlsx format. Filename: " + fullFileName);
                 else
                 {
                     // Reading from a OpenXml Excel file (2007 format; *.xlsx)

@@ -1,19 +1,16 @@
 ﻿using System;
-using UserInterface.Views;
-using Models.Graph;
-using Models.Core;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Collections;
 using System.Linq;
-using Models.Factorial;
-using UserInterface.Interfaces;
-using System.Data;
-using Models;
-using UserInterface.EventArguments;
-using Models.Soils;
 using APSIM.Shared.Utilities;
+using Models.Core;
+using Models.Graph;
+using UserInterface.EventArguments;
+using UserInterface.Interfaces;
+using UserInterface.Views;
 
 namespace UserInterface.Presenters
 {
@@ -54,7 +51,7 @@ namespace UserInterface.Presenters
             explorerPresenter.CommandHistory.ModelChanged += OnGraphModelChanged;
             this.graphView.AddContextAction("Copy graph to clipboard", false, CopyGraphToClipboard);
             this.graphView.AddContextAction("Include in auto-documentation?", graph.IncludeInDocumentation, IncludeInDocumentationClicked);
-
+            this.graph.ClearBaseData();
             DrawGraph();
         }
 
@@ -128,7 +125,8 @@ namespace UserInterface.Presenters
                 else if (definition.type == SeriesType.Scatter)
                     graphView.DrawLineAndMarkers(definition.title, definition.x, definition.y, 
                                                  definition.xAxis, definition.yAxis, definition.colour,
-                                                 definition.line, definition.marker, definition.showInLegend);
+                                                 definition.line, definition.marker, 
+                                                 definition.lineThickness, definition.markerSize, definition.showInLegend);
                 
                 else if (definition.type == SeriesType.Area)
                     graphView.DrawArea(definition.title, definition.x, definition.y, definition.x2, definition.y2,
@@ -207,12 +205,15 @@ namespace UserInterface.Presenters
         /// <returns></returns>
         public string ExportToPDF(string folder)
         {
-            Rectangle r = new Rectangle(0, 0, 800, 500);
+            // The rectange numbers below are optimised for generation of PDF document
+            // on a computer that has its display settings at 100%.
+            Rectangle r = new Rectangle(0, 0, 600, 450); 
             Bitmap img = new Bitmap(r.Width, r.Height);
 
             graphView.Export(img, true);
 
-            string fileName = Path.Combine(folder, graph.Name + ".png");
+            string path = Apsim.FullPath(graph).Replace(".Simulations.", "");
+            string fileName = Path.Combine(folder, path + ".png");
             img.Save(fileName, System.Drawing.Imaging.ImageFormat.Png);
 
             return fileName;
@@ -301,6 +302,8 @@ namespace UserInterface.Presenters
                 if (definition.title == e.SeriesName)
                 {
                     e.HoverText = GetSimulationNameForPoint(e.X, e.Y);
+                    if (e.HoverText == null)
+                        e.HoverText = e.SeriesName;
                     return;
                 }
             }
@@ -311,10 +314,7 @@ namespace UserInterface.Presenters
         /// <param name="e">Event arguments</param>
         private void CopyGraphToClipboard(object sender, EventArgs e)
         {
-            // Set the clipboard text.
-            Bitmap bitmap = new Bitmap(800, 600);
-            graphView.Export(bitmap, false);
-            System.Windows.Forms.Clipboard.SetImage(bitmap);
+            graphView.ExportToClipboard();
         }
 
         /// <summary>User has clicked "Include In Documentation" menu item.</summary>

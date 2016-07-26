@@ -8,8 +8,8 @@ namespace UserInterface.Interfaces
     using System;
     using System.Collections.Generic;
     using System.Runtime.Serialization;
-    using System.Windows.Forms;
     using EventArguments;
+    using System.Drawing;
 
     /// <summary>A structure for holding info about an item in the treeview.</summary>
     public class NodeDescriptionArgs : EventArgs
@@ -40,7 +40,7 @@ namespace UserInterface.Interfaces
         /// <summary>The checked</summary>
         public bool Checked;
         /// <summary>The shortcut key</summary>
-        public Keys ShortcutKey;
+        public string ShortcutKey;
         /// <summary>The enabled</summary>
         public bool Enabled;
     }
@@ -168,7 +168,7 @@ namespace UserInterface.Interfaces
 
         /// <summary>Gets or sets the shortcut keys.</summary>
         /// <value>The shortcut keys.</value>
-        Keys[] ShortcutKeys { get; set; }
+        string[] ShortcutKeys { get; set; }
 
         /// <summary>Populate the main menu tool strip.</summary>
         /// <param name="menuDescriptions">Menu descriptions for each menu item.</param>
@@ -188,63 +188,26 @@ namespace UserInterface.Interfaces
         /// <summary>
         /// Add a view to the right hand panel.
         /// </summary>
-        void AddRightHandView(UserControl Control);
+        void AddRightHandView(object Control);
+
+        /// <summary>Get a screen shot of the right hand panel.</summary>
+        Image GetScreenshotOfRightHandPanel();
 
         /// <summary>
-        /// Ask about saving.
+        /// Get whatever text is currently on the clipboard
         /// </summary>
-        /// <returns>-1, 0, 1</returns>
-        Int32 AskToSave();
+        /// <returns></returns>
+        string GetClipboardText();
 
         /// <summary>
-        /// A helper function that asks user for a folder.
+        /// Place text on the clipboard
         /// </summary>
-        /// <returns>Returns the selected folder or null if action cancelled by user.</returns>
-        string AskUserForFolder(string prompt);
-        
-        /// <summary>
-        /// A helper function that asks user for a file.
-        /// </summary>
-        /// <returns>Returns the selected file or null if action cancelled by user.</returns>
-        string AskUserForFile(string prompt);
-
-        /// <summary>
-        /// Add a status message. A message of null will clear the status message.
-        /// </summary>
-        /// <param name="Message"></param>
-        void ShowMessage(string Message, Models.DataStore.ErrorLevel errorLevel);
-
-        /// <summary>
-        /// A helper function that asks user for a SaveAs name and returns their new choice.
-        /// </summary>
-        string SaveAs(string OldFilename);
-
-        /// <summary>
-        /// Change the name of the tab.
-        /// </summary>
-        void ChangeTabText(string NewTabName);
-
-        /// <summary>
-        /// Turn on or off the 2nd explorer view.
-        /// </summary>
-        void ToggleSecondExplorerViewVisible();
+        /// <param name="text"></param>
+        void SetClipboardText(string text);
 
         /// <summary>
         /// Gets or sets the width of the tree view.
         /// </summary>
         Int32 TreeWidth { get; set; }
-
-        /// <summary>
-        /// Close down APSIMX user interface.
-        /// </summary>
-        void Close();
-
-        /// <summary>
-        /// Show progress bar with the specified percent.
-        /// </summary>
-        /// <param name="percent"></param>
-        void ShowProgress(int percent);
     }
-
-
 }

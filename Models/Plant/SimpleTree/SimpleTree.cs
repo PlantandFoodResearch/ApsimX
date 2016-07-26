@@ -17,7 +17,7 @@ namespace Models.PMF
     [Serializable]
     [ViewName("UserInterface.Views.GridView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
-    [ValidParent(typeof(Zone))]
+    [ValidParent(ParentType = typeof(Zone))]
     public class SimpleTree : Model, ICrop, ICanopy, IUptake
     {
         #region Canopy interface
@@ -35,7 +35,7 @@ namespace Models.PMF
 
         /// <summary>Gets the cover green.</summary>
         [Units("0-1")]
-        public double CoverGreen { get { return 1.0 - Math.Exp(-0.5 * LAI); } }
+        public double CoverGreen { get { return Math.Min(1.0 - Math.Exp(-0.5 * LAI),0.999999999); } }
 
         /// <summary>Gets the cover total.</summary>
         [Units("0-1")]
@@ -66,6 +66,15 @@ namespace Models.PMF
         /// </summary>
         public string CropType { get; set; }
 
+        /// <summary>Albedo.</summary>
+        public double Albedo { get { return 0.15; } }
+
+        /// <summary>Gets or sets the gsmax.</summary>
+        public double Gsmax { get { return 0.01; } }
+
+        /// <summary>Gets or sets the R50.</summary>
+        public double R50 { get { return 200; } }
+
         /// <summary>The soil</summary>
         [Link]
         Soils.Soil Soil = null;
@@ -81,7 +90,14 @@ namespace Models.PMF
             get { return true; }
         }
 
+        /// <summary>Returns true if the crop is ready for harvesting</summary>
+        public bool IsReadyForHarvesting { get { return false; } }
 
+        /// <summary>Harvest the crop</summary>
+        public void Harvest() { }
+
+        /// <summary>End the crop</summary>
+        public void EndCrop() { }
 
         /// <summary>Rooting Depth</summary>
         /// <value>The rooting depth.</value>

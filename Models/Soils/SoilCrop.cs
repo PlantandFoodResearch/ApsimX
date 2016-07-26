@@ -16,7 +16,7 @@ namespace Models.Soils
     [Serializable]
     [ViewName("UserInterface.Views.ProfileView")]
     [PresenterName("UserInterface.Presenters.ProfilePresenter")]
-    [ValidParent(typeof(Water))]
+    [ValidParent(ParentType=typeof(Water))]
     public class SoilCrop : Model, ISoilCrop
     {
         /// <summary>
@@ -79,7 +79,7 @@ namespace Models.Soils
         [Summary]
         [Description("KL")]
         [Display(Format = "N2")]
-        [Units("mm/mm")]
+        [Units("/day")]
         public double[] KL { get; set; }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Models.Soils
         [Summary]
         [Description("XF")]
         [Display(Format = "N1")]
-        [Units("mm/mm")]
+        [Units("0-1")]
         public double[] XF { get; set; }
 
         /// <summary>

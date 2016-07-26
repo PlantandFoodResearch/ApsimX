@@ -265,6 +265,11 @@ namespace UserInterface.Views
             {
                 pictureBox1.Image = Image.FromStream(file);
                 pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+                pictureBox1.Visible = true;
+                Grid.Dock = DockStyle.Left;
+                this.Controls.SetChildIndex(pictureBox1, 0);
+                this.Controls.SetChildIndex(Grid, 1);
+                this.Parent.Refresh();
             }
         }
 
@@ -292,6 +297,33 @@ namespace UserInterface.Views
         public void EndEdit()
         {
             this.Grid.EndEdit();
+        }
+
+        /// <summary>Lock the left most number of columns.</summary>
+        /// <param name="number"></param>
+        public void LockLeftMostColumns(int number)
+        {
+            this.Grid.Columns[number - 1].Frozen = true;
+        }
+
+        /// <summary>Get screenshot of grid.</summary>
+        public Image GetScreenshot()
+        {
+            Grid.Dock = DockStyle.None;
+
+            // Resize DataGridView to full height.
+            Grid.AutoSize = true;
+            Application.DoEvents();
+
+            // Create a Bitmap and draw the DataGridView on it.
+            // I've added 20 pixels to account for scroll bars.
+            Bitmap bitmap = new Bitmap(this.Grid.Width, this.Grid.Height);
+            Grid.DrawToBitmap(bitmap, new Rectangle(0, 0, this.Grid.Width, this.Grid.Height));
+
+            // Resize DataGridView back to original height.
+            Grid.Dock = DockStyle.Fill;
+
+            return bitmap;
         }
 
         /// <summary>
@@ -388,6 +420,15 @@ namespace UserInterface.Views
                         }
                         this.Grid.RowCount = this.DataSource.Rows.Count;
                     }
+
+                    // Format DateTime columns
+                    for (int col = 0; col < this.DataSource.Columns.Count; col++)
+                    {
+                        if (DataSource.Columns[col].DataType == typeof(DateTime))
+                        {
+                            this.Grid.Columns[col].DefaultCellStyle.Format = "yyyy-MM-d";
+                        }
+                    }
                 }
 
                 // ColIndex doesn't matter since we're resizing all of them.
@@ -398,10 +439,10 @@ namespace UserInterface.Views
                 {
                     col.Width = Convert.ToInt32(col.GetPreferredWidth(DataGridViewAutoSizeColumnMode.DisplayedCells, true) * 1.2);
 
-                    //col.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-                    //int newWidth = Convert.ToInt32(col.Width * 1.0);
-                    //col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                    //col.Width = newWidth;
+                    col.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                    int newWidth = Convert.ToInt32(col.Width * 1.0);
+                    col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    col.Width = newWidth;
                 }
 
                 // Reinstate Grid.CellValueChanged event.
@@ -457,7 +498,13 @@ namespace UserInterface.Views
                 // Put the new value into the table on the correct row.
                 if (this.DataSource != null)
                 {
-                    this.DataSource.Rows[e.RowIndex][e.ColumnIndex] = newValue;
+                    try
+                    {
+                        this.DataSource.Rows[e.RowIndex][e.ColumnIndex] = newValue;
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
 
                 if (this.valueBeforeEdit != null && this.valueBeforeEdit.GetType() == typeof(string) && newValue == null)
@@ -515,6 +562,8 @@ namespace UserInterface.Views
                 Grid.Height = 0;
                 Grid.Visible = false;
             }
+            else
+                Grid.Visible = true;
 
             //resize PictureBox
             pictureBox1.Location = new Point(Grid.Width, 0);
@@ -610,63 +659,72 @@ namespace UserInterface.Views
                 int rowIndex = this.Grid.CurrentCell.RowIndex;
                 int columnIndex = this.Grid.CurrentCell.ColumnIndex;
                 List<IGridCell> cellsChanged = new List<IGridCell>();
-                foreach (string line in lines)
+                if (lines.Length > 0 && this.Grid.CurrentCell.IsInEditMode)
                 {
-                    if (rowIndex < this.Grid.RowCount && line.Length > 0)
+                    DataGridViewTextBoxEditingControl dText = (DataGridViewTextBoxEditingControl)Grid.EditingControl;
+                    dText.Paste(text);
+                    cellsChanged.Add(this.GetCell(columnIndex , rowIndex));
+                }
+                else
+                {
+                    foreach (string line in lines)
                     {
-                        string[] words = line.Split('\t');
-                        for (int i = 0; i < words.GetLength(0); ++i)
+                        if (rowIndex < this.Grid.RowCount && line.Length > 0)
                         {
-                            if (columnIndex + i < this.Grid.ColumnCount)
+                            string[] words = line.Split('\t');
+                            for (int i = 0; i < words.GetLength(0); ++i)
                             {
-                                DataGridViewCell cell = this.Grid[columnIndex + i, rowIndex];
-                                if (!cell.ReadOnly)
+                                if (columnIndex + i < this.Grid.ColumnCount)
                                 {
-                                    if (cell.Value == null || cell.Value.ToString() != words[i])
+                                    DataGridViewCell cell = this.Grid[columnIndex + i, rowIndex];
+                                    if (!cell.ReadOnly)
                                     {
-                                        // We are pasting a new value for this cell. Put the new
-                                        // value into the cell.
-                                        if (words[i] == string.Empty)
+                                        if (cell.Value == null || cell.Value.ToString() != words[i])
                                         {
-                                            cell.Value = null;
-                                        }
-                                        else
-                                        {
-                                            cell.Value = Convert.ChangeType(words[i], this.DataSource.Columns[columnIndex + i].DataType);
-                                        }
+                                            // We are pasting a new value for this cell. Put the new
+                                            // value into the cell.
+                                            if (words[i] == string.Empty)
+                                            {
+                                                cell.Value = null;
+                                            }
+                                            else
+                                            {
+                                                cell.Value = Convert.ChangeType(words[i], this.DataSource.Columns[columnIndex + i].DataType);
+                                            }
 
-                                        // Make sure there are enough rows in the data source.
-                                        while (this.DataSource.Rows.Count <= rowIndex)
-                                        {
-                                            this.DataSource.Rows.Add(this.DataSource.NewRow());
-                                        }
+                                            // Make sure there are enough rows in the data source.
+                                            while (this.DataSource.Rows.Count <= rowIndex)
+                                            {
+                                                this.DataSource.Rows.Add(this.DataSource.NewRow());
+                                            }
 
-                                        // Put the new value into the data source.
-                                        if (cell.Value == null)
-                                        {
-                                            this.DataSource.Rows[rowIndex][columnIndex + i] = DBNull.Value;
-                                        }
-                                        else
-                                        {
-                                            this.DataSource.Rows[rowIndex][columnIndex + i] = cell.Value;
-                                        }
+                                            // Put the new value into the data source.
+                                            if (cell.Value == null)
+                                            {
+                                                this.DataSource.Rows[rowIndex][columnIndex + i] = DBNull.Value;
+                                            }
+                                            else
+                                            {
+                                                this.DataSource.Rows[rowIndex][columnIndex + i] = cell.Value;
+                                            }
 
-                                        // Put a cell into the cells changed member.
-                                        cellsChanged.Add(this.GetCell(columnIndex + i, rowIndex));
+                                            // Put a cell into the cells changed member.
+                                            cellsChanged.Add(this.GetCell(columnIndex + i, rowIndex));
+                                        }
                                     }
                                 }
+                                else
+                                {
+                                    break;
+                                }
                             }
-                            else
-                            { 
-                                break; 
-                            }
-                        }
 
-                        rowIndex++;
-                    }
-                    else
-                    { 
-                        break; 
+                            rowIndex++;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -688,7 +746,24 @@ namespace UserInterface.Views
         /// <param name="e">The event arguments</param>
         private void OnCopyToClipboard(object sender, EventArgs e)
         {
-            DataObject content = this.Grid.GetClipboardContent();
+            // this.Grid.EndEdit();
+            DataObject content = new DataObject();
+            if (this.Grid.SelectedCells.Count==1)
+            {
+                if (this.Grid.CurrentCell.IsInEditMode)
+                {
+                    if (this.Grid.EditingControl is System.Windows.Forms.TextBox)
+                    {
+                        string text = ((System.Windows.Forms.TextBox)this.Grid.EditingControl).SelectedText;
+                        content.SetText(text);
+                    }
+                }
+                else
+                    content.SetText(this.Grid.CurrentCell.Value.ToString());
+            }
+            else
+            content = this.Grid.GetClipboardContent();
+
             Clipboard.SetDataObject(content);
         }
 
@@ -700,18 +775,35 @@ namespace UserInterface.Views
         private void OnDeleteClick(object sender, EventArgs e)
         {
             List<IGridCell> cellsChanged = new List<IGridCell>();
-            foreach (DataGridViewCell cell in this.Grid.SelectedCells)
+
+            if (this.Grid.CurrentCell.IsInEditMode)
             {
-                // Save change in data source
-                if (cell.RowIndex < this.DataSource.Rows.Count)
+                DataGridViewTextBoxEditingControl dText = (DataGridViewTextBoxEditingControl)Grid.EditingControl;
+                string newText;
+                int savedSelectionStart = dText.SelectionStart;
+                if (dText.SelectionLength == 0)
+                    newText = dText.Text.Remove(dText.SelectionStart, 1);
+                else
+                    newText = dText.Text.Remove(dText.SelectionStart, dText.SelectionLength);
+                dText.Text = newText;
+                dText.SelectionStart = savedSelectionStart;
+                cellsChanged.Add(this.GetCell(Grid.CurrentCell.ColumnIndex, Grid.CurrentCell.RowIndex));
+            }
+            else
+            {
+                foreach (DataGridViewCell cell in this.Grid.SelectedCells)
                 {
-                    this.DataSource.Rows[cell.RowIndex][cell.ColumnIndex] = DBNull.Value;
+                    // Save change in data source
+                    if (cell.RowIndex < this.DataSource.Rows.Count)
+                    {
+                        this.DataSource.Rows[cell.RowIndex][cell.ColumnIndex] = DBNull.Value;
 
-                    // Delete cell in grid.
-                    this.Grid[cell.ColumnIndex, cell.RowIndex].Value = null;
+                        // Delete cell in grid.
+                        this.Grid[cell.ColumnIndex, cell.RowIndex].Value = null;
 
-                    // Put a cell into the cells changed member.
-                    cellsChanged.Add(this.GetCell(cell.ColumnIndex, cell.RowIndex));
+                        // Put a cell into the cells changed member.
+                        cellsChanged.Add(this.GetCell(cell.ColumnIndex, cell.RowIndex));
+                    }
                 }
             }
 
@@ -737,6 +829,9 @@ namespace UserInterface.Views
             IGridCell cell = this.GetCell(e.ColumnIndex, e.RowIndex);
             if (cell != null && cell.EditorType == EditorTypeEnum.Button)
             {
+                DataGridViewButtonCell gridCell = Grid[e.ColumnIndex, e.RowIndex] as DataGridViewButtonCell;
+                if (gridCell != null)
+                    cell.DropDownStrings = (string[])gridCell.Tag;
                 GridCellsChangedArgs cellClicked = new GridCellsChangedArgs();
                 cellClicked.ChangedCells = new List<IGridCell>();
                 cellClicked.ChangedCells.Add(cell);

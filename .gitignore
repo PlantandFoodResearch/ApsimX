@@ -33,4 +33,10 @@ _ReSharper*/
 Documentation/html
 *.db
 packages/
+Tests/MultiZoneManagement/MultiFieldMultiZoneManagementBasic.db.sum
+*.sum
 Documents/
+Prototypes/SCRUM/Obs/
+Prototypes/SCRUM/.ipynb_checkpoints/ParameterListBuilder-checkpoint.ipynb
+Prototypes/SCRUM/Crop.xml
+Prototypes/SCRUM/SCRUM.apsimx.orig

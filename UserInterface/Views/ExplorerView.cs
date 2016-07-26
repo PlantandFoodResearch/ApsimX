@@ -60,7 +60,6 @@ namespace UserInterface.Views
         public ExplorerView()
         {
             this.InitializeComponent();
-            StatusWindow.Visible = false;
         }
 
         /// <summary>
@@ -134,7 +133,6 @@ namespace UserInterface.Views
                 TreeView.SelectedNode = node;
 
                 TreeView.AfterSelect += OnAfterSelect;
-
             }
         }
 
@@ -212,7 +210,7 @@ namespace UserInterface.Views
 
         /// <summary>Gets or sets the shortcut keys.</summary>
         /// <value>The shortcut keys.</value>
-        public Keys[] ShortcutKeys { get; set; }
+        public string[] ShortcutKeys { get; set; }
 
         /// <summary>Populate the main menu tool strip.</summary>
         /// <param name="menuDescriptions">Menu descriptions for each menu item.</param>
@@ -248,7 +246,11 @@ namespace UserInterface.Views
                 ToolStripMenuItem Button = PopupMenu.Items.Add(Description.Name, Icon, Description.OnClick) as ToolStripMenuItem;
                 Button.TextImageRelation = TextImageRelation.ImageBeforeText;
                 Button.Checked = Description.Checked;
-                Button.ShortcutKeys = Description.ShortcutKey;
+                if (Description.ShortcutKey != null)
+                {
+                    KeysConverter kc = new KeysConverter();
+                    Button.ShortcutKeys = (Keys)kc.ConvertFromString(Description.ShortcutKey);
+                }
                 Button.Enabled = Description.Enabled;
             }
         }
@@ -271,135 +273,29 @@ namespace UserInterface.Views
         /// Add a user control to the right hand panel. If Control is null then right hand panel will be cleared.
         /// </summary>
         /// <param name="control">The control to add.</param>
-        public void AddRightHandView(UserControl control)
+        public void AddRightHandView(object control)
         {
             RightHandPanel.Controls.Clear();
-            if (control != null)
+            UserControl userControl = control as UserControl;
+            if (userControl != null)
             {
-                RightHandPanel.Controls.Add(control);
-                control.Dock = DockStyle.Fill;
+                RightHandPanel.Controls.Add(userControl);
+                userControl.Dock = DockStyle.Fill;
             }
         }
 
-        /// <summary>Ask the user if they wish to save the simulation.</summary>
-        /// <returns>Choice for saving the simulation</returns>
-        public Int32 AskToSave()
+        /// <summary>Get a screen shot of the right hand panel.</summary>
+        public Image GetScreenshotOfRightHandPanel()
         {
-            TabPage page = Parent as TabPage;
-            DialogResult result = MessageBox.Show("Do you want to save changes for " + page.Text + " ?", "Save changes", MessageBoxButtons.YesNoCancel);
-            switch (result)
+            if (RightHandPanel != null)
             {
-                case DialogResult.Cancel: return -1;
-                case DialogResult.Yes: return 0;
-                case DialogResult.No: return 1;
-                default: return -1;
+                var bmp = new Bitmap(RightHandPanel.Width, RightHandPanel.Height);
+                RightHandPanel.DrawToBitmap(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+                return bmp;
             }
+            return null;
         }
-
-        /// <summary>A helper function that asks user for a folder.</summary>
-        /// <param name="prompt"></param>
-        /// <returns>
-        /// Returns the selected folder or null if action cancelled by user.
-        /// </returns>
-        public string AskUserForFolder(string prompt)
-        {
-            folderBrowserDialog1.Description = prompt;
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-                return folderBrowserDialog1.SelectedPath;
-            else
-                return null;
-        }
-
-        /// <summary>A helper function that asks user for a file.</summary>
-        /// <param name="prompt"></param>
-        /// <returns>
-        /// Returns the selected file or null if action cancelled by user.
-        /// </returns>
-        public string AskUserForFile(string prompt)
-        {
-            openFileDialog.Title = prompt;
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-                return openFileDialog.FileName;
-            else
-                return null;
-        }
-
-        /// <summary>Add a status message to the explorer window</summary>
-        /// <param name="message">The message.</param>
-        /// <param name="errorLevel">The error level.</param>
-        public void ShowMessage(string message, Models.DataStore.ErrorLevel errorLevel)
-        {
-            StatusWindow.Visible = message != null;
-
-            // Output the message
-            if (errorLevel == Models.DataStore.ErrorLevel.Error)
-            {
-                StatusWindow.ForeColor = Color.Red;
-            }
-            else if (errorLevel == Models.DataStore.ErrorLevel.Warning)
-            {
-                StatusWindow.ForeColor = Color.Brown;
-            }
-            else
-            {
-                StatusWindow.ForeColor = Color.Blue;
-            }
-            message = message.TrimEnd("\n".ToCharArray());
-            message = message.Replace("\n", "\n                      ");
-            message += "\n";
-            StatusWindow.Text = message;
-            this.toolTip1.SetToolTip(this.StatusWindow, message);
-            progressBar.Visible = false;
-            Application.DoEvents();
-        }
-
-        /// <summary>
-        /// Show progress bar with the specified percent.
-        /// </summary>
-        /// <param name="percent"></param>
-        public void ShowProgress(int percent)
-        {
-            progressBar.Visible = true;
-            progressBar.Value = percent;
-        }
-
-        /// <summary>
-        /// A helper function that asks user for a SaveAs name and returns their new choice.
-        /// </summary>
-        /// <param name="oldFilename">The old filename.</param>
-        /// <returns>
-        /// Returns the new file name or null if action cancelled by user.
-        /// </returns>
-        public string SaveAs(string oldFilename)
-        {
-            TabbedExplorerView parentView = this.Parent.Parent.Parent as TabbedExplorerView;
-            return parentView.AskUserForSaveFileName(oldFilename);
-        }
-
-        /// <summary>Change the name of the tab.</summary>
-        /// <param name="newTabName">New name of the tab.</param>
-        public void ChangeTabText(string newTabName)
-        {
-            TabPage page = Parent as TabPage;
-            page.Text = newTabName;
-        }
-
-        /// <summary>Toggle the 2nd right hand side explorer view on/off</summary>
-        public void ToggleSecondExplorerViewVisible()
-        {
-            MainForm mainForm = Application.OpenForms[0] as MainForm;
-            mainForm.ToggleSecondExplorerViewVisible();
-        }
-
-        /// <summary>
-        /// Close down APSIMX user interface.
-        /// </summary>
-        public void Close()
-        {
-            MainForm mainForm = Application.OpenForms[0] as MainForm;
-            mainForm.Close();
-        }
-
+        
         /// <summary>Gets or sets the width of the tree view.</summary>
         public Int32 TreeWidth
         {
@@ -519,10 +415,15 @@ namespace UserInterface.Views
         /// <returns>True if command key was processed.</returns>
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (ShortcutKeyPressed != null && ShortcutKeys != null && ShortcutKeys.Contains(keyData))
+            if (ShortcutKeyPressed != null && ShortcutKeys != null)
             {
-                ShortcutKeyPressed.Invoke(this, new KeysArgs() { Keys = keyData });
-                return true;
+                KeysConverter kc = new KeysConverter();
+                string keyName = kc.ConvertToString(keyData);
+                if (ShortcutKeys.Contains(keyName))
+                {
+                    ShortcutKeyPressed.Invoke(this, new KeysArgs() { Keys = keyData });
+                    return true;
+                }
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -689,12 +590,22 @@ namespace UserInterface.Views
             }
         }
 
-        /// <summary>User has closed the status window.</summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnCloseStatusWindowClick(object sender, EventArgs e)
+        /// <summary>
+        /// Get whatever text is currently on the clipboard
+        /// </summary>
+        /// <returns></returns>
+        public string GetClipboardText()
         {
-            StatusWindow.Visible = false;
+            return Clipboard.GetText();
+        }
+
+        /// <summary>
+        /// Place text on the clipboard
+        /// </summary>
+        /// <param name="text"></param>
+        public void SetClipboardText(string text)
+        {
+            Clipboard.SetText(text);
         }
 
         #endregion

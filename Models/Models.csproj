@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Models</RootNamespace>
-    <AssemblyName>Model</AssemblyName>
+    <AssemblyName>Models</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -39,9 +39,9 @@
     <DefineConstants>TRACE;DEBUG;APSIMX</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>..\Bin\Model.xml</DocumentationFile>
+    <DocumentationFile>..\Bin\Models.xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -51,8 +51,30 @@
     <DefineConstants>TRACE;APSIMX</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>..\Bin\Models.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;APSIMX</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>..\Bin\Models.xml</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <DocumentationFile>..\Bin\Model.xml</DocumentationFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\Bin\</OutputPath>
+    <DefineConstants>TRACE;APSIMX</DefineConstants>
+    <DocumentationFile>..\Bin\Models.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Excel, Version=2.1.2.3, Culture=neutral, PublicKeyToken=93517dbe6a4012fa, processorArchitecture=MSIL">
@@ -60,6 +82,10 @@
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Numerics, Version=3.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.3.8.0\lib\net40\MathNet.Numerics.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="MigraDoc.DocumentObjectModel, Version=1.32.4334.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -88,31 +114,39 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="MathNet.Numerics">
-      <HintPath>..\packages\MathNet.Numerics.3.1.0\lib\net40\MathNet.Numerics.dll</HintPath>
-    </Reference>
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgPasture.cs" />
     <Compile Include="AgPasture\AgPasture1.Sward.cs" />
     <Compile Include="AgPasture\AgPasture1.PastureSpecies.cs" />
+    <Compile Include="Agroforestry\AgroforestrySystem.cs" />
     <Compile Include="Agroforestry\LocalMicroClimate.cs" />
-    <Compile Include="Agroforestry\StaticForestrySystem.cs" />
+    <Compile Include="Agroforestry\TreeProxy.cs" />
+    <Compile Include="Aqua\FoodInPond.cs" />
+    <Compile Include="Aqua\PondWater.cs" />
+    <Compile Include="Aqua\Prawns.cs" />
+    <Compile Include="Aqua\WaterPropertiesData.cs" />
     <Compile Include="Arbitrator\Arbitrator.cs" />
     <Compile Include="Arbitrator\ArbitratorGod.cs" />
     <Compile Include="Core\Attributes\DoNotDocumentAttribute.cs" />
     <Compile Include="Core\AutoDocumentation.cs" />
     <Compile Include="Core\Converter.cs" />
+    <Compile Include="Core\Alias.cs" />
+    <Compile Include="Core\Runner.cs" />
     <Compile Include="Graph\IGraphable.cs" />
     <Compile Include="Core\ITestable.cs" />
     <Compile Include="Core\Replacements.cs" />
     <Compile Include="Graph\Regression.cs" />
     <Compile Include="Grazplan\Supplement.cs" />
     <Compile Include="Grazplan\GrazSupp.cs" />
+    <Compile Include="Interfaces\ILeaf.cs" />
     <Compile Include="Interfaces\ISurfaceOrganicMatter.cs" />
     <Compile Include="Interfaces\ICanopy.cs" />
     <Compile Include="Interfaces\IWeather.cs" />
+    <Compile Include="Map.cs" />
+    <Compile Include="Plant\CultivarFolder.cs" />
+    <Compile Include="Plant\Functions\MovingAverage.cs" />
     <Compile Include="Plant\Functions\HoldFunction.cs" />
     <Compile Include="Plant\Functions\DeltaFunction.cs" />
     <Compile Include="Plant\Functions\DemandFunctions\FillingRateFunction.cs" />
@@ -121,6 +155,10 @@
     <Compile Include="Plant\Interfaces\IFunctionArray.cs" />
     <Compile Include="Interfaces\IUptake.cs" />
     <Compile Include="Plant\Phenology\NodeNumberPhase.cs" />
+    <Compile Include="Plant\Phenology\PhaseSetFunction.cs" />
+    <Compile Include="Plant\Phenology\QualitativePPEffect.cs" />
+    <Compile Include="Plant\Phenology\VernalisationC.cs" />
+    <Compile Include="Plant\Phenology\ZadokPMF.cs" />
     <Compile Include="Plant\PlantTypes.cs" />
     <Compile Include="PostSimulationTools\Probability.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
@@ -162,12 +200,12 @@
     <Compile Include="Memo.cs" />
     <Compile Include="NullSummary.cs" />
     <Compile Include="Plant\SimpleTree\SimpleTree.cs" />
-    <Compile Include="Plant\Slurp\Slurp.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Report\ReportColumnConstantValue.cs" />
     <Compile Include="Report\ReportColumn.cs" />
     <Compile Include="Soils\Arbitrator\CropUptakes.cs" />
     <Compile Include="Soils\Arbitrator\Estimate.cs" />
@@ -184,10 +222,28 @@
     <Compile Include="Soils\SoilWaterBackend\SoilWaterSoil.cs" />
     <Compile Include="Soils\SoilWaterBackend\SoilWaterSurface.cs" />
     <Compile Include="Soils\Variables.cs" />
-    <Compile Include="SugarCane\CropConstants.cs" />
-    <Compile Include="SugarCane\CultivarConstants.cs" />
-    <Compile Include="SugarCane\MathUtil.cs" />
-    <Compile Include="SugarCane\SugarCane.cs" />
+    <Compile Include="Stock\animgrp.cs" />
+    <Compile Include="Stock\animprm.cs" />
+    <Compile Include="Stock\grazenv.cs" />
+    <Compile Include="Stock\grazparam.cs" />
+    <Compile Include="Stock\grazprmread.cs" />
+    <Compile Include="Stock\graztype.cs" />
+    <Compile Include="Stock\sdmlpsr.cs" />
+    <Compile Include="Stock\stddate.cs" />
+    <Compile Include="Stock\stdmath.cs" />
+    <Compile Include="Stock\stdstrng.cs" />
+    <Compile Include="Stock\stock.cs" />
+    <Compile Include="Stock\stock_ent.cs" />
+    <Compile Include="Stock\stock_intf.cs" />
+    <Compile Include="Stock\stock_manage.cs" />
+    <Compile Include="Stock\stock_padd.cs" />
+    <Compile Include="Stock\stock_vars.cs" />
+    <Compile Include="Stock\typedval.cs" />
+    <Compile Include="Stock\xmlpsr.cs" />
+    <Compile Include="Sugarcane\CropConstants.cs" />
+    <Compile Include="Sugarcane\CultivarConstants.cs" />
+    <Compile Include="Sugarcane\MathUtil.cs" />
+    <Compile Include="Sugarcane\Sugarcane.cs" />
     <Compile Include="Core\Variable.cs" />
     <Compile Include="Fertiliser.cs" />
     <Compile Include="PostSimulationTools\Input.cs" />
@@ -239,7 +295,6 @@
     <Compile Include="Plant\Functions\StageBasedInterpolation.cs" />
     <Compile Include="Plant\Functions\StructureFunctions\HeightFunction.cs" />
     <Compile Include="Plant\Functions\StructureFunctions\InPhaseTemperatureFunction.cs" />
-    <Compile Include="Plant\Functions\StructureFunctions\MainStemFinalNodeNumberFunction.cs" />
     <Compile Include="Plant\Functions\SubtractFunction.cs" />
     <Compile Include="Plant\Functions\SupplyFunctions\RUECO2Function.cs" />
     <Compile Include="Plant\Functions\SupplyFunctions\RUEModel.cs" />
@@ -249,7 +304,6 @@
     <Compile Include="Plant\Functions\Zadok.cs" />
     <Compile Include="Plant\InterpolationSet.cs" />
     <Compile Include="Plant\OilPalm\OilPalm.cs" />
-    <Compile Include="Plant\OilPalm\OilPalmUnderstory.cs" />
     <Compile Include="Plant\OldPlant\BaseOrgan1.cs" />
     <Compile Include="Plant\OldPlant\Conversions.cs" />
     <Compile Include="Plant\OldPlant\Environment.cs" />
@@ -295,13 +349,11 @@
     <Compile Include="Plant\Phenology\LeafDeathPhase.cs" />
     <Compile Include="Plant\Phenology\MolecularPhenology.cs" />
     <Compile Include="Plant\Phenology\Phase.cs" />
-    <Compile Include="Plant\Phenology\PhaseJumpFunction.cs" />
     <Compile Include="Plant\Phenology\Phenology.cs" />
     <Compile Include="Plant\Phenology\Vernalisation.cs" />
     <Compile Include="Plant\Phenology\VernalisationCW.cs" />
     <Compile Include="Plant\Plant.cs" />
     <Compile Include="Plant\Structure.cs" />
-    <Compile Include="Plant\Summary.cs" />
     <Compile Include="Plant\Utility.cs" />
     <Compile Include="Soils\IrrigationApplicationType.cs" />
     <Compile Include="Soils\RunoffEventType.cs" />
@@ -338,11 +390,28 @@
     <Compile Include="Core\ICrop.cs" />
     <Compile Include="Graph\Graph.cs" />
     <Compile Include="Utilities\Accumulator.cs" />
-    <Compile Include="Weather.cs" />
+    <Compile Include="Weather\ControlledEnvironment.cs" />
+    <Compile Include="Weather\Weather.cs" />
     <Compile Include="Report\Report.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\Simulation.cs" />
+    <Compile Include="WholeFarm\IResource.cs" />
+    <Compile Include="WholeFarm\RuminantTypeCohort.cs" />
+    <Compile Include="WholeFarm\RuminantType.cs" />
+    <Compile Include="WholeFarm\RuminantHerd.cs" />
+    <Compile Include="WholeFarm\PastureType.cs" />
+    <Compile Include="WholeFarm\Pasture.cs" />
+    <Compile Include="WholeFarm\FoodStoreType.cs" />
+    <Compile Include="WholeFarm\FoodStore.cs" />
+    <Compile Include="WholeFarm\Fodder.cs" />
+    <Compile Include="WholeFarm\FodderType.cs" />
+    <Compile Include="WholeFarm\LandType.cs" />
+    <Compile Include="WholeFarm\Land.cs" />
+    <Compile Include="WholeFarm\LabourFamily.cs" />
+    <Compile Include="WholeFarm\LabourFamilyType.cs" />
+    <Compile Include="WholeFarm\LabourHired.cs" />
+    <Compile Include="WholeFarm\LabourHiredType.cs" />
     <Compile Include="Zones\CircularZone.cs" />
     <Compile Include="Zones\RectangularZone.cs" />
   </ItemGroup>
@@ -381,6 +450,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Resources\ruminant.prm" />
     <None Include="Resources\Wheat.xml">
       <SubType>Designer</SubType>
     </None>
@@ -401,14 +471,18 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Maize.xml" />
     <Content Include="Resources\ResidueTypes.xml">
       <SubType>Designer</SubType>
     </Content>
+    <None Include="Resources\SCRUM.xml" />
+    <None Include="Resources\Slurp.xml" />
     <None Include="Resources\Supplement.txt" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -71,16 +71,29 @@ namespace UserInterface.Presenters
         /// <param name="explorerPresenter">The parent explorer presenter</param>
         public void Attach(object model, object view, ExplorerPresenter explorerPresenter)
         {
+            //if the model is Testable, run the test method.
+            ITestable testModel = model as ITestable;
+            if (testModel != null)
+                testModel.Test(false, true);
+
             string[] split;
             this.grid = view as IGridView;
             this.model = model as Model;
             this.explorerPresenter = explorerPresenter;
 
-            this.FindAllProperties();
-            this.PopulateGrid(this.model);
-            this.grid.CellsChanged += this.OnCellValueChanged;
+            this.FindAllProperties(this.model);
+            if (this.grid.DataSource == null)
+            {
+                this.PopulateGrid(this.model);
+            }
+            else
+            {
+                this.grid.ResizeControls();
+                FormatTestGrid();
+            }
+
+                this.grid.CellsChanged += this.OnCellValueChanged;
             this.grid.ButtonClick += OnFileBrowseClick;
-            this.grid.ResizeControls();
             this.explorerPresenter.CommandHistory.ModelChanged += this.OnModelChanged;
             if (model != null)
             {
@@ -114,12 +127,12 @@ namespace UserInterface.Presenters
             table.Columns.Add("Value", typeof(object));
 
             this.FillTable(table);
-            this.grid.DataSource = table;
-            this.FormatGrid();
+             this.FormatGrid();
             if (selectedCell != null)
                 this.grid.GetCurrentCell = selectedCell;
+            this.grid.ResizeControls();
         }
-        
+
         /// <summary>
         /// Remove the specified properties from the grid.
         /// </summary>
@@ -144,8 +157,9 @@ namespace UserInterface.Presenters
         /// <summary>
         /// Find all properties from the model and fill this.properties.
         /// </summary>
-        private void FindAllProperties()
+        public void FindAllProperties(Model model)
         {
+            this.model = model;
             this.properties.Clear();
             if (this.model != null)
             {
@@ -171,6 +185,13 @@ namespace UserInterface.Presenters
                         Attribute descriptionAttribute = ReflectionUtilities.GetAttribute(property, typeof(DescriptionAttribute), true);
                         this.properties.Add(new VariableProperty(this.model, property));
                     }
+
+                    if(property.PropertyType == typeof(DataTable))
+                    {
+                        VariableProperty vp = new VariableProperty(this.model, property);
+                        DataTable dt = vp.Value as DataTable;
+                        this.grid.DataSource = dt;
+                    }
                 }
             }
         }
@@ -182,9 +203,20 @@ namespace UserInterface.Presenters
         private void FillTable(DataTable table)
         {
             foreach (VariableProperty property in this.properties)
-            {
                 table.Rows.Add(new object[] { property.Description, property.ValueWithArrayHandling });
-            }
+
+            this.grid.DataSource = table;
+        }
+
+        /// <summary>
+        /// Format the grid when displaying Tests.
+        /// </summary>
+        private void FormatTestGrid()
+        {
+            int numCols = this.grid.DataSource.Columns.Count;
+
+            for (int i = 0; i < numCols; i++)
+                this.grid.GetColumn(i).Format = "F4";
         }
 
         /// <summary>
@@ -216,12 +248,13 @@ namespace UserInterface.Presenters
                     ICrop crop = GetCrop(properties);
                     if (crop != null)
                     {
-                        cell.DropDownStrings = crop.CultivarNames;
+                        cell.DropDownStrings = GetCultivarNames(crop);
                     }
                     
                 }
                 else if (this.properties[i].DisplayType == DisplayAttribute.DisplayTypeEnum.FileName)
                 {
+                    cell.DropDownStrings = this.properties[i].Metadata;
                     cell.EditorType = EditorTypeEnum.Button;
                 }
                 else if (this.properties[i].DisplayType == DisplayAttribute.DisplayTypeEnum.FieldName)
@@ -275,6 +308,28 @@ namespace UserInterface.Presenters
 
             IGridColumn valueColumn = this.grid.GetColumn(1);
             valueColumn.Width = -1;
+        }
+
+        /// <summary>Get a list of cultivars for crop.</summary>
+        /// <param name="crop">The crop.</param>
+        /// <returns>A list of cultivars.</returns>
+        private string[] GetCultivarNames(ICrop crop)
+        {
+            if (crop.CultivarNames.Length == 0)
+            {
+                Simulations simulations = Apsim.Parent(crop as IModel, typeof(Simulations)) as Simulations;
+                Replacements replacements = Apsim.Child(simulations, typeof(Replacements)) as Replacements;
+                if (replacements != null)
+                {
+                    ICrop replacementCrop = Apsim.Child(replacements, (crop as IModel).Name) as ICrop;
+                    if (replacementCrop != null)
+                        return replacementCrop.CultivarNames;
+                }
+            }
+            else
+                return crop.CultivarNames;
+
+            return new string[0];
         }
 
         /// <summary>
@@ -349,6 +404,10 @@ namespace UserInterface.Presenters
             {
                 value = Apsim.Find(this.model, value.ToString()) as ICrop;
             }
+            else if (property.DataType.IsEnum)
+            {
+                value = Enum.Parse(property.DataType, value.ToString());
+            }
 
             Commands.ChangeProperty cmd = new Commands.ChangeProperty(this.model, property.Name, value);
             this.explorerPresenter.CommandHistory.Add(cmd, true);
@@ -373,7 +432,20 @@ namespace UserInterface.Presenters
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void OnFileBrowseClick(object sender, GridCellsChangedArgs e)
         {
-            string fileName = explorerPresenter.AskUserForFile("Select file");
+            string filterString = "";
+            string[] fileFilters = e.ChangedCells[0].DropDownStrings;
+            if (fileFilters != null)
+            {
+                for (int i = 0; i < fileFilters.Length; i++)
+                {
+                    if (i > 0)
+                        filterString += '|';
+                    filterString += fileFilters[i];
+                }
+            }
+            else
+              filterString = "All files (*.*)|*.*";
+            string fileName = explorerPresenter.MainPresenter.AskUserForOpenFileName(filterString);
             if (fileName != null)
             {
                 e.ChangedCells[0].Value = fileName;

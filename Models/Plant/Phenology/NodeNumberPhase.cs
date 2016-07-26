@@ -4,6 +4,7 @@ using System.Text;
 using Models.Core;
 using Models.PMF.Organs;
 using Models.PMF.Functions;
+using System.Xml.Serialization;
 
 namespace Models.PMF.Phen
 {
@@ -13,7 +14,7 @@ namespace Models.PMF.Phen
     [Serializable]
     [Description("This phase extends from the end of the previous phase until the Completion Leaf Number is achieved.  The duration of this phase is determined by leaf appearance rate and the completion leaf number target.")]
     [ViewName("UserInterface.Views.GridView")]
-    [PresenterName("UserInterface.Presenters.PhasePresenter")]
+    [PresenterName("UserInterface.Presenters.PropertyPresenter")]
     public class NodeNumberPhase : Phase
     {
         /// <summary>The structure</summary>
@@ -49,13 +50,13 @@ namespace Models.PMF.Phen
 
             if (First)
             {
-                CohortNoAtStart = Structure.MainStemNodeNo;
+                CohortNoAtStart = Structure.LeafTipsAppeared;
                 First = false;
             }
 
             FractionCompleteYesterday = FractionComplete;
 
-            if (Structure.MainStemNodeNo >= CompletionNodeNumber.Value)
+            if (Structure.LeafTipsAppeared >= CompletionNodeNumber.Value)
                 return 0.00001;
             else
                 return 0;
@@ -70,13 +71,13 @@ namespace Models.PMF.Phen
             base.AddTT(PropOfDayToUse);
             if (First)
             {
-                CohortNoAtStart = Structure.MainStemNodeNo;
+                CohortNoAtStart = Structure.LeafTipsAppeared;
                 First = false;
             }
 
             FractionCompleteYesterday = FractionComplete;
 
-            if (Structure.MainStemNodeNo >= CompletionNodeNumber.Value)
+            if (Structure.LeafTipsAppeared >= CompletionNodeNumber.Value)
                 return 0.00001;
             else
                 return 0;
@@ -84,14 +85,19 @@ namespace Models.PMF.Phen
 
         /// <summary>Return a fraction of phase complete.</summary>
         /// <value>The fraction complete.</value>
+        [XmlIgnore]
         public override double FractionComplete
         {
             get
             {
-                double F = (Structure.MainStemNodeNo - CohortNoAtStart) / (CompletionNodeNumber.Value - CohortNoAtStart);
+                double F = (Structure.LeafTipsAppeared - CohortNoAtStart) / (CompletionNodeNumber.Value - CohortNoAtStart);
                 if (F < 0) F = 0;
                 if (F > 1) F = 1;
                 return Math.Max(F, FractionCompleteYesterday); //Set to maximum of FractionCompleteYesterday so on days where final leaf number increases phenological stage is not wound back.
+            }
+            set
+            {
+                throw new Exception("Not possible to set phenology into " + this + " phase (at least not at the moment because there is no code to do it");
             }
         }
 

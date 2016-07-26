@@ -10,18 +10,13 @@ namespace UserInterface.Presenters
     using System.Data;
     using System.Diagnostics;
     using System.IO;
-    using System.Reflection;
     using System.Windows.Forms;
-    using System.Xml;
     using Commands;
-    using Interfaces;
-    using Microsoft.Win32;
     using Models;
     using Models.Core;
     using Models.Factorial;
     using Models.Soils;
-    using APSIM.Shared.Utilities;
-    
+
     /// <summary>
     /// This class contains methods for all context menu items that the ExplorerView exposes to the user.
     /// </summary>
@@ -51,7 +46,7 @@ namespace UserInterface.Presenters
         /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
-        [ContextMenu(MenuName = "Rename", ShortcutKey = Keys.F2)]
+        [ContextMenu(MenuName = "Rename", ShortcutKey = "F2")]
         public void OnRename(object sender, EventArgs e)
         {
             this.explorerPresenter.Rename();
@@ -62,14 +57,14 @@ namespace UserInterface.Presenters
         /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
-        [ContextMenu(MenuName = "Copy", ShortcutKey = Keys.Control | Keys.C)]
+        [ContextMenu(MenuName = "Copy", ShortcutKey = "Ctrl+C")]
         public void OnCopyClick(object sender, EventArgs e)
         {
             Model model = Apsim.Get(this.explorerPresenter.ApsimXFile, this.explorerPresenter.CurrentNodePath) as Model;
             if (model != null)
             {
                 // Set the clipboard text.
-                System.Windows.Forms.Clipboard.SetText(Apsim.Serialise(model));
+                this.explorerPresenter.SetClipboardText(Apsim.Serialise(model));
             }
         }
 
@@ -78,10 +73,10 @@ namespace UserInterface.Presenters
         /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
-        [ContextMenu(MenuName = "Paste", ShortcutKey = Keys.Control | Keys.V)]
+        [ContextMenu(MenuName = "Paste", ShortcutKey = "Ctrl+V")]
         public void OnPasteClick(object sender, EventArgs e)
         {
-            this.explorerPresenter.Add(System.Windows.Forms.Clipboard.GetText(), this.explorerPresenter.CurrentNodePath);
+            this.explorerPresenter.Add(this.explorerPresenter.GetClipboardText(), this.explorerPresenter.CurrentNodePath);
         }
 
         /// <summary>
@@ -89,7 +84,7 @@ namespace UserInterface.Presenters
         /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
-        [ContextMenu(MenuName = "Delete", ShortcutKey = Keys.Delete)]
+        [ContextMenu(MenuName = "Delete", ShortcutKey = "Del")]
         public void OnDeleteClick(object sender, EventArgs e)
         {
             IModel model = Apsim.Get(this.explorerPresenter.ApsimXFile, this.explorerPresenter.CurrentNodePath) as IModel;
@@ -102,7 +97,7 @@ namespace UserInterface.Presenters
         /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
-        [ContextMenu(MenuName = "Move up", ShortcutKey = Keys.Control | Keys.Up)]
+        [ContextMenu(MenuName = "Move up", ShortcutKey = "Ctrl+Up")]
         public void OnMoveUpClick(object sender, EventArgs e)
         {
             IModel model = Apsim.Get(this.explorerPresenter.ApsimXFile, this.explorerPresenter.CurrentNodePath) as IModel;
@@ -115,7 +110,7 @@ namespace UserInterface.Presenters
         /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
-        [ContextMenu(MenuName = "Move down", ShortcutKey = Keys.Control | Keys.Down)]
+        [ContextMenu(MenuName = "Move down", ShortcutKey = "Ctrl+Down")]
         public void OnMoveDownClick(object sender, EventArgs e)
         {
             IModel model = Apsim.Get(this.explorerPresenter.ApsimXFile, this.explorerPresenter.CurrentNodePath) as IModel;
@@ -133,7 +128,7 @@ namespace UserInterface.Presenters
                                               typeof(Simulations),
                                               typeof(Experiment),
                                               typeof(Folder) },
-                     ShortcutKey = Keys.F5)]
+                     ShortcutKey = "F5")]
         public void RunAPSIM(object sender, EventArgs e)
         {
             if (this.explorerPresenter.Save())
@@ -173,70 +168,38 @@ namespace UserInterface.Presenters
                 string errorMessages = currentSoil.Check(false);
                 if (errorMessages != string.Empty)
                 {
-                    this.explorerPresenter.ShowMessage(errorMessages, DataStore.ErrorLevel.Error);
+                    this.explorerPresenter.MainPresenter.ShowMessage(errorMessages, DataStore.ErrorLevel.Error);
                 }
             }
         }
 
         /// <summary>
-        /// Event handler for a User interface "Run APSIM" action
+        /// Accept the current test output as the official baseline for future comparison. 
         /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
-        [ContextMenu(MenuName = "Run Tests", AppliesTo = new Type[] { typeof(Tests) })]
-        public void RunTests(object sender, EventArgs e)
+        [ContextMenu(MenuName = "Accept Tests", AppliesTo = new Type[] { typeof(Tests) })]
+        public void AcceptTests(object sender, EventArgs e)
         {
-            RegistryKey registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"Software\R-core\R", false);
-            if (registryKey != null)
+            DialogResult result = MessageBox.Show("You are about to change the officially accepted stats for this model. Are you sure?", "Replace official stats?", MessageBoxButtons.YesNo);
+            if(result != DialogResult.Yes)
             {
-                // Will need to make this work on 32bit machines
-                string pathToR = (string)registryKey.GetValue("InstallPath", string.Empty);
-                pathToR += "\\Bin\\x64\\rscript.exe";
-
-                string binFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                string scriptFileName = Path.Combine(new string[] 
-                    {
-                        binFolder, 
-                        "..", 
-                        "Tests", 
-                        "RTestSuite",
-                        "RunTest.R"
-                    });
-
-                string workingFolder = Path.Combine(new string[] { binFolder, ".." });
-
-                string arguments = "\"" + scriptFileName + "\" " + "\"" + this.explorerPresenter.ApsimXFile.FileName + "\"";
-                Process process = ProcessUtilities.RunProcess(pathToR, arguments, workingFolder);
-                try
-                {
-                    string message = ProcessUtilities.CheckProcessExitedProperly(process);
-                    this.explorerPresenter.ShowMessage(message, DataStore.ErrorLevel.Information);
-                }
-                catch (Exception err)
-                {
-                    this.explorerPresenter.ShowMessage(err.Message, DataStore.ErrorLevel.Error);
-                }
-                
-            }
-            else
-            {
-                this.explorerPresenter.ShowMessage("Could not find R installation.", DataStore.ErrorLevel.Warning);
+                return;
             }
 
+            Tests test = Apsim.Get(this.explorerPresenter.ApsimXFile, this.explorerPresenter.CurrentNodePath) as Tests;
+            try
             {
-            string binFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string apsimxFolder = Path.Combine(binFolder, "..");
-            string scriptFileName = Path.Combine(new string[] 
+                test.Test(true);
+            }
+            catch (ApsimXException ex)
             {
-                binFolder, 
-                "..", 
-                "Tests", 
-                "RTestSuite",
-                "RunTest.Bat"
-            });
-            string workingFolder = apsimxFolder;
-            Process process = ProcessUtilities.RunProcess(scriptFileName, this.explorerPresenter.ApsimXFile.FileName, workingFolder);
-            string errorMessages = ProcessUtilities.CheckProcessExitedProperly(process);
+                this.explorerPresenter.MainPresenter.ShowMessage(ex.Message, DataStore.ErrorLevel.Error);
+            }
+            finally
+            {
+                this.explorerPresenter.HideRightHandPanel();
+                this.explorerPresenter.ShowRightHandPanel();
             }
         }
 
@@ -269,11 +232,11 @@ namespace UserInterface.Presenters
                 {
                     // Run all child model post processors.
                     dataStore.RunPostProcessingTools();
-                    this.explorerPresenter.ShowMessage("Post processing models have successfully completed", Models.DataStore.ErrorLevel.Information);
+                    this.explorerPresenter.MainPresenter.ShowMessage("Post processing models have successfully completed", Models.DataStore.ErrorLevel.Information);
                 }
                 catch (Exception err)
                 {
-                    this.explorerPresenter.ShowMessage("Error: " + err.Message, Models.DataStore.ErrorLevel.Error);
+                    this.explorerPresenter.MainPresenter.ShowMessage("Error: " + err.Message, Models.DataStore.ErrorLevel.Error);
                 }
             }
         }
@@ -291,22 +254,6 @@ namespace UserInterface.Presenters
             if (dataStore != null)
             {
                 dataStore.DeleteAllTables();
-            }
-        }
-
-        /// <summary>
-        /// Export the data store to comma separated values
-        /// </summary>
-        /// <param name="sender">Sender of the event</param>
-        /// <param name="e">Event arguments</param>
-        [ContextMenu(MenuName = "Export to CSV",
-                     AppliesTo = new Type[] { typeof(DataStore) })]
-        public void ExportDataStoreToCSV(object sender, EventArgs e)
-        {
-            DataStore dataStore = Apsim.Get(this.explorerPresenter.ApsimXFile, this.explorerPresenter.CurrentNodePath) as DataStore;
-            if (dataStore != null)
-            {
-                dataStore.WriteToTextFiles();
             }
         }
 
@@ -350,23 +297,37 @@ namespace UserInterface.Presenters
             string destinationFolder = Path.Combine(Path.GetDirectoryName(this.explorerPresenter.ApsimXFile.FileName), "Doc");
             if (destinationFolder != null)
             {
-                explorerPresenter.ShowMessage("Creating documentation...", DataStore.ErrorLevel.Information);
+                explorerPresenter.MainPresenter.ShowMessage("Creating documentation...", DataStore.ErrorLevel.Information);
                 Cursor.Current = Cursors.WaitCursor;
 
                 try
                 {
                     ExportNodeCommand command = new ExportNodeCommand(this.explorerPresenter, this.explorerPresenter.CurrentNodePath);
                     this.explorerPresenter.CommandHistory.Add(command, true);
-                    explorerPresenter.ShowMessage("Finished creating documentation", DataStore.ErrorLevel.Information);
+                    explorerPresenter.MainPresenter.ShowMessage("Finished creating documentation", DataStore.ErrorLevel.Information);
                     Process.Start(command.FileNameWritten);
                 }
                 catch (Exception err)
                 {
-                    explorerPresenter.ShowMessage(err.Message, DataStore.ErrorLevel.Error);
+                    explorerPresenter.MainPresenter.ShowMessage(err.Message, DataStore.ErrorLevel.Error);
                 }
 
                 Cursor.Current = Cursors.Default;
             }
+        }
+
+        /// <summary>
+        /// Event handler for a Add model action
+        /// </summary>
+        /// <param name="sender">Sender of the event</param>
+        /// <param name="e">Event arguments</param>
+        [ContextMenu(MenuName = "Add...")]
+        public void AddModel(object sender, EventArgs e)
+        {
+            object model = Apsim.Get(explorerPresenter.ApsimXFile, explorerPresenter.CurrentNodePath);
+            explorerPresenter.ShowInRightHandPanel(model,
+                                                   "UserInterface.Views.ListButtonView",
+                                                   "UserInterface.Presenters.AddModelPresenter");
         }
 
     }

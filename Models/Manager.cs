@@ -6,7 +6,6 @@ using Models.Core;
 using System.Xml.Schema;
 using System.Runtime.Serialization;
 using System.IO;
-using System.Windows.Forms;
 using APSIM.Shared.Utilities;
 namespace Models
 {
@@ -16,7 +15,11 @@ namespace Models
     [Serializable]
     [ViewName("UserInterface.Views.ManagerView")]
     [PresenterName("UserInterface.Presenters.ManagerPresenter")]
-    [ValidParent(ParentModels=new Type[] { typeof(Simulation), typeof(Zone) })]
+    [ValidParent(ParentType = typeof(Simulation))]
+    [ValidParent(ParentType = typeof(Zone))]
+    [ValidParent(ParentType = typeof(Zones.RectangularZone))]
+    [ValidParent(ParentType = typeof(Zones.CircularZone))]
+    [ValidParent(ParentType = typeof(Agroforestry.AgroforestrySystem))]
     public class Manager : Model
     {
         // ----------------- Privates
@@ -113,7 +116,7 @@ namespace Models
         private void OnLoaded()
         {
             HasDeserialised = true;
-            if (Script == null)
+            if (Script == null && Code != string.Empty)
                 RebuildScriptModel();
         }
 
@@ -264,7 +267,14 @@ namespace Models
             {
                 PropertyInfo property = Script.GetType().GetProperty(element.Name);
                 if (property != null)
-                    property.SetValue(script, ReflectionUtilities.StringToObject(property.PropertyType, element.InnerText), null);
+                {
+                    object value;
+                    if (property.PropertyType.Name == "ICrop")
+                        value = Apsim.Find(this, element.InnerText);
+                    else
+                        value = ReflectionUtilities.StringToObject(property.PropertyType, element.InnerText);
+                    property.SetValue(script, value, null);
+                }
             }
         }
 
@@ -283,6 +293,8 @@ namespace Models
                     object value = property.GetValue(script, null);
                     if (value == null)
                         value = "";
+                    else if (value is ICrop)
+                        value = (value as IModel).Name;
                     XmlUtilities.SetValue(doc.DocumentElement, property.Name, 
                                          ReflectionUtilities.ObjectToString(value));
                 }

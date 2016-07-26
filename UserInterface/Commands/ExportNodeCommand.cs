@@ -18,6 +18,11 @@ using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.DocumentObjectModel.Shapes;
 using UserInterface.Classes;
 using MigraDoc.DocumentObjectModel.Fields;
+using Models.Agroforestry;
+using Models.Zones;
+using System.Windows.Forms;
+using System.Threading;
+using Models.PostSimulationTools;
 
 namespace UserInterface.Commands
 {
@@ -36,7 +41,12 @@ namespace UserInterface.Commands
         private static Type[] modelTypesToRecurseDown = new Type[] {typeof(Folder),
                                                                     typeof(Simulations),
                                                                     typeof(Simulation),
-                                                                    typeof(Experiment)};
+                                                                    typeof(Experiment),
+                                                                    typeof(Zone),
+                                                                    typeof(AgroforestrySystem),
+                                                                    typeof(CircularZone),
+                                                                    typeof(RectangularZone),
+                                                                    typeof(PredictedObserved)};
 
         /// <summary>A .bib file instance.</summary>
         private BibTeX bibTeX;
@@ -123,9 +133,6 @@ namespace UserInterface.Commands
         /// <returns>True if something was written to index.</returns>
         private void AddValidationTags(List<AutoDocumentation.ITag> tags, IModel modelToExport, int headingLevel, string workingDirectory)
         {
-            if (modelToExport.Name != "Simulations")
-                tags.Add(new AutoDocumentation.Heading(modelToExport.Name, headingLevel));
-
             // Look for child models that are a folder or simulation etc
             // that we need to recurse down through.
             foreach (Model child in modelToExport.Children)
@@ -136,10 +143,21 @@ namespace UserInterface.Commands
                 {
                     if (Array.IndexOf(modelTypesToRecurseDown, child.GetType()) != -1)
                     {
+                        tags.Add(new AutoDocumentation.Heading(child.Name, headingLevel));
                         string childFolderPath = Path.Combine(workingDirectory, child.Name);
                         AddValidationTags(tags, child, headingLevel + 1, workingDirectory);
+
+                        if (child.Name == "Validation")
+                        {
+                            IModel dataStore = Apsim.Child(modelToExport, "DataStore");
+                            if (dataStore != null)
+                            {
+                                tags.Add(new AutoDocumentation.Heading("Statistics", headingLevel + 1));
+                                AddValidationTags(tags, dataStore, headingLevel + 2, workingDirectory);
+                            }
+                        }
                     }
-                    else if (child.Name != "TitlePage" && (child is Memo || child is Graph))
+                    else if (child.Name != "TitlePage" && child.Name != "Introduction" && (child is Memo || child is Graph || child is Map || child is Tests))
                         child.Document(tags, headingLevel, 0);
                 }
             }
@@ -163,16 +181,10 @@ namespace UserInterface.Commands
             Section section = document.AddSection();
 
             // write image files
-            string png1 = Path.Combine(workingDirectory, "apsim_logo.png");
+            string png1 = Path.Combine(workingDirectory, "AIBanner.png");
             using (FileStream file = new FileStream(png1, FileMode.Create, FileAccess.Write))
             {
-                Assembly.GetExecutingAssembly().GetManifestResourceStream("UserInterface.Resources.apsim_logo.png").CopyTo(file);
-            }
-
-            string png2 = Path.Combine(workingDirectory, "hd_bg.png");
-            using (FileStream file = new FileStream(png2, FileMode.Create, FileAccess.Write))
-            {
-                Assembly.GetExecutingAssembly().GetManifestResourceStream("UserInterface.Resources.hd_bg.png").CopyTo(file);
+                Assembly.GetExecutingAssembly().GetManifestResourceStream("UserInterface.Resources.AIBanner.png").CopyTo(file);
             }
             section.AddImage(png1);
 
@@ -182,14 +194,30 @@ namespace UserInterface.Commands
             IModel titlePage = Apsim.Find(ExplorerPresenter.ApsimXFile, "TitlePage");
             if (titlePage != null)
                 titlePage.Document(tags, 1, 0);
+            AddBackground(tags);
+
+            // See if there is a title page. If so do it first.
+            IModel introductionPage = Apsim.Find(ExplorerPresenter.ApsimXFile, "Introduction");
+            if (introductionPage != null)
+            {
+                tags.Add(new AutoDocumentation.Heading("Introduction", 1));
+                introductionPage.Document(tags, 1, 0);
+            }
+
+            AddUserDocumentation(tags, modelNameToExport);
 
             // Document model description.
             tags.Add(new AutoDocumentation.Heading("Model description", 1));
-            ExplorerPresenter.ApsimXFile.DocumentModel(modelNameToExport, tags, 2);
+            ExplorerPresenter.ApsimXFile.DocumentModel(modelNameToExport, tags, 1);
 
             // Document model validation.
-            tags.Add(new AutoDocumentation.Heading("Validation", 1));
             AddValidationTags(tags, ExplorerPresenter.ApsimXFile, 1, workingDirectory);
+
+            // Move cultivars to end.
+            MoveCultivarsToEnd(tags);
+
+            // Strip all blank sections i.e. two headings with nothing between them.
+            StripEmptySections(tags);
 
             // Scan for citations.
             ScanForCitations(tags);
@@ -214,16 +242,175 @@ namespace UserInterface.Commands
             Directory.Delete(workingDirectory, true);
         }
 
+        /// <summary>Add user documentation, based on the example.</summary>
+        /// <param name="tags">The tags to add to.</param>
+        /// <param name="modelName">Name of model to document.</param>
+        private void AddUserDocumentation(List<AutoDocumentation.ITag> tags, string modelName)
+        {
+            // Look for some instructions on which models in the example file we should write.
+            // Instructions will be in a memo in the validation .apsimx file 
+
+            IModel userDocumentation = Apsim.Get(ExplorerPresenter.ApsimXFile, ".Simulations.UserDocumentation") as IModel;
+            string exampleFileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "..", "Examples", modelName + ".apsimx");
+
+            if (userDocumentation != null && userDocumentation.Children.Count > 0 && File.Exists(exampleFileName))
+            {
+                // Write heading.
+                tags.Add(new AutoDocumentation.Heading("User documentation", 1));
+
+                // Open the related example .apsimx file and get its presenter.
+                ExplorerPresenter examplePresenter = ExplorerPresenter.MainPresenter.OpenApsimXFileInTab(exampleFileName, onLeftTabControl:true);
+
+                Memo instructionsMemo = userDocumentation.Children[0] as Memo;
+                string[] instructions = instructionsMemo.MemoText.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                foreach (string instruction in instructions)
+                {
+                    IModel model = Apsim.Find(examplePresenter.ApsimXFile, instruction);
+                    if (model != null)
+                    {
+                        examplePresenter.SelectNode(Apsim.FullPath(model));
+                        Application.DoEvents();
+                        if (model is Memo)
+                            model.Document(tags, 1, 0);
+                        else
+                        {
+                            System.Drawing.Image image;
+
+                            if (model is Manager)
+                                image = (examplePresenter.CurrentPresenter as ManagerPresenter).GetScreenshot();
+                            else
+                                image = examplePresenter.GetScreenhotOfRightHandPanel();
+
+                            if (image != null)
+                            {
+                                string name = "Example" + instruction;
+                                tags.Add(new AutoDocumentation.Image() { name = name, image = image });
+                            }
+                        }
+                    }
+                }
+
+                // Close the tab
+                examplePresenter.MainPresenter.CloseTab(exampleFileName);
+            }
+        }
+
+        /// <summary>Adds a software availability section</summary>
+        /// <param name="tags">The tags to add to.</param>
+        private void AddBackground(List<AutoDocumentation.ITag> tags)
+        {
+            string text = "**Background:** " +
+                          "The Agricultural Production Systems sIMulator (APSIM) is a farming systems modelling framework " +
+                          "that is being actively developed by the APSIM Initiative. " + Environment.NewLine + Environment.NewLine +
+                          " It is comprised of " + Environment.NewLine + Environment.NewLine +
+                          " 1. a set of biophysical models that capture the science and management of the system being modelled, " + Environment.NewLine +
+                          " 2. a software framework that allows these models to be coupled together to facilitate data exchange between the models, " + Environment.NewLine +
+                          " 3. a community of developers and users who work together, to share ideas, data and source code, " + Environment.NewLine +
+                          " 4. a data platform to enable this sharing and " + Environment.NewLine +
+                          " 5. a user interface to make it accessible to a broad range of users." + Environment.NewLine + Environment.NewLine +
+                          " The literature contains numerous papers outlining the many uses of APSIM applied to diverse problem domains. " +
+                          " In particular, [holzworth_apsim_2014;keating_overview_2003;mccown_apsim:_1996;mccown_apsim:_1995] " +
+                          " have described earlier versions of APSIM in detail, outlining the key APSIM crop and soil process models and presented some examples " +
+                          " of the capabilities of APSIM." + Environment.NewLine + Environment.NewLine +
+
+                          "![Alt Text](..\\..\\Documentation\\Images\\Jigsaw.jpg)" + Environment.NewLine + Environment.NewLine +
+                          "*Figure: This conceptual representation of an APSIM simulation shows a “top level” farm (with climate, farm management and livestock) " +
+                          "and two fields. The farm and each field are built from a combination of models found in the toolbox. The APSIM infrastructure connects all selected model pieces together to form a coherent simulation.*" + Environment.NewLine + Environment.NewLine +
+
+                          "The APSIM Initiative has begun developing a next generation of APSIM (APSIM Next Generation) that is written from scratch and designed " +
+                          "to run natively on Windows, LINUX and MAC OSX. The new framework incorporates the best of the APSIM 7.x " +
+                          "framework with an improved supporting framework. The Plant Modelling Framework (a generic collection of plant building blocks) was ported " +
+                          "from the existing APSIM to bring a rapid development pathway for plant models. The user interface paradigm has been kept the same as the " +
+                          "existing APSIM version, but completely rewritten to support new application domains and the newer Plant Modelling Framework. " +
+                          "The ability to describe experiments has been added which can also be used for rapidly building factorials of simulations. " +
+                          "The ability to write C# scripts to control farm and paddock management has been retained. Finally, all simulation outputs are written to " +
+                          "an SQLite database to make it easier and quicker to query, filter and graph outputs." + Environment.NewLine + Environment.NewLine +
+                          "The model described in this documentation is for APSIM Next Generation." + Environment.NewLine + Environment.NewLine +
+
+                          "APSIM is freely available for non-commercial purposes. Non-commercial use of APSIM means public-good research & development and educational activities. " +
+                          "It includes the support of policy development and/or implementation by, or on behalf of, government bodies and industry-good work where the research outcomes " +
+                          "are to be made publicly available. For more information visit <a href=\"http://www.apsim.info/Products/Licensing.aspx\">the licensing page on the APSIM web site</a>";
+
+            tags.Add(new AutoDocumentation.Paragraph(text, 0));
+        }
+
+        /// <summary>Strip all blank sections i.e. two headings with nothing between them.</summary>
+        /// <param name="tags"></param>
+        private void StripEmptySections(List<AutoDocumentation.ITag> tags)
+        {
+            bool tagsRemoved;
+            do
+            {
+                tagsRemoved = false;
+                for (int i = 0; i < tags.Count - 1; i++)
+                {
+                    AutoDocumentation.Heading thisTag = tags[i] as AutoDocumentation.Heading;
+                    AutoDocumentation.Heading nextTag = tags[i + 1] as AutoDocumentation.Heading;
+                    if (thisTag != null && nextTag != null && thisTag.headingLevel >= nextTag.headingLevel)
+                    {
+                        // Need to renumber headings after this tag until we get to the same heading
+                        // level that thisTag is on.
+                        tags.RemoveAt(i);
+                        i--;
+                        tagsRemoved = true;
+                    }
+                }
+            }
+            while (tagsRemoved);
+        }
+
+        /// <summary>Move cultivars to the end of the tags.</summary>
+        /// <param name="tags">tags</param>
+        private void MoveCultivarsToEnd(List<AutoDocumentation.ITag> tags)
+        {
+            for (int i = 0; i < tags.Count; i++)
+            {
+                if (tags[i] is AutoDocumentation.Heading)
+                {
+                    AutoDocumentation.Heading heading = tags[i] as AutoDocumentation.Heading;
+                    if (heading.text == "Cultivars")
+                    {
+                        int cultivarHeadingLevel = heading.headingLevel;
+                        heading.headingLevel = 1;
+
+                        bool stopMovingTags;
+                        do
+                        {
+                            AutoDocumentation.ITag thisTag = tags[i];
+                            tags.Remove(thisTag);
+                            tags.Add(thisTag);
+                            thisTag = tags[i];
+                            if (thisTag is AutoDocumentation.Heading)
+                            {
+                                AutoDocumentation.Heading thisTagAsHeading = thisTag as AutoDocumentation.Heading;
+                                stopMovingTags = thisTagAsHeading.headingLevel <= cultivarHeadingLevel;
+                                if (!stopMovingTags)
+                                    thisTagAsHeading.headingLevel = 2;
+                            }
+                            else
+                                stopMovingTags = false;
+                        }
+                        while (!stopMovingTags);
+                        return;
+                    }
+                }
+            }
+        }
+
         /// <summary>Creates the PDF syles.</summary>
         /// <param name="document">The document to create the styles in.</param>
         public void CreatePDFSyles(Document document)
         {
             Style style = document.Styles.AddStyle("GraphAndTable", "Normal");
-            style.Font.Size = 8;
+            style.Font.Size = 7;
             style.ParagraphFormat.SpaceAfter = Unit.FromCentimeter(0);
 
             Style xyStyle = document.Styles.AddStyle("GraphAndTable", "Normal");
             xyStyle.Font = new MigraDoc.DocumentObjectModel.Font("Courier New");
+
+            Style tableStyle = document.Styles.AddStyle("Table", "Normal");
+            tableStyle.Font.Size = 8;
+            tableStyle.ParagraphFormat.SpaceAfter = Unit.FromCentimeter(0);
         }
 
         /// <summary>Creates the graph.</summary>
@@ -260,7 +447,8 @@ namespace UserInterface.Commands
             // Create a line series.
             graph.DrawLineAndMarkers("", graphAndTable.xyPairs.X, graphAndTable.xyPairs.Y,
                                      Models.Graph.Axis.AxisType.Bottom, Models.Graph.Axis.AxisType.Left,
-                                     System.Drawing.Color.Blue, Models.Graph.LineType.Solid, Models.Graph.MarkerType.None, true);
+                                     System.Drawing.Color.Blue, Models.Graph.LineType.Solid, Models.Graph.MarkerType.None,
+                                     Models.Graph.LineThicknessType.Normal, Models.Graph.MarkerSizeType.Normal, true);
 
             // Format the axes.
             graph.FormatAxis(Models.Graph.Axis.AxisType.Bottom, graphAndTable.xName, false, double.NaN, double.NaN, double.NaN);
@@ -293,6 +481,39 @@ namespace UserInterface.Commands
             Paragraph spacing = section.AddParagraph();
         }
 
+        /// <summary>Creates the table.</summary>
+        /// <param name="section">The section.</param>
+        /// <param name="tableObj">The table to convert to html.</param>
+        /// <param name="workingDirectory">The working directory.</param>
+        private void CreateTable(Section section, AutoDocumentation.Table tableObj, string workingDirectory)
+        {
+            // Create a 2 column, 1 row table. Image in first cell, X/Y data in second cell.
+            Table table = section.AddTable();
+            table.Style = "Table";
+            table.Rows.LeftIndent = "1cm";
+
+            foreach (List<string> column in tableObj.data)
+            {
+                Column column1 = table.AddColumn();
+                column1.Width = "1.4cm";
+                column1.Format.Alignment = ParagraphAlignment.Right;
+            }
+
+            for (int rowIndex = 0; rowIndex < tableObj.data[0].Count; rowIndex++)
+            {
+                Row row = table.AddRow();
+                for (int columnIndex = 0; columnIndex < tableObj.data.Count; columnIndex++)
+                {
+                    string cellText = tableObj.data[columnIndex][rowIndex];
+                    row.Cells[columnIndex].AddParagraph(cellText);
+                }
+                
+            }
+
+            
+        }
+
+
         /// <summary>
         /// Adds fixed-width text to a MigraDoc paragraph
         /// </summary>
@@ -323,6 +544,9 @@ namespace UserInterface.Commands
                     AutoDocumentation.Heading heading = tag as AutoDocumentation.Heading;
                     if (heading.headingLevel > 0 && heading.headingLevel <= 6)
                     {
+                        if (heading.headingLevel == 1)
+                            section.AddPageBreak();
+
                         Paragraph para = section.AddParagraph(heading.text, "Heading" + heading.headingLevel);
                         if (heading.headingLevel == 1)
                             para.Format.OutlineLevel = OutlineLevel.Level1;
@@ -346,11 +570,18 @@ namespace UserInterface.Commands
                 {
                     CreateGraphPDF(section, tag as AutoDocumentation.GraphAndTable, workingDirectory);
                 }
+                else if (tag is AutoDocumentation.Table)
+                {
+                    CreateTable(section, tag as AutoDocumentation.Table, workingDirectory);
+                }
                 else if (tag is Graph)
                 {
                     GraphPresenter graphPresenter = new GraphPresenter();
                     GraphView graphView = new GraphView();
                     graphView.BackColor = System.Drawing.Color.White;
+                    graphView.FontSize = 12;
+                    graphView.Width = 500;
+                    graphView.Height = 500;
                     graphPresenter.Attach(tag, graphView, ExplorerPresenter);
                     string PNGFileName = graphPresenter.ExportToPDF(workingDirectory);
                     section.AddImage(PNGFileName);
@@ -358,6 +589,38 @@ namespace UserInterface.Commands
                     if (caption != null)
                         section.AddParagraph(caption);
                     graphPresenter.Detach();
+                }
+                else if (tag is Map)
+                {
+                    Form f = new Form();
+                    f.Width = 700; // 1100;
+                    f.Height = 500; // 600;
+                    MapPresenter mapPresenter = new MapPresenter();
+                    MapView mapView = new MapView();
+                    mapView.BackColor = System.Drawing.Color.White;
+                    mapView.Parent = f;
+                    (mapView as Control).Dock = DockStyle.Fill; 
+                    f.Show(); 
+
+                    mapPresenter.Attach(tag, mapView, ExplorerPresenter);
+
+                    Application.DoEvents();
+                    Thread.Sleep(2000);
+                    Application.DoEvents();
+                    string PNGFileName = mapPresenter.ExportToPDF(workingDirectory);
+                    section.AddImage(PNGFileName);
+                    mapPresenter.Detach();
+
+                    f.Close();
+                }
+                else if (tag is AutoDocumentation.Image)
+                {
+                    AutoDocumentation.Image imageTag = tag as AutoDocumentation.Image;
+                    if (imageTag.image.Width > 700)
+                        imageTag.image = ImageUtilities.ResizeImage(imageTag.image, 700, 500);
+                    string PNGFileName = Path.Combine(workingDirectory, imageTag.name);
+                    imageTag.image.Save(PNGFileName, System.Drawing.Imaging.ImageFormat.Png);
+                    section.AddImage(PNGFileName);
                 }
             }
         }
@@ -384,6 +647,7 @@ namespace UserInterface.Commands
                 para.Format.FirstLineIndent = "-1cm";
             }
         }
+
 
         /// <summary>Scans for citations.</summary>
         /// <param name="t">The tags to go through looking for citations.</param>
@@ -417,13 +681,14 @@ namespace UserInterface.Commands
 
                                 // If we haven't encountered it, look it up in the .bib file.
                                 if (citation == null)
+                                {
                                     citation = bibTeX.Lookup(inTextCitation);
+                                    if (citation != null)
+                                        citations.Add(citation);
+                                }
 
                                 if (citation != null)
                                 {
-                                    // Add it to our list of citations.
-                                    citations.Add(citation);
-
                                     // Replace the in-text citation with (author et al., year)
                                     if (replacementText != string.Empty)
                                         replacementText += "; ";
@@ -433,7 +698,6 @@ namespace UserInterface.Commands
 
                             if (replacementText != string.Empty)
                             {
-                                replacementText = "(" + replacementText + ")";
                                 text = text.Remove(posBracket, posEndBracket - posBracket + 1);
                                 text = text.Insert(posBracket, replacementText);
                             }
@@ -458,8 +722,7 @@ namespace UserInterface.Commands
             citations.Sort(new BibTeX.CitationComparer());
             foreach (BibTeX.Citation citation in citations)
             {
-                string url = citation.URL.Replace("=", "EQUALS");
-                url = url.Replace("&", "AND");
+                string url = citation.URL;
                 string text;
                 if (url != string.Empty)
                     text = string.Format("<a href=\"{0}\">{1}</a>", url, citation.BibliographyText);

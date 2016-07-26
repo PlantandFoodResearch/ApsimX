@@ -74,7 +74,7 @@ namespace UnitTests
         [TearDown]
         public void Cleanup()
         {
-            this.simulation.CleanupRun(null);
+            this.simulation.CleanupRun();
             File.Delete("Test.apsimx");
             File.Delete("Goondiwindi.met");
         }
@@ -316,7 +316,7 @@ namespace UnitTests
         public void MoveUpDown()
         {
             IExplorerView explorerView = new ExplorerView();
-            ExplorerPresenter explorerPresenter = new ExplorerPresenter();
+            ExplorerPresenter explorerPresenter = new ExplorerPresenter(null);
             CommandHistory commandHistory = new CommandHistory();
 
             explorerPresenter.Attach(simulations, explorerView, null);

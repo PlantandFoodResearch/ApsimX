@@ -21,7 +21,7 @@ namespace Models
     [Serializable]
     [ViewName("UserInterface.Views.GridView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
-    [ValidParent(typeof(Zone))]
+    [ValidParent(ParentType = typeof(Zone))]
     public class AgPasture : Model, ICrop, ICanopy, IUptake
     {
         #region Links and event declarations
@@ -37,6 +37,15 @@ namespace Models
         /// <summary>The met data</summary>
         [Link]
         private IWeather MetData = null;
+
+        /// <summary>Albedo.</summary>
+        public double Albedo { get { return 0.26; } }
+
+        /// <summary>Gets or sets the gsmax.</summary>
+        public double Gsmax { get { return 0.011; } }
+
+        /// <summary>Gets or sets the R50.</summary>
+        public double R50 { get { return 200; } }
 
         //Events
         /// <summary>
@@ -1314,6 +1323,15 @@ namespace Models
                 else return "out";
             }
         }
+
+        /// <summary>Returns true if the crop is ready for harvesting</summary>
+        public bool IsReadyForHarvesting { get { return false; } }
+
+        /// <summary>Harvest the crop</summary>
+        public void Harvest() { }
+
+        /// <summary>End the crop</summary>
+        public void EndCrop() { }
 
         /// <summary>Gets the stage.</summary>
         /// <value>The stage.</value>
@@ -4298,7 +4316,7 @@ namespace Models
             Species.simToday = clock.Today;
 
             //pass some metData to species
-            Species.DayLength = MetData.DayLength;
+            Species.DayLength = MetData.CalculateDayLength(-6);
             Species.localLatitude = MetData.Latitude;
             Species.Tmax = MetData.MaxT;
             Species.Tmin = MetData.MinT;
