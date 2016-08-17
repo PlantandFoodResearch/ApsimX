@@ -62,7 +62,7 @@ The model consists of:
         <string>[Chickpea].Leaf.LAI</string>
         <string>[Chickpea].Leaf.Fn</string>
         <string>[Chickpea].Leaf.Fw</string>
-        <string>[Chickpea].Structure.MainStemNodeNo</string>
+        <string>[Chickpea].Structure.LeafTipsAppeared</string>
         <string>[Chickpea].Structure.PlantTotalNodeNo</string>
         <string>[Chickpea].Leaf.SenescingCohortNo</string>
         <string>[Chickpea].Structure.TotalStemPopn</string>
@@ -542,7 +542,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
                 <double>0</double>
               </Y>
             </XYPairs>
-            <XProperty>[Structure].MainStemNodeNo</XProperty>
+            <XProperty>[Structure].LeafTipsAppeared</XProperty>
           </LinearInterpolationFunction>
           <LinearInterpolationFunction>
             <Name>Cover_response</Name>
@@ -877,10 +877,6 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
           <Name>BranchMortality</Name>
           <Value>0</Value>
         </Constant>
-        <VariableReference>
-          <Name>MainStemPrimordiaInitiationRate</Name>
-          <VariableName>[Structure].MainStemNodeAppearanceRate.Value</VariableName>
-        </VariableReference>
         <PhaseLookup>
           <Name>MainStemNodeAppearanceRate</Name>
           <PhaseLookupValue>
@@ -930,10 +926,11 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
               <double>50</double>
             </Y>
           </XYPairs>
-          <XProperty>[Structure].MainStemNodeNo</XProperty>
+          <XProperty>[Structure].LeafTipsAppeared</XProperty>
         </LinearInterpolationFunction>
-        <InitialiseStage>Emergence</InitialiseStage>
-        <PrimaryBudNo>0</PrimaryBudNo>
+        <Initialised>false</Initialised>
+        <Germinated>false</Germinated>
+        <Emerged>false</Emerged>
       </Structure>
       <HIReproductiveOrgan>
         <Name>Grain</Name>
@@ -959,28 +956,38 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>1</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>1</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>1</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>1</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.8</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.8</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0.6</FractionRemoved>
-            <FractionToResidue>0.2</FractionToResidue>
+            <FractionLiveToRemove>0.6</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.2</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Thin</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.05</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.05</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
         <PhaseLookup>
@@ -1027,6 +1034,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
             <End>HarvestRipe</End>
           </PhaseLookupValue>
         </PhaseLookup>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
       </HIReproductiveOrgan>
       <Root>
         <Name>Root</Name>
@@ -1251,23 +1259,31 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.2</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.2</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.3</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.3</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.1</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.1</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.15</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.15</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
         <LinearInterpolationFunction>
@@ -1315,8 +1331,17 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
           </XYPairs>
           <XProperty>[Root].RWC</XProperty>
         </LinearInterpolationFunction>
-        <InitialDM>0.2</InitialDM>
-        <SpecificRootLength>40000</SpecificRootLength>
+        <Constant>
+          <Name>InitialDM</Name>
+          <Value>0.2</Value>
+          <Units>g/plant</Units>
+        </Constant>
+        <Constant>
+          <Name>SpecificRootLength</Name>
+          <Value>40</Value>
+          <Units>m/g</Units>
+        </Constant>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
         <NuptakeSupply>0</NuptakeSupply>
       </Root>
       <GenericAboveGroundOrgan>
@@ -1421,25 +1446,35 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>0.5</FractionRemoved>
-            <FractionToResidue>0.1</FractionToResidue>
+            <FractionLiveToRemove>0.5</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.1</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>0.8</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0.8</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.6</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.6</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0.6</FractionRemoved>
-            <FractionToResidue>0.2</FractionToResidue>
+            <FractionLiveToRemove>0.6</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.2</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
+        <GrowthRespiration>0</GrowthRespiration>
       </GenericAboveGroundOrgan>
       <Leaf>
         <Name>Leaf</Name>
@@ -1473,16 +1508,19 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
           <Name>InitialLeaf1</Name>
           <Rank>1</Rank>
           <Area>224</Area>
+          <MaintenanceRespiration>0</MaintenanceRespiration>
         </LeafCohort>
         <LeafCohort>
           <Name>InitialLeaf2</Name>
           <Rank>2</Rank>
           <Area>224</Area>
+          <MaintenanceRespiration>0</MaintenanceRespiration>
         </LeafCohort>
         <LeafCohort>
           <Name>InitialLeaf3</Name>
           <Rank>3</Rank>
           <Area>0</Area>
+          <MaintenanceRespiration>0</MaintenanceRespiration>
         </LeafCohort>
         <VariableReference>
           <Name>ThermalTime</Name>
@@ -1517,7 +1555,7 @@ Robertson et al (2002) used a maximum leaf size of 300 mm2 for the first 9 leave
                 <double>850</double>
               </Y>
             </XYPairs>
-            <XProperty>[Structure].MainStemNodeNo</XProperty>
+            <XProperty>[Structure].LeafTipsAppeared</XProperty>
           </LinearInterpolationFunction>
           <LinearInterpolationFunction>
             <Name>MaxArea</Name>
@@ -1541,7 +1579,7 @@ Robertson et al (2002) used a maximum leaf size of 300 mm2 for the first 9 leave
                 <double>1080</double>
               </Y>
             </XYPairs>
-            <XProperty>[Structure].MainStemNodeNo</XProperty>
+            <XProperty>[Structure].LeafTipsAppeared</XProperty>
           </LinearInterpolationFunction>
           <MultiplyFunction>
             <Name>GrowthDuration</Name>
@@ -1756,8 +1794,8 @@ Maximum specific leaf area has been taken from Robertson et al (2002).
               <Y>
                 <double>0</double>
                 <double>0</double>
-                <double>0.1</double>
-                <double>0.1</double>
+                <double>0</double>
+                <double>0</double>
               </Y>
             </XYPairs>
             <XProperty>[Leaf].CohortCurrentRankCoverAbove</XProperty>
@@ -2042,29 +2080,37 @@ Ayaz eta 2004 presented a RUE of 1.6 g/MJ PAR during non-limiting temperature co
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.3</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.3</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>0.8</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0.8</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.6</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.6</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0.6</FractionRemoved>
-            <FractionToResidue>0.1</FractionToResidue>
+            <FractionLiveToRemove>0.6</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.1</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
         <CurrentExpandingLeaf>0</CurrentExpandingLeaf>
         <StartFractionExpanded>0</StartFractionExpanded>
         <FractionNextleafExpanded>0</FractionNextleafExpanded>
-        <_ExpandedNodeNo>0</_ExpandedNodeNo>
         <DeadNodesYesterday>0</DeadNodesYesterday>
         <MaxCover>1</MaxCover>
         <Albedo>0.2</Albedo>
@@ -2072,8 +2118,13 @@ Ayaz eta 2004 presented a RUE of 1.6 g/MJ PAR during non-limiting temperature co
         <R50>200</R50>
         <FRGR>0</FRGR>
         <PotentialEP>0</PotentialEP>
+        <FudgeToGetETDemandRight>0</FudgeToGetETDemandRight>
         <KDead>0.3</KDead>
         <MaximumMainStemLeafNumber>40</MaximumMainStemLeafNumber>
+        <DMConversionEfficiency>0</DMConversionEfficiency>
+        <GrowthRespiration>0</GrowthRespiration>
+        <TipsAtEmergence>0</TipsAtEmergence>
+        <CohortsAtInitialisation>0</CohortsAtInitialisation>
         <FractionDied>0</FractionDied>
       </Leaf>
       <GenericAboveGroundOrgan>
@@ -2148,23 +2199,31 @@ Ayaz eta 2004 presented a RUE of 1.6 g/MJ PAR during non-limiting temperature co
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>0.5</FractionRemoved>
-            <FractionToResidue>0.1</FractionToResidue>
+            <FractionLiveToRemove>0.5</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.1</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>0.8</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0.8</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.6</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.6</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0.6</FractionRemoved>
-            <FractionToResidue>0.2</FractionToResidue>
+            <FractionLiveToRemove>0.6</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0.2</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
         <PartitionFractionDemandFunction>
@@ -2210,6 +2269,8 @@ Ayaz eta 2004 presented a RUE of 1.6 g/MJ PAR during non-limiting temperature co
             </PhaseLookupValue>
           </PhaseLookup>
         </PartitionFractionDemandFunction>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
+        <GrowthRespiration>0</GrowthRespiration>
       </GenericAboveGroundOrgan>
       <Nodule>
         <Name>Nodule</Name>
@@ -2370,25 +2431,35 @@ Ayaz eta 2004 presented a RUE of 1.6 g/MJ PAR during non-limiting temperature co
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
+        <GrowthRespiration>0</GrowthRespiration>
         <NFixationOption>Majic</NFixationOption>
       </Nodule>
       <CompositeBiomass>
@@ -2490,6 +2561,7 @@ Singh P, Virmani SM (1996) Modeling growth and yield of chickpea (Cicer arietinu
         <Command>[Phenology].Vegetative.PhotoperiodEffect.CriticalPhotoperiod = 10.5</Command>
       </Cultivar>
       <CropType>Chickpea</CropType>
+      <SowingDate>0001-01-01T00:00:00</SowingDate>
     </Plant>
   </Replacements>
   <DataStore>
@@ -2516,30 +2588,30 @@ Singh P, Virmani SM (1996) Modeling growth and yield of chickpea (Cicer arietinu
           <RegrStats>
             <Name>Chickpea.AboveGround.Wt</Name>
             <n>73</n>
-            <Slope>0.91339721206752655</Slope>
-            <Intercept>305.12660970964237</Intercept>
-            <SEslope>0.1122620719950423</SEslope>
-            <SEintercept>88.822161018691091</SEintercept>
-            <R2>0.48250456724732804</R2>
-            <RMSE>358.97074033786743</RMSE>
-            <NSE>-0.64318402887584969</NSE>
-            <ME>241.04158231404855</ME>
-            <MAE>288.79492177892507</MAE>
-            <RSR>1.2730572094832486</RSR>
+            <Slope>0.91287932221741563</Slope>
+            <Intercept>308.827921547124</Intercept>
+            <SEslope>0.1114079374080907</SEslope>
+            <SEintercept>88.146366616667237</SEintercept>
+            <R2>0.48603622192452223</R2>
+            <RMSE>359.7414839048385</RMSE>
+            <NSE>-0.65024774184940459</NSE>
+            <ME>244.35966185584331</ME>
+            <MAE>290.60070221553008</MAE>
+            <RSR>1.2757905817176316</RSR>
           </RegrStats>
           <RegrStats>
             <Name>Chickpea.Shell.PodNumber.Value</Name>
             <n>197</n>
-            <Slope>1.4988784502966128</Slope>
-            <Intercept>2994.5053060715986</Intercept>
-            <SEslope>0.15510192431672049</SEslope>
-            <SEintercept>147.78028288309756</SEintercept>
-            <R2>0.32383134434595129</R2>
-            <RMSE>3697.6018394800426</RMSE>
-            <NSE>-21.65484844724709</NSE>
-            <ME>3269.7103995398365</ME>
-            <MAE>3291.3257779935238</MAE>
-            <RSR>4.747615108299156</RSR>
+            <Slope>0.10067802847417431</Slope>
+            <Intercept>199.27719834457537</Intercept>
+            <SEslope>0.01040595538936394</SEslope>
+            <SEintercept>9.9147385687420346</SEintercept>
+            <R2>0.32433927865363332</R2>
+            <RMSE>767.43272662866286</RMSE>
+            <NSE>0.024108570925508443</NSE>
+            <ME>-296.83159746461428</ME>
+            <MAE>344.98605938992006</MAE>
+            <RSR>0.98536169271751606</RSR>
           </RegrStats>
           <RegrStats>
             <Name>EmergenceDAS</Name>
@@ -2572,16 +2644,16 @@ Singh P, Virmani SM (1996) Modeling growth and yield of chickpea (Cicer arietinu
           <RegrStats>
             <Name>GrainWt</Name>
             <n>312</n>
-            <Slope>0.6800459644275445</Slope>
-            <Intercept>202.33092325445966</Intercept>
-            <SEslope>0.0910663956299885</SEslope>
-            <SEintercept>19.709620481593777</SEintercept>
-            <R2>0.15246084345216138</R2>
-            <RMSE>230.59080428200113</RMSE>
-            <NSE>-3.3373280322680738</NSE>
-            <ME>142.8303712346096</ME>
-            <MAE>178.27205554253274</MAE>
-            <RSR>2.0792850549785036</RSR>
+            <Slope>0.68798781349375138</Slope>
+            <Intercept>202.96533952706017</Intercept>
+            <SEslope>0.091318983996129727</SEslope>
+            <SEintercept>19.764288515837027</SEintercept>
+            <R2>0.15475969146794977</R2>
+            <RMSE>232.14919377369446</RMSE>
+            <NSE>-3.3961515987613184</NSE>
+            <ME>144.94170091026282</ME>
+            <MAE>179.94071726962997</MAE>
+            <RSR>2.0933373758852416</RSR>
           </RegrStats>
           <RegrStats>
             <Name>MaturityDAS</Name>
@@ -2619,6 +2691,11 @@ Simulation results for the combined datasets from the various growing regions ar
     </Memo>
     <Map>
       <Name>Map</Name>
+      <Center>
+        <Latitude>0</Latitude>
+        <Longitude>0</Longitude>
+      </Center>
+      <Zoom>1.4</Zoom>
     </Map>
     <Graph>
       <Name>FloweringDate</Name>
@@ -3740,6 +3817,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -4326,7 +4404,7 @@ namespace Models
                 <string>[MicroClimate].peta</string>
                 <string>[MicroClimate].petr</string>
                 <string>[Chickpea].Leaf.LAI</string>
-                <string>[Chickpea].Structure.MainStemNodeNo</string>
+                <string>[Chickpea].Structure.LeafTipsAppeared</string>
                 <string>[Chickpea].Structure.PlantTotalNodeNo</string>
                 <string>[Chickpea].Leaf.SenescingCohortNo</string>
                 <string>[Chickpea].Structure.TotalStemPopn</string>
@@ -4732,6 +4810,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -4860,7 +4939,7 @@ namespace Models
             <LineThickness>Normal</LineThickness>
             <TableName>Report</TableName>
             <XFieldName>Clock.Today</XFieldName>
-            <YFieldName>Chickpea.Structure.MainStemNodeNo</YFieldName>
+            <YFieldName>Chickpea.Structure.LeafTipsAppeared</YFieldName>
             <ShowInLegend>false</ShowInLegend>
             <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
             <Cumulative>false</Cumulative>
@@ -7063,6 +7142,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>SowingRule</Name>
@@ -8323,6 +8403,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -9121,6 +9202,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -9926,6 +10008,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -10697,6 +10780,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -11118,6 +11202,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>soil</Name>
@@ -12193,6 +12278,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>soil</Name>
@@ -13320,6 +13406,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -13972,6 +14059,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -14535,6 +14623,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Iversen 12</Name>
@@ -16055,6 +16144,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Iversen 12</Name>
@@ -17539,6 +17629,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Iversen 12</Name>
@@ -18998,6 +19089,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Iversen 12</Name>
@@ -20420,6 +20512,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Iversen 12</Name>
@@ -21386,6 +21479,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Iversen 12</Name>
@@ -22412,6 +22506,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>soil</Name>
@@ -23418,6 +23513,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>soil</Name>
@@ -24513,6 +24609,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>soil</Name>
@@ -25468,6 +25565,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Soil</Name>
@@ -26198,6 +26296,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Soil</Name>
@@ -26921,6 +27020,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Soil</Name>
@@ -27644,6 +27744,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>Soil</Name>
@@ -28557,6 +28658,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>soil</Name>
@@ -29325,6 +29427,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>soil</Name>
@@ -30029,6 +30132,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>WI_VRLB006</Name>
@@ -30839,6 +30943,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>WI_VRLB006</Name>
@@ -31649,6 +31754,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>WI_VRLB006</Name>
@@ -32459,6 +32565,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>WI_LVPT007</Name>
@@ -33248,6 +33355,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>WI_LVPT007</Name>
@@ -34567,6 +34675,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -36467,6 +36576,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Manager>
               <Name>AutoIrrigate</Name>
@@ -37607,6 +37717,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>WI_SCAF005</Name>
@@ -38991,6 +39102,7 @@ namespace Models
             <Plant>
               <Name>Chickpea</Name>
               <CropType>Chickpea</CropType>
+              <SowingDate>0001-01-01T00:00:00</SowingDate>
             </Plant>
             <Soil>
               <Name>WI_SCAF005</Name>

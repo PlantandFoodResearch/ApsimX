@@ -16,6 +16,7 @@ namespace Models.PMF.Functions.SupplyFunctions
     /// using stress factors that account for plant nutrition (Fn), air temperature(Ft), vapour pressure deficit (Fvpd), water supply (Fw) and atmospheric CO2 concentration (Fco2).
     /// </summary>
     [Serializable]
+    [ValidParent(ParentType = typeof(ILeaf))]
     public class RUEModel : Model, IFunction
     {
         /// <summary>The rue</summary>
@@ -101,6 +102,10 @@ namespace Models.PMF.Functions.SupplyFunctions
         {
             get
             {
+                if (Double.IsNaN(RadnInt.Value))
+                    throw new Exception("NaN Radiation interception value supplied to RUE model");
+                if (RadnInt.Value < 0)
+                    throw new Exception("Negative Radiation interception value supplied to RUE model");
                 return RadnInt.Value * RueAct;
             }
         }

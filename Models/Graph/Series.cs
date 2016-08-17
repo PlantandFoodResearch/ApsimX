@@ -192,6 +192,9 @@ namespace Models.Graph
             foreach (IGraphable series in Apsim.Children(this, typeof(IGraphable)))
                 series.GetSeriesToPutOnGraph(ourDefinitions);
 
+            // Remove series that have no data.
+            ourDefinitions.RemoveAll(d => !MathUtilities.ValuesInArray(d.x) || !MathUtilities.ValuesInArray(d.y));
+
             definitions.AddRange(ourDefinitions);
         }
 
@@ -623,6 +626,7 @@ namespace Models.Graph
                             data.Columns.Contains(YFieldName) &&
                             dataView.Count > 0)
                         {
+                            definition.dataView = dataView;
                             definition.x = GetDataFromTable(dataView, XFieldName);
                             definition.y = GetDataFromTable(dataView, YFieldName);
                             if (Cumulative)
@@ -677,7 +681,13 @@ namespace Models.Graph
                     // Try by assuming the name is a type.
                     Type t = ReflectionUtilities.GetTypeFromUnqualifiedName(modelName);
                     if (t != null)
-                        modelWithData = Apsim.Find(this.Parent.Parent, t) as IModel;
+                    {
+                        IModel parentOfGraph = this.Parent.Parent;
+                        if (t.IsAssignableFrom(parentOfGraph.GetType()))
+                            modelWithData = parentOfGraph;
+                        else
+                            modelWithData = Apsim.Find(parentOfGraph, t);
+                    }
                 }
 
                 if (modelWithData != null)

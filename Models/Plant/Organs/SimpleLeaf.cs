@@ -50,6 +50,23 @@ namespace Models.PMF.Organs
         /// <summary>
         /// 
         /// </summary>
+        public int TipsAtEmergence { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int CohortsAtInitialisation { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public double InitialisedCohortNo { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public double AppearedCohortNo { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public double PlantAppearedLeafNo { get; set; }
         /// <summary>
         /// 
@@ -88,10 +105,24 @@ namespace Models.PMF.Organs
         {
             get
             {
-                //Micromet rejects values of 1 RFZ
-                if (CoverFunction == null)
-                    return Math.Min((LAI== 0) ? 0 : 1.0 - Math.Exp((-1 * ExtinctionCoefficientFunction.Value) * LAI),0.99990);
-                return Math.Min(Math.Max(CoverFunction.Value, 0), 0.99990);
+                //if (CoverFunction == null)
+                //    return 1.0 - Math.Exp((-1 * ExtinctionCoefficientFunction.Value) * LAI);
+                //return Math.Min(Math.Max(CoverFunction.Value, 0), 1);
+
+                if (Plant.IsAlive)
+                {
+                    double greenCover = 0.0;
+                    if (CoverFunction == null)
+                        greenCover = 1.0 - Math.Exp(-ExtinctionCoefficientFunction.Value * LAI);
+                    else
+                        greenCover = CoverFunction.Value;
+                    return Math.Min(Math.Max(greenCover, 0.0), 0.999999999); // limiting to within 10^-9, so MicroClimate doesn't complain
+                }
+                else
+                {
+                    return 0.0;
+                }
+
             }
         }
 
@@ -168,6 +199,7 @@ namespace Models.PMF.Organs
 
         /// <summary>The initial leaf DM</summary>
         [Link(IsOptional = true)]
+        [Units("g/plant")]
         IFunction InitialDM = null;
 
         #endregion
@@ -266,7 +298,6 @@ namespace Models.PMF.Organs
             }
         }
 
-    
         /// <summary>Flag whether leaf DM has been initialised</summary>
         private bool isInitialised = false;
 
@@ -300,17 +331,24 @@ namespace Models.PMF.Organs
                 return new BiomassPoolType { Structural = Demand };
             }
         }
+
         /// <summary>Gets or sets the dm supply.</summary>
         /// <value>The dm supply.</value>
         public override BiomassSupplyType DMSupply
         {
             get
             {
-                if (Math.Round(Photosynthesis.Value, 8) < 0)
+                if (Math.Round(Photosynthesis.Value + AvailableDMRetranslocation(), 8) < 0)
                     throw new Exception(this.Name + " organ is returning a negative DM supply.  Check your parameterisation");
-                return new BiomassSupplyType { Fixation = Photosynthesis.Value, Retranslocation = 0, Reallocation = 0 };
+                return new BiomassSupplyType
+                {
+                    Fixation = Photosynthesis.Value,
+                    Retranslocation = AvailableDMRetranslocation(),
+                    Reallocation = 0.0
+                };
             }
         }
+
         /// <summary>Sets the dm allocation.</summary>
         /// <value>The dm allocation.</value>
         public override BiomassAllocationType DMAllocation
@@ -393,13 +431,13 @@ namespace Models.PMF.Organs
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         [EventSubscribe("DoDailyInitialisation")]
-        private void OnDoDailyInitialisation(object sender, EventArgs e)
+        protected override void OnDoDailyInitialisation(object sender, EventArgs e)
         {
             if (Phenology != null)
                 if (Phenology.OnDayOf("Emergence"))
                 {
                     if (Structure != null)
-                        Structure.MainStemNodeNo = 1.0;
+                        Structure.LeafTipsAppeared = 1.0;
                 }
 
             EP = 0;
@@ -462,7 +500,7 @@ namespace Models.PMF.Organs
                 if (LAIFunction != null)
                     LAI = LAIFunction.Value;
 
-                Height = (HeightFunction == null) ? Structure.Height : HeightFunction.Value ;
+                Height = HeightFunction.Value;
 
                 if (LaiDeadFunction != null)
                     LAIDead = LaiDeadFunction.Value;
@@ -603,7 +641,7 @@ namespace Models.PMF.Organs
                    | (child.Name != "NReallocationFactor")
                    | (child.Name != "NRetranslocationFactor")
                    | (child.Name != "DMRetranslocationFactor")
-                   | (child.Name != "SenescenceRateFunction")
+                   | (child.Name != "SenescenceRate")
                    | (child.Name != "DetachmentRateFunctionFunction")
                    | (child.Name != "LAIFunction")
                    | (child.Name != "CoverFunction")
@@ -632,7 +670,7 @@ namespace Models.PMF.Organs
                        | (child.Name == "NReallocationFactor")
                        | (child.Name == "NRetranslocationFactor")
                        | (child.Name == "DMRetranslocationFactor")
-                       | (child.Name == "SenescenceRateFunction")
+                       | (child.Name == "SenescenceRate")
                        | (child.Name == "DetachmentRateFunctionFunction")
                        | (child.Name == "LAIFunction")
                        | (child.Name == "CoverFunction")

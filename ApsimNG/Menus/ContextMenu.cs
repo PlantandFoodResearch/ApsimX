@@ -15,6 +15,7 @@ namespace UserInterface.Presenters
     using Models.Core;
     using Models.Factorial;
     using Models.Soils;
+    using APSIM.Shared.Utilities;
 
     /// <summary>
     /// This class contains methods for all context menu items that the ExplorerView exposes to the user.
@@ -132,9 +133,21 @@ namespace UserInterface.Presenters
         {
             if (this.explorerPresenter.Save())
             {
-                Model model = Apsim.Get(this.explorerPresenter.ApsimXFile, this.explorerPresenter.CurrentNodePath) as Model;
-                this.command = new Commands.RunCommand(this.explorerPresenter.ApsimXFile, model, this.explorerPresenter);
-                this.command.Do(null);
+                List<string> duplicates = this.explorerPresenter.ApsimXFile.FindDuplicateSimulationNames();
+                if (duplicates.Count > 0)
+                {
+                    string errorMessage = "Duplicate simulation names found " + StringUtilities.BuildString(duplicates.ToArray(), ", ");
+                    explorerPresenter.MainPresenter.ShowMessage(errorMessage, Models.DataStore.ErrorLevel.Error);
+                }
+                else
+                {
+                    Model model = Apsim.Get(this.explorerPresenter.ApsimXFile, this.explorerPresenter.CurrentNodePath) as Model;
+
+                    JobManager.IRunnable job = Runner.ForSimulations(this.explorerPresenter.ApsimXFile, model, false);
+
+                    this.command = new Commands.RunCommand(job, model.Name, this.explorerPresenter);
+                    this.command.Do(null);
+                }
             }
         }
 
@@ -167,7 +180,7 @@ namespace UserInterface.Presenters
                 string errorMessages = currentSoil.Check(false);
                 if (errorMessages != string.Empty)
                 {
-                    this.explorerPresenter.ShowMessage(errorMessages, DataStore.ErrorLevel.Error);
+                    this.explorerPresenter.MainPresenter.ShowMessage(errorMessages, DataStore.ErrorLevel.Error);
                 }
             }
         }
@@ -180,7 +193,7 @@ namespace UserInterface.Presenters
         [ContextMenu(MenuName = "Accept Tests", AppliesTo = new Type[] { typeof(Tests) })]
         public void AcceptTests(object sender, EventArgs e)
         {
-            int result = explorerPresenter.ShowMsgDialog("You are about to change the officially accepted stats for this model. Are you sure?", "Replace official stats?", Gtk.MessageType.Question, Gtk.ButtonsType.YesNo);
+            int result = explorerPresenter.MainPresenter.ShowMsgDialog("You are about to change the officially accepted stats for this model. Are you sure?", "Replace official stats?", Gtk.MessageType.Question, Gtk.ButtonsType.YesNo);
             if ((Gtk.ResponseType)result != Gtk.ResponseType.Yes)
             {
                 return;
@@ -193,7 +206,7 @@ namespace UserInterface.Presenters
             }
             catch (ApsimXException ex)
             {
-                this.explorerPresenter.ShowMessage(ex.Message, DataStore.ErrorLevel.Error);
+                this.explorerPresenter.MainPresenter.ShowMessage(ex.Message, DataStore.ErrorLevel.Error);
             }
             finally
             {
@@ -231,11 +244,11 @@ namespace UserInterface.Presenters
                 {
                     // Run all child model post processors.
                     dataStore.RunPostProcessingTools();
-                    this.explorerPresenter.ShowMessage("Post processing models have successfully completed", Models.DataStore.ErrorLevel.Information);
+                    this.explorerPresenter.MainPresenter.ShowMessage("Post processing models have successfully completed", Models.DataStore.ErrorLevel.Information);
                 }
                 catch (Exception err)
                 {
-                    this.explorerPresenter.ShowMessage("Error: " + err.Message, Models.DataStore.ErrorLevel.Error);
+                    this.explorerPresenter.MainPresenter.ShowMessage("Error: " + err.Message, Models.DataStore.ErrorLevel.Error);
                 }
             }
         }
@@ -278,7 +291,7 @@ namespace UserInterface.Presenters
                         tables.Add(table);
                     }
                 }
-                explorerPresenter.ShowWaitCursor(true);
+                explorerPresenter.MainPresenter.ShowWaitCursor(true);
                 try
                 {
                     string fileName = Path.ChangeExtension(dataStore.Filename, ".xlsx");
@@ -286,7 +299,7 @@ namespace UserInterface.Presenters
                 }
                 finally
                 {
-                    explorerPresenter.ShowWaitCursor(false);
+                    explorerPresenter.MainPresenter.ShowWaitCursor(false);
                 }
             }
         }
@@ -302,21 +315,21 @@ namespace UserInterface.Presenters
             string destinationFolder = Path.Combine(Path.GetDirectoryName(this.explorerPresenter.ApsimXFile.FileName), "Doc");
             if (destinationFolder != null)
             {
-                explorerPresenter.ShowMessage("Creating documentation...", DataStore.ErrorLevel.Information);
-                explorerPresenter.ShowWaitCursor(true);
+                explorerPresenter.MainPresenter.ShowMessage("Creating documentation...", DataStore.ErrorLevel.Information);
+                explorerPresenter.MainPresenter.ShowWaitCursor(true);
 
                 try
                 {
                     ExportNodeCommand command = new ExportNodeCommand(this.explorerPresenter, this.explorerPresenter.CurrentNodePath);
                     this.explorerPresenter.CommandHistory.Add(command, true);
-                    explorerPresenter.ShowMessage("Finished creating documentation", DataStore.ErrorLevel.Information);
+                    explorerPresenter.MainPresenter.ShowMessage("Finished creating documentation", DataStore.ErrorLevel.Information);
                     Process.Start(command.FileNameWritten);
                 }
                 catch (Exception err)
                 {
-                    explorerPresenter.ShowMessage(err.Message, DataStore.ErrorLevel.Error);
+                    explorerPresenter.MainPresenter.ShowMessage(err.Message, DataStore.ErrorLevel.Error);
                 }
-                explorerPresenter.ShowWaitCursor(false);
+                explorerPresenter.MainPresenter.ShowWaitCursor(false);
             }
         }
 

@@ -121,7 +121,7 @@ var locations = [";
        center:myCenter,
        zoom: 1,
 ";
-            if (tempWindow) // When exporting into a report, leave off the controls
+            if (popupWin != null) // When exporting into a report, leave off the controls
             {
                 html += "zoomControl: false,";
                 html += "mapTypeControl: false,";
@@ -163,10 +163,10 @@ google.maps.event.addDomListener(window, 'load', initialize);
             SetContents(html, false);
         }
 
-    /// <summary>
-    /// Export the map to an image.
-    /// </summary>
-    public Image Export()
+        /// <summary>
+        /// Export the map to an image.
+        /// </summary>
+        public Image Export()
         {
             // Create a Bitmap and draw the DataGridView on it.
             int width;
@@ -209,7 +209,16 @@ google.maps.event.addDomListener(window, 'load', initialize);
                 if (browser is TWWebBrowserIE)
                     (browser as TWWebBrowserIE).wb.Document.InvokeScript("SetZoom", new object[] { value });
                 else if (browser is TWWebBrowserWK)
+                {
                     (browser as TWWebBrowserWK).wb.ExecuteScript("SetZoom(" + (int)Math.Round(value) + ")");
+                    if (popupWin != null)
+                    {
+                        Stopwatch watch = new Stopwatch();
+                        watch.Start(); 
+                        while (watch.ElapsedMilliseconds < 500)
+                            Gtk.Application.RunIteration();
+                    }
+                }
             }
         }
 
@@ -227,7 +236,18 @@ google.maps.event.addDomListener(window, 'load', initialize);
                 if (browser is TWWebBrowserIE)
                     (browser as TWWebBrowserIE).wb.Document.InvokeScript("SetCenter", new object[] { value.Latitude, value.Longitude });
                 else if (browser is TWWebBrowserWK)
+                {
                     (browser as TWWebBrowserWK).wb.ExecuteScript("SetCenter(" + value.Latitude + ", " + value.Longitude + ")");
+                    // With WebKit, it appears we need to give it time to actually update the display
+                    // Really only a problem with the temporary windows used for generating documentation
+                    if (popupWin != null) 
+                    {
+                        Stopwatch watch = new Stopwatch();
+                        watch.Start(); 
+                        while (watch.ElapsedMilliseconds < 500)
+                            Gtk.Application.RunIteration();
+                    }
+                }
             }
         }
 
