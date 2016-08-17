@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Simulations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="2">
+<Simulations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Name>Simulations</Name>
   <Replacements>
     <Name>Replacements</Name>
@@ -209,7 +209,9 @@
         <PhotoperiodFunction>
           <Name>Photoperiod</Name>
           <Twilight>-6</Twilight>
+          <DayLength>0</DayLength>
         </PhotoperiodFunction>
+        <DaysAfterSowing>0</DaysAfterSowing>
       </Phenology>
       <Structure>
         <Name>Structure</Name>
@@ -230,7 +232,7 @@
               <double>2500</double>
             </Y>
           </XYPairs>
-          <XProperty>[Structure].MainStemNodeNo</XProperty>
+          <XProperty>[Structure].LeafTipsAppeared</XProperty>
         </LinearInterpolationFunction>
         <PhaseLookupValue>
           <Name>MainStemPrimordiaInitiationRate</Name>
@@ -273,7 +275,7 @@ Two stage phyllochron (100oCd to 50oCd) is an empirical fix to get first leaves 
 
 There seems to be a seasonal difference in leaf appearance rates across sowing dates. So we should check thermal-time model.]]></MemoText>
             </Memo>
-            <XProperty>[Kale].Structure.MainStemNodeNo</XProperty>
+            <XProperty>[Kale].Structure.LeafTipsAppeared</XProperty>
           </LinearInterpolationFunction>
           <Start>PreEmerge</Start>
           <End>Maturity</End>
@@ -298,15 +300,19 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
           <Name>PlantMortality</Name>
           <Value>0</Value>
         </Constant>
-        <InitialiseStage>PreEmerge</InitialiseStage>
-        <PrimaryBudNo>1</PrimaryBudNo>
+        <Initialised>false</Initialised>
+        <Germinated>false</Germinated>
+        <Emerged>false</Emerged>
       </Structure>
       <Leaf>
         <Name>Leaf</Name>
         <LeafCohort>
           <Name>InitialLeaves[1]</Name>
+          <DeltaWaterConstrainedArea>0</DeltaWaterConstrainedArea>
+          <DeltaCarbonConstrainedArea>0</DeltaCarbonConstrainedArea>
           <Rank>1</Rank>
           <Area>50</Area>
+          <MaintenanceRespiration>0</MaintenanceRespiration>
         </LeafCohort>
         <CompositeBiomass>
           <Name>Live</Name>
@@ -492,7 +498,7 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
               <MemoText><![CDATA[Pattern of max leaf area assumed from sugar beet: Milford et al. 1985
 Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoText>
             </Memo>
-            <XProperty>[Structure].MainStemNodeNo</XProperty>
+            <XProperty>[Structure].LeafTipsAppeared</XProperty>
           </LinearInterpolationFunction>
           <LinearInterpolationFunction>
             <Name>GrowthDuration</Name>
@@ -519,7 +525,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
                 <double>120</double>
               </Y>
             </XYPairs>
-            <XProperty>[Structure].MainStemNodeNo</XProperty>
+            <XProperty>[Structure].LeafTipsAppeared</XProperty>
           </LinearInterpolationFunction>
           <LinearInterpolationFunction>
             <Name>LagDuration</Name>
@@ -600,7 +606,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
                 <double>1</double>
               </Y>
             </XYPairs>
-            <XProperty>[Root].PAWPC</XProperty>
+            <XProperty>[Leaf].Fw</XProperty>
           </LinearInterpolationFunction>
           <Constant>
             <Name>MinimumNConc</Name>
@@ -685,29 +691,37 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.3</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>0.8</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.6</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0.6</FractionRemoved>
-            <FractionToResidue>0.1</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
         <CurrentExpandingLeaf>0</CurrentExpandingLeaf>
         <StartFractionExpanded>0</StartFractionExpanded>
         <FractionNextleafExpanded>0</FractionNextleafExpanded>
-        <_ExpandedNodeNo>0</_ExpandedNodeNo>
         <DeadNodesYesterday>0</DeadNodesYesterday>
         <MaxCover>1</MaxCover>
         <Albedo>0.2</Albedo>
@@ -715,8 +729,13 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
         <R50>150</R50>
         <FRGR>0</FRGR>
         <PotentialEP>0</PotentialEP>
+        <FudgeToGetETDemandRight>0</FudgeToGetETDemandRight>
         <KDead>0.3</KDead>
         <MaximumMainStemLeafNumber>80</MaximumMainStemLeafNumber>
+        <DMConversionEfficiency>0</DMConversionEfficiency>
+        <GrowthRespiration>0</GrowthRespiration>
+        <TipsAtEmergence>0</TipsAtEmergence>
+        <CohortsAtInitialisation>0</CohortsAtInitialisation>
         <FractionDied>0</FractionDied>
       </Leaf>
       <GenericAboveGroundOrgan>
@@ -781,7 +800,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
               <Name>Memo</Name>
               <MemoText><![CDATA[Allocation determined by Node number]]></MemoText>
             </Memo>
-            <XProperty>[Structure].MainStemNodeNo</XProperty>
+            <XProperty>[Structure].LeafTipsAppeared</XProperty>
           </LinearInterpolationFunction>
           <PhaseLookup>
             <Name>PartitionFraction11</Name>
@@ -812,25 +831,35 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>0.5</FractionRemoved>
-            <FractionToResidue>0.1</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>0.8</FractionRemoved>
-            <FractionToResidue>0</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.6</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0.6</FractionRemoved>
-            <FractionToResidue>0.2</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
+        <GrowthRespiration>0</GrowthRespiration>
       </GenericAboveGroundOrgan>
       <Root>
         <Name>Root</Name>
@@ -936,6 +965,16 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           <Value>7.5</Value>
         </Constant>
         <Constant>
+          <Name>InitialDM</Name>
+          <Value>5</Value>
+          <Units>g/plant</Units>
+        </Constant>
+        <Constant>
+          <Name>SpecificRootLength</Name>
+          <Value>40</Value>
+          <Units>m/g</Units>
+        </Constant>
+        <Constant>
           <Name>StructuralFraction</Name>
           <Value>0.5</Value>
         </Constant>
@@ -943,23 +982,31 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           <Name>BiomassRemovalDefaults</Name>
           <OrganBiomassRemovalType>
             <Name>Harvest</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.2</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Cut</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.3</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Prune</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.1</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
           <OrganBiomassRemovalType>
             <Name>Graze</Name>
-            <FractionRemoved>0</FractionRemoved>
-            <FractionToResidue>0.15</FractionToResidue>
+            <FractionLiveToRemove>0</FractionLiveToRemove>
+            <FractionDeadToRemove>0</FractionDeadToRemove>
+            <FractionLiveToResidue>0</FractionLiveToResidue>
+            <FractionDeadToResidue>0</FractionDeadToResidue>
           </OrganBiomassRemovalType>
         </Folder>
         <LinearInterpolationFunction>
@@ -1037,11 +1084,12 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
             <MemoText><![CDATA[Pattern of max leaf area assumed from sugar beet: Milford et al. 1985
 Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoText>
           </Memo>
-          <XProperty>[Structure].MainStemNodeNo</XProperty>
+          <XProperty>[Structure].LeafTipsAppeared</XProperty>
         </LinearInterpolationFunction>
-        <InitialDM>5</InitialDM>
-        <SpecificRootLength>40000</SpecificRootLength>
-        <NuptakeSupply>0</NuptakeSupply>
+        <MaintenanceRespiration>0</MaintenanceRespiration>
+        <ZoneNamesToGrowRootsIn />
+        <ZoneRootDepths />
+        <ZoneInitialDM />
       </Root>
       <CompositeBiomass>
         <Name>AboveGround</Name>
@@ -1087,6 +1135,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
         </Propertys>
       </CompositeBiomass>
       <CropType>Kale</CropType>
+      <SowingDate>0001-01-01T00:00:00</SowingDate>
     </Plant>
   </Replacements>
   <DataStore>
@@ -1419,7 +1468,6 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           </Water>
           <SoilWater>
             <Name>SoilWater</Name>
-            <residueinterception>0</residueinterception>
             <SummerDate>1-Nov</SummerDate>
             <SummerU>9</SummerU>
             <SummerCona>4.4</SummerCona>
@@ -1452,6 +1500,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
               <double>0.55</double>
               <double>0.55</double>
             </SWCON>
+            <residueinterception>0</residueinterception>
           </SoilWater>
           <SoilNitrogen>
             <Name>SoilNitrogen</Name>
@@ -1588,6 +1637,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
         </Soil>
         <Plant>
           <Name>Kale</Name>
+          <SowingDate>0001-01-01T00:00:00</SowingDate>
         </Plant>
         <MicroClimate>
           <Name>MicroClimate</Name>
@@ -1674,7 +1724,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
             <string>[Kale].Total.Wt</string>
             <string>[Kale].Stem.Live.Wt</string>
             <string>[Kale].Leaf.LAI</string>
-            <string>[Kale].Structure.MainStemNodeNo</string>
+            <string>[Kale].Structure.LeafTipsAppeared</string>
             <string>[Kale].Leaf.PlantAppearedLeafNo</string>
             <string>[Kale].Leaf.PlantAppearedGreenLeafNo</string>
             <string>[Kale].Leaf.PlantsenescedLeafNo</string>
@@ -2038,7 +2088,7 @@ namespace Models
           <LineThickness>Normal</LineThickness>
           <TableName>Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Structure.MainStemNodeNo</YFieldName>
+          <YFieldName>Kale.Structure.LeafTipsAppeared</YFieldName>
           <ShowInLegend>true</ShowInLegend>
           <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
@@ -3026,7 +3076,6 @@ namespace Models
           </Water>
           <SoilWater>
             <Name>SoilWater</Name>
-            <residueinterception>0</residueinterception>
             <SummerDate>1-Nov</SummerDate>
             <SummerU>9</SummerU>
             <SummerCona>4.4</SummerCona>
@@ -3059,6 +3108,7 @@ namespace Models
               <double>0.55</double>
               <double>0.55</double>
             </SWCON>
+            <residueinterception>0</residueinterception>
           </SoilWater>
           <SoilNitrogen>
             <Name>SoilNitrogen</Name>
@@ -3195,6 +3245,7 @@ namespace Models
         </Soil>
         <Plant>
           <Name>Kale</Name>
+          <SowingDate>0001-01-01T00:00:00</SowingDate>
         </Plant>
         <MicroClimate>
           <Name>MicroClimate</Name>
@@ -3281,7 +3332,7 @@ namespace Models
             <string>[Kale].Total.Wt</string>
             <string>[Kale].Stem.Live.Wt</string>
             <string>[Kale].Leaf.LAI</string>
-            <string>[Kale].Structure.MainStemNodeNo</string>
+            <string>[Kale].Structure.LeafTipsAppeared</string>
             <string>[Kale].Leaf.PlantAppearedLeafNo</string>
             <string>[Kale].Leaf.PlantAppearedGreenLeafNo</string>
             <string>[Kale].Leaf.PlantsenescedLeafNo</string>
@@ -3711,7 +3762,7 @@ namespace Models
           <LineThickness>Normal</LineThickness>
           <TableName>Ashley_Dean_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
-          <YFieldName>Kale.Structure.MainStemNodeNo</YFieldName>
+          <YFieldName>Kale.Structure.LeafTipsAppeared</YFieldName>
           <ShowInLegend>true</ShowInLegend>
           <IncludeSeriesNameInLegend>false</IncludeSeriesNameInLegend>
           <Cumulative>false</Cumulative>
