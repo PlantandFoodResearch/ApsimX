@@ -65,6 +65,9 @@ namespace Models.PMF.Functions.SupplyFunctions
         {
             get
             {
+                //OK if plant models references it without running then exception thrown RFZ
+                if (MetData == null)
+                    return -99;
                 const double SVPfrac = 0.66;
                 if (MetData != null)
                 {
