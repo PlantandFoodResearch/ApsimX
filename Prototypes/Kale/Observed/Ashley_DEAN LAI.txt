@@ -1,4 +1,4 @@
-SimulationName    Date    Water    Nitrogen    final    lai    laierror
+SimulationName    Date    Water    Nitrogen    final    Leaf.LAI    laierror
 ()    ()    ()    ()    ()    ()    ()
 Ashley_Dean_2013_Irrigation_Full_Fertiliser_0    2013-12-18    Full    0    0    2.57    0.42
 Ashley_Dean_2013_Irrigation_Full_Fertiliser_0    2014-01-17    Full    0    0    2.86    0.64
