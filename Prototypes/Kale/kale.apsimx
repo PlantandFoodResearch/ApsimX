@@ -3262,7 +3262,7 @@ namespace Models
             <Action>[Kale].Sow(population:75, cultivar:"Grunner", depth:9, rowSpacing:150);</Action>
           </Operation>
           <Operation>
-            <Date>2014-07-02</Date>
+            <Date>2014-06-29</Date>
             <Action>[Kale].EndCrop</Action>
           </Operation>
         </Operations>
@@ -5582,7 +5582,7 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>Solid</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Kale_05_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
           <YFieldName>Kale.Structure.LeafTipsAppeared</YFieldName>
           <ShowInLegend>true</ShowInLegend>
@@ -5624,7 +5624,7 @@ namespace Models
           <MarkerSize>Small</MarkerSize>
           <Line>Solid</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Report</TableName>
+          <TableName>Kale_05_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
           <YFieldName>Kale.Leaf.PlantAppearedGreenLeafNo</YFieldName>
           <ShowInLegend>true</ShowInLegend>
@@ -5666,7 +5666,7 @@ namespace Models
           <MarkerSize>Normal</MarkerSize>
           <Line>Solid</Line>
           <LineThickness>Normal</LineThickness>
-          <TableName>Kale_Calib_Report</TableName>
+          <TableName>Kale_05_Report</TableName>
           <XFieldName>Clock.Today</XFieldName>
           <YFieldName>Kale.Leaf.LAI</YFieldName>
           <ShowInLegend>true</ShowInLegend>
