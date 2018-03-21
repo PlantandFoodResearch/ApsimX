@@ -8387,7 +8387,7 @@ The Ear composite biomass object includes the Live and dead pools of all organs 
           <Command>[Phenology].EarlyReproductiveLongDayBase.FixedValue = 2</Command>
           <Command>[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0</Command>
           <Command>[Structure].Phyllochron.BasePhyllochron.FixedValue = 105</Command>
-          <Command>[Leaf].CohortParameters.MaxArea.AreaLargestLeaves.FixedValue = 4000</Command>
+          <Command>[Leaf].CohortParameters.MaxArea.AreaLargestLeaves.FixedValue = 4100</Command>
           <Command>[Leaf].CohortParameters.SenescenceDuration.Multiplier.FixedValue = 3</Command>
           <Command>[Leaf].CohortParameters.GrowthDuration.AgeFactor.XYPairs.Y = 1,1,0.1</Command>
           <Command>[Grain].MaximumPotentialGrainSize.FixedValue = 0.05</Command>
@@ -13027,6 +13027,7 @@ Grazing winter forage crops is an important management strategy for profitable l
                 <Name>Fertilise</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
+                  <SDSwitch>0</SDSwitch>
                   <FertDate1>05-Aug</FertDate1>
                   <FertDate2>01-Oct</FertDate2>
                   <FertDate3>20-Oct</FertDate3>
@@ -13035,7 +13036,6 @@ Grazing winter forage crops is an important management strategy for profitable l
                   <Amount2>0</Amount2>
                   <Amount3>0</Amount3>
                   <Amount4>0</Amount4>
-                  <SDSwitch>0</SDSwitch>
                 </Script>
                 <Code><![CDATA[using System;
 using Models.Core;
@@ -13969,6 +13969,7 @@ Grazing winter forage crops is an important management strategy for profitable l
                 <Name>Fertilise</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
+                  <SDSwitch>0</SDSwitch>
                   <FertDate1>05-Aug</FertDate1>
                   <FertDate2>01-Oct</FertDate2>
                   <FertDate3>20-Oct</FertDate3>
@@ -13977,7 +13978,6 @@ Grazing winter forage crops is an important management strategy for profitable l
                   <Amount2>0</Amount2>
                   <Amount3>0</Amount3>
                   <Amount4>0</Amount4>
-                  <SDSwitch>0</SDSwitch>
                 </Script>
                 <Code><![CDATA[using System;
 using Models.Core;
@@ -15452,8 +15452,8 @@ namespace Models
                 <Name>TreatmentSpecificActions</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
-                  <IrrFactor>False</IrrFactor>
                   <NitFactor>0</NitFactor>
+                  <IrrFactor>False</IrrFactor>
                 </Script>
                 <Code><![CDATA[using System;
 using Models.Core;
@@ -29034,9 +29034,9 @@ namespace Models
                 <Name>Sowing</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
-                  <SowDate>02-Feb</SowDate>
                   <CultivarName>
                   </CultivarName>
+                  <SowDate>02-Feb</SowDate>
                   <SowingDepth>30</SowingDepth>
                   <RowSpacing>250</RowSpacing>
                   <Population>100</Population>
