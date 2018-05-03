@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Simulations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="27">
+<Simulations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="28">
   <Name>Simulations</Name>
-  <Memo>
-    <Name>TitlePage</Name>
-    <IncludeInDocumentation>true</IncludeInDocumentation>
-    <MemoText><![CDATA[
-# APSIM Barley Model 
-
-The APSIM Barley Model has been developed using the Plant Modelling Framework (PMF) of [brown_plant_2014]. This framework provides a library of plant organ and process submodels that can be coupled, at runtime, to construct a model in much the same way that models can be coupled to construct a simulation. This means that dynamic composition of lower level process and organ classes (e.g. photosynthesis, leaf) into larger constructions (e.g. maize, Barley, sorghum) can be achieved by the model developer without additional coding.
-
-The model consists of:
-
-* A phenology model to simulate development between growth phases  
-* A structure model to simulate plant morphology  
-* A collection of organs to simulate the various plant parts  
-* An arbitrator to allocate resources (N, biomass) to various plant organs.  
-]]></MemoText>
-  </Memo>
   <Memo>
     <Name>References</Name>
     <IncludeInDocumentation>true</IncludeInDocumentation>
@@ -180,18 +164,18 @@ The model consists of:
         <Name>TitlePage</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
         <MemoText><![CDATA[
-# The APSIM Barley Model
+# APSIM Barley Model 
 
-_Brown, H.E., Huth, N.I. and Holzworth, D.P._
+_Khaembah E.N., Brown H.E., Zyskowski R., Huth N.I. and Holzworth D.P.
 
-The APSIM Barley model has been developed using the Plant Modelling Framework (PMF) of [brown_plant_2014]. This new framework provides a library of plant organ and process submodels that can be coupled, at runtime, to construct a model in much the same way that models can be coupled to construct a simulation. This means that dynamic composition of lower level process and organ classes (e.g. photosynthesis, leaf) into larger constructions (e.g. maize, Barley, sorghum) can be achieved by the model developer without additional coding.
+The APSIM Barley Model has been developed using the Plant Modelling Framework (PMF) of [brown_plant_2014]. This framework provides a library of plant organ and process submodels that can be coupled, at runtime, to construct a model in much the same way that models can be coupled to construct a simulation. This means that dynamic composition of lower level process and organ classes (e.g. photosynthesis, leaf) into larger constructions (e.g. maize, Barley, sorghum) can be achieved by the model developer without additional coding.
 
 The model consists of:
 
-* a phenology model to simulate development between developmental phases  
-* a structure model to simulate plant morphology  
-* a collection of organs to simulate the various plant parts  
-* an arbitrator to allocate resources (N, biomass) to the various plant organs  
+* A phenology model to simulate development between growth phases  
+* A structure model to simulate plant morphology  
+* A collection of organs to simulate the various plant parts  
+* An arbitrator to allocate resources (N, biomass) to various plant organs.  
 ]]></MemoText>
       </Memo>
       <OrganArbitrator>
@@ -628,7 +612,7 @@ Where MinLeafNumber is the number of leaves that a Barley crop will produce when
           <Memo>
             <Name>Memo</Name>
             <IncludeInDocumentation>true</IncludeInDocumentation>
-            <MemoText><![CDATA[The phyllochrons duration for the plant to go from flag leaf ligual appearance at 16 h Pp compared to the phyllochron duration for the same phase at 8 h Pp.  ]]></MemoText>
+            <MemoText><![CDATA[The phyllochrons duration for the plant to go from flag leaf ligule appearance at 16 h Pp compared to the phyllochron duration for the same phase at 8 h Pp.  ]]></MemoText>
           </Memo>
           <IncludeInDocumentation>true</IncludeInDocumentation>
           <FixedValue>0</FixedValue>
@@ -638,7 +622,7 @@ Where MinLeafNumber is the number of leaves that a Barley crop will produce when
           <Memo>
             <Name>Memo</Name>
             <IncludeInDocumentation>true</IncludeInDocumentation>
-            <MemoText><![CDATA[The phyllochrons duration for the plant to go from flag leaf ligual appearance at 16 h Pp.]]></MemoText>
+            <MemoText><![CDATA[The phyllochrons duration for the plant to go from flag leaf ligule appearance at 16 h Pp.]]></MemoText>
           </Memo>
           <IncludeInDocumentation>true</IncludeInDocumentation>
           <FixedValue>1</FixedValue>
@@ -2702,10 +2686,12 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
         <Live>
           <Name>Biomass</Name>
           <IncludeInDocumentation>true</IncludeInDocumentation>
+          <DMDOfStructural>0.6</DMDOfStructural>
         </Live>
         <Dead>
           <Name>Biomass</Name>
           <IncludeInDocumentation>true</IncludeInDocumentation>
+          <DMDOfStructural>0.6</DMDOfStructural>
         </Dead>
       </ReproductiveOrgan>
       <Root>
@@ -6182,6 +6168,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>AboveGround</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Live</string>
           <string>[Leaf].Dead</string>
@@ -6196,6 +6183,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>AboveGroundLive</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Live</string>
           <string>[Stem].Live</string>
@@ -6206,6 +6194,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>AboveGroundDead</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Dead</string>
           <string>[Stem].Dead</string>
@@ -6216,6 +6205,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>BelowGround</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Root].Live</string>
           <string>[Root].Dead</string>
@@ -6224,6 +6214,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>Total</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Live</string>
           <string>[Leaf].Dead</string>
@@ -6240,6 +6231,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>TotalLive</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Live</string>
           <string>[Stem].Live</string>
@@ -6251,6 +6243,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>TotalDead</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Dead</string>
           <string>[Stem].Dead</string>
@@ -6269,6 +6262,7 @@ The Ear composite biomass object includes the Live and dead pools of all organs 
 ]]></MemoText>
         </Memo>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Spike].Live</string>
           <string>[Grain].Live</string>
@@ -6279,6 +6273,7 @@ The Ear composite biomass object includes the Live and dead pools of all organs 
       <CompositeBiomass>
         <Name>StemPlusSpike</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Stem].Live</string>
           <string>[Spike].Live</string>
@@ -7822,10 +7817,12 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
         <Live>
           <Name>Biomass</Name>
           <IncludeInDocumentation>true</IncludeInDocumentation>
+          <DMDOfStructural>0.6</DMDOfStructural>
         </Live>
         <Dead>
           <Name>Biomass</Name>
           <IncludeInDocumentation>true</IncludeInDocumentation>
+          <DMDOfStructural>0.6</DMDOfStructural>
         </Dead>
       </ReproductiveOrgan>
       <Root>
@@ -9796,6 +9793,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>AboveGround</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Live</string>
           <string>[Leaf].Dead</string>
@@ -9810,6 +9808,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>AboveGroundLive</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Live</string>
           <string>[Stem].Live</string>
@@ -9820,6 +9819,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>AboveGroundDead</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Dead</string>
           <string>[Stem].Dead</string>
@@ -9830,6 +9830,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>BelowGround</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Root].Live</string>
           <string>[Root].Dead</string>
@@ -9838,6 +9839,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>Total</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Live</string>
           <string>[Leaf].Dead</string>
@@ -9854,6 +9856,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>TotalLive</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Live</string>
           <string>[Stem].Live</string>
@@ -9865,6 +9868,7 @@ A function is used to provide maturity date as days after sowing(DAS).]]></MemoT
       <CompositeBiomass>
         <Name>TotalDead</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Leaf].Dead</string>
           <string>[Stem].Dead</string>
@@ -9883,6 +9887,7 @@ The Ear composite biomass object includes the Live and dead pools of all organs 
 ]]></MemoText>
         </Memo>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Spike].Live</string>
           <string>[Grain].Live</string>
@@ -9893,6 +9898,7 @@ The Ear composite biomass object includes the Live and dead pools of all organs 
       <CompositeBiomass>
         <Name>StemPlusSpike</Name>
         <IncludeInDocumentation>true</IncludeInDocumentation>
+        <DMDOfStructural>0.6</DMDOfStructural>
         <Propertys>
           <string>[Stem].Live</string>
           <string>[Spike].Live</string>
@@ -12427,8 +12433,8 @@ namespace Models
                 <Name>Sowing</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
-                  <InitialRootDepth>10</InitialRootDepth>
                   <Cultivar>Booma</Cultivar>
+                  <InitialRootDepth>10</InitialRootDepth>
                   <SowingDate>2009-10-01</SowingDate>
                 </Script>
                 <Code><![CDATA[using System;
@@ -15361,8 +15367,8 @@ Biomass accumulation, Leaf area index, radiation interception and soil water con
                 <Name>Sowing</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
-                  <InitialRootDepth>40</InitialRootDepth>
                   <Cultivar>Dash</Cultivar>
+                  <InitialRootDepth>40</InitialRootDepth>
                   <SowingDate>2010-08-26</SowingDate>
                 </Script>
                 <Code><![CDATA[using System;
@@ -17406,9 +17412,9 @@ namespace Models
                 <Name>Sowing</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
-                  <InitialRootDepth>20</InitialRootDepth>
                   <Cultivar>Dash</Cultivar>
                   <SowingDate>2011-07-13</SowingDate>
+                  <InitialRootDepth>20</InitialRootDepth>
                 </Script>
                 <Code><![CDATA[using System;
 using Models.Core;
@@ -19691,9 +19697,9 @@ namespace Models
                 <Name>Sowing</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
-                  <InitialRootDepth>40</InitialRootDepth>
                   <Cultivar>
                   </Cultivar>
+                  <InitialRootDepth>40</InitialRootDepth>
                   <SowingDate>2014-10-15</SowingDate>
                 </Script>
                 <Code><![CDATA[using System;
@@ -21394,7 +21400,7 @@ namespace Models
         <Memo>
           <Name>Trial details</Name>
           <IncludeInDocumentation>true</IncludeInDocumentation>
-          <MemoText><![CDATA[This experiment was conducted in the rainshelter at Plant and Food Research in Lincoln, New Zealand. The objective was to evaluate the effect of drought on the yield of barley crops. The experiment is fully described by Jamieson et al. (1995).  Briefly, 'Triumph' barley was sown at 188kg/ha on 07 September 1988. This sowing rate resulted in a population of 291 ± 6 plants/m2.  Plants were evaluated for their response to drought of varying duration. The treatments were:
+          <MemoText><![CDATA[This experiment was conducted in the rainshelter at Plant and Food Research in Lincoln, New Zealand. The objective was to evaluate the effect of drought on the yield of barley crops. The experiment is fully described by [Jamieson1995].  Briefly, 'Triumph' barley was sown at 188kg/ha on 07 September 1988. This sowing rate resulted in a population of 291 ± 6 plants/m2.  Plants were evaluated for their response to drought of varying duration. The treatments were:
 
 - Full irrigation – measured ET replaced weekly (06 October to 29 December) 
 - Early Drought 1 – irrigated from 03 November to 05 January
@@ -23825,7 +23831,7 @@ namespace Models
           <Name>Trial details</Name>
           <IncludeInDocumentation>true</IncludeInDocumentation>
           <MemoText><![CDATA[
-This is a water response trial conducted inside and outside the rain shelter at the New Zealand Institute for Plant & Food Research in Lincoln and described in De Ruiter et al (1999). Briefly, a vernalisation insensitive barley, variety "Valetta", was sown at 280 plant/m^2^ on 20 October 1995 and subjected to five water treatments as follows:  
+This is a water response trial conducted inside and outside the rain shelter at the New Zealand Institute for Plant & Food Research in Lincoln and described in [DeRuiter1999]. Briefly, a vernalisation insensitive barley, variety "Valetta", was sown at 280 plant/m^2^ on 20 October 1995 and subjected to five water treatments as follows:  
 
 - Full drought (in rain shelter) – was not irrigated except for 17 mm rainfall as a result of shelter failure 42 days after sowing;
 - Early drought (in rain shelter) – also receive 17 mm rainfall and the drought was fully relieved at the onset stem elongation;
@@ -29045,9 +29051,9 @@ This was a sowing date by irrigation trial conducted at Lincoln
                 <Name>Sowing</Name>
                 <IncludeInDocumentation>true</IncludeInDocumentation>
                 <Script>
-                  <SowDepth>20</SowDepth>
-                  <Popn>300</Popn>
                   <SowingDate>1999-05-28</SowingDate>
+                  <Popn>300</Popn>
+                  <SowDepth>20</SowDepth>
                   <CultivarName>Dash</CultivarName>
                 </Script>
                 <Code><![CDATA[using System;
@@ -39957,8 +39963,8 @@ namespace Models
                   <IncludeInDocumentation>false</IncludeInDocumentation>
                   <Script>
                     <TOS>1</TOS>
-                    <Cultivar>Grimmett</Cultivar>
                     <Population>120</Population>
+                    <Cultivar>Grimmett</Cultivar>
                   </Script>
                   <Code><![CDATA[
 using System;
@@ -41313,5 +41319,5 @@ namespace Models
     <ShowPageOfGraphs>true</ShowPageOfGraphs>
   </Folder>
   <IncludeInDocumentation>true</IncludeInDocumentation>
-  <ExplorerWidth>256</ExplorerWidth>
+  <ExplorerWidth>283</ExplorerWidth>
 </Simulations>
