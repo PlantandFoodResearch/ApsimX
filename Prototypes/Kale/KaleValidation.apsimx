@@ -614,102 +614,6 @@ There seems to be a seasonal difference in leaf appearance rates across sowing d
             <Enabled>true</Enabled>
             <XProperty>[Leaf].Fn</XProperty>
           </LinearInterpolationFunction>
-          <RUEModel>
-            <Name>Photosynthesis</Name>
-            <Constant>
-              <Name>RUE</Name>
-              <IncludeInDocumentation>true</IncludeInDocumentation>
-              <Enabled>true</Enabled>
-              <FixedValue>1.6</FixedValue>
-            </Constant>
-            <Constant>
-              <Name>FVPD</Name>
-              <IncludeInDocumentation>true</IncludeInDocumentation>
-              <Enabled>true</Enabled>
-              <FixedValue>1</FixedValue>
-            </Constant>
-            <WeightedTemperatureFunction>
-              <Name>FT</Name>
-              <XYPairs>
-                <Name>XYPairs</Name>
-                <IncludeInDocumentation>true</IncludeInDocumentation>
-                <Enabled>true</Enabled>
-                <X>
-                  <double>0</double>
-                  <double>10</double>
-                  <double>18</double>
-                  <double>26</double>
-                  <double>38</double>
-                </X>
-                <Y>
-                  <double>0.1</double>
-                  <double>1</double>
-                  <double>1</double>
-                  <double>1</double>
-                  <double>0</double>
-                </Y>
-              </XYPairs>
-              <IncludeInDocumentation>true</IncludeInDocumentation>
-              <Enabled>true</Enabled>
-              <MaximumTemperatureWeighting>1</MaximumTemperatureWeighting>
-            </WeightedTemperatureFunction>
-            <LinearInterpolationFunction>
-              <Name>FW</Name>
-              <XYPairs>
-                <Name>XYPairs</Name>
-                <IncludeInDocumentation>true</IncludeInDocumentation>
-                <Enabled>true</Enabled>
-                <X>
-                  <double>0</double>
-                  <double>1</double>
-                  <double>1.5</double>
-                </X>
-                <Y>
-                  <double>0</double>
-                  <double>1</double>
-                  <double>1</double>
-                </Y>
-              </XYPairs>
-              <IncludeInDocumentation>true</IncludeInDocumentation>
-              <Enabled>true</Enabled>
-              <XProperty>[Leaf].Fw</XProperty>
-            </LinearInterpolationFunction>
-            <RUECO2Function>
-              <Name>FCO2</Name>
-              <IncludeInDocumentation>true</IncludeInDocumentation>
-              <Enabled>true</Enabled>
-              <PhotosyntheticPathway>C3</PhotosyntheticPathway>
-            </RUECO2Function>
-            <VariableReference>
-              <Name>RadnInt</Name>
-              <IncludeInDocumentation>true</IncludeInDocumentation>
-              <Enabled>true</Enabled>
-              <VariableName>[Leaf].RadIntTot</VariableName>
-            </VariableReference>
-            <LinearInterpolationFunction>
-              <Name>FN</Name>
-              <XYPairs>
-                <Name>XYPairs</Name>
-                <IncludeInDocumentation>true</IncludeInDocumentation>
-                <Enabled>true</Enabled>
-                <X>
-                  <double>0</double>
-                  <double>1</double>
-                  <double>1.5</double>
-                </X>
-                <Y>
-                  <double>0</double>
-                  <double>1</double>
-                  <double>1</double>
-                </Y>
-              </XYPairs>
-              <IncludeInDocumentation>true</IncludeInDocumentation>
-              <Enabled>true</Enabled>
-              <XProperty>[Leaf].Fn</XProperty>
-            </LinearInterpolationFunction>
-            <IncludeInDocumentation>true</IncludeInDocumentation>
-            <Enabled>true</Enabled>
-          </RUEModel>
           <IncludeInDocumentation>true</IncludeInDocumentation>
           <Enabled>true</Enabled>
         </RUEModel>
@@ -1323,12 +1227,12 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           <FixedValue>0</FixedValue>
         </Constant>
         <PartitionFractionDemandFunction>
-          <Name>DMDemandFunctionP</Name>
+          <Name>DMDemandFunction</Name>
           <Constant>
             <Name>PartitionFraction</Name>
             <IncludeInDocumentation>true</IncludeInDocumentation>
             <Enabled>true</Enabled>
-            <FixedValue>0</FixedValue>
+            <FixedValue>0.3</FixedValue>
             <Units>g/m^2</Units>
           </Constant>
           <IncludeInDocumentation>true</IncludeInDocumentation>
@@ -1428,7 +1332,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
           <FixedValue>0.4</FixedValue>
         </Constant>
         <PhaseLookup>
-          <Name>DMDemandFunction</Name>
+          <Name>DMDemandFunctionA</Name>
           <PhaseLookupValue>
             <Name>Early</Name>
             <AllometricDemandFunction>
