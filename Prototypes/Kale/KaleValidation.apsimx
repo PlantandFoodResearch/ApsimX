@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Simulations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="38">
+<Simulations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="39">
   <Name>Simulations</Name>
   <Memo>
     <Name>Title page</Name>
@@ -10613,7 +10613,8 @@ namespace Models
                 <XAxis>Bottom</XAxis>
                 <YAxis>Left</YAxis>
                 <ColourArgb>-11094807</ColourArgb>
-                <FactorToVaryColours>Simulation</FactorToVaryColours>
+                <FactorToVaryColours>_Fert_</FactorToVaryColours>
+                <FactorToVaryLines>Sown</FactorToVaryLines>
                 <Marker>None</Marker>
                 <MarkerSize>Normal</MarkerSize>
                 <Line>Solid</Line>
@@ -10636,7 +10637,8 @@ namespace Models
                 <XAxis>Bottom</XAxis>
                 <YAxis>Left</YAxis>
                 <ColourArgb>-16736653</ColourArgb>
-                <FactorToVaryColours>Simulation</FactorToVaryColours>
+                <FactorToVaryColours>_Fert_</FactorToVaryColours>
+                <FactorToVaryMarkers>Sown</FactorToVaryMarkers>
                 <Marker>FilledCircle</Marker>
                 <MarkerSize>Normal</MarkerSize>
                 <Line>None</Line>
