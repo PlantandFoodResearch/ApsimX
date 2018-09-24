@@ -1153,7 +1153,7 @@ Values from measurments A-Block FRNL experiment 2014-15 Plant & Food]]></MemoTex
         <FRGR>0</FRGR>
         <PotentialEP>0</PotentialEP>
         <MicroClimatePresent>true</MicroClimatePresent>
-        <KDead>0</KDead>
+        <KDead>0.03</KDead>
         <MaximumMainStemLeafNumber>80</MaximumMainStemLeafNumber>
         <TipsAtEmergence>0</TipsAtEmergence>
         <CohortsAtInitialisation>0</CohortsAtInitialisation>
