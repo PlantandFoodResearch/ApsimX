@@ -229,9 +229,16 @@ namespace Models.PMF.Organs
         /// <summary>The FRGR function</summary>
         [Link]
         IFunction FRGRFunction = null;   // VPD effect on Growth Interpolation Set
-        /// <summary>The dm demand function</summary>
-        [Link]
-        IFunction DMDemandFunction = null;
+        /// <summary>The DM demand function</summary>
+        [ChildLinkByName]
+        [Units("g/m2/d")]
+        private BiomassDemand dmDemands = null;
+
+        /// <summary>The N demand function</summary>
+        [ChildLinkByName]
+        [Units("g/m2/d")]
+        private BiomassDemand nDemands = null;
+
         /// <summary>The extinction coefficient function</summary>
         [Link]
         IFunction ExtinctionCoefficient = null;
@@ -388,21 +395,20 @@ namespace Models.PMF.Organs
         [EventSubscribe("SetDMDemand")]
         private void SetDMDemand(object sender, EventArgs e)
         {
-            StructuralDMDemand = DMDemandFunction.Value();
-            StorageDMDemand = 0;
-            DMDemand.Structural = StructuralDMDemand;
-            DMDemand.Storage = StorageDMDemand;
+            DMDemand.Structural = dmDemands.Structural.Value();
+            DMDemand.Storage = 0;
+            DMDemand.Metabolic = 0;
         }
 
         /// <summary>Calculate and return the nitrogen demand (g/m2)</summary>
         [EventSubscribe("SetNDemand")]
         private void SetNDemand(object sender, EventArgs e)
         {
-            double StructuralDemand = MinimumNConc.Value() * PotentialDMAllocation;
-            double NDeficit = Math.Max(0.0, MaximumNConc.Value() * (Live.Wt + PotentialDMAllocation) - Live.N - StructuralDemand);
-
-            NDemand.Structural = StructuralDemand;
-            NDemand.Storage = NDeficit;
+            NDemand.Structural = nDemands.Structural.Value();
+            //NDemand.Metabolic = nDemands.Metabolic.Value();
+            //FixMe.  I have commented this out because perennial leaf has no critical N concentration.
+            //However the converter has put a metabolic N demand into perennial leaf organs
+            NDemand.Storage = nDemands.Storage.Value();
         }
 
 
@@ -435,11 +441,6 @@ namespace Models.PMF.Organs
             Height = 0;
             StartNRetranslocationSupply = 0;
             StartNReallocationSupply = 0;
-            PotentialDMAllocation = 0;
-            PotentialStructuralDMAllocation = 0;
-            PotentialMetabolicDMAllocation = 0;
-            StructuralDMDemand = 0;
-            StorageDMDemand = 0;
             LiveFWt = 0;
             DMDemand.Clear();
             DMSupply.Clear();
@@ -506,17 +507,9 @@ namespace Models.PMF.Organs
         private double StartNRetranslocationSupply = 0;
         /// <summary>The start n reallocation supply</summary>
         private double StartNReallocationSupply = 0;
-        /// <summary>The potential dm allocation</summary>
-        protected double PotentialDMAllocation = 0;
-        /// <summary>The potential structural dm allocation</summary>
-        protected double PotentialStructuralDMAllocation = 0;
-        /// <summary>The potential metabolic dm allocation</summary>
-        protected double PotentialMetabolicDMAllocation = 0;
-        /// <summary>The structural dm demand</summary>
-        protected double StructuralDMDemand = 0;
-        /// <summary>The non structural dm demand</summary>
-        protected double StorageDMDemand = 0;
-
+        /// <summary>The dry matter potentially being allocated</summary>
+        public BiomassPoolType potentialDMAllocation { get; set; }
+        
         #endregion
 
         #region Class properties
@@ -626,9 +619,8 @@ namespace Models.PMF.Organs
         /// <summary>Sets the dry matter potential allocation.</summary>
         public void SetDryMatterPotentialAllocation(BiomassPoolType dryMatter)
         {
-            PotentialMetabolicDMAllocation = dryMatter.Metabolic;
-            PotentialStructuralDMAllocation = dryMatter.Structural;
-            PotentialDMAllocation = dryMatter.Structural + dryMatter.Metabolic;
+            potentialDMAllocation.Metabolic = dryMatter.Metabolic;
+            potentialDMAllocation.Structural = dryMatter.Structural;
         }
 
         /// <summary>Sets the dry matter allocation.</summary>
@@ -642,7 +634,7 @@ namespace Models.PMF.Organs
             double growthRespFactor = ((1 / DMConversionEfficiency.Value()) * (12.0 / 30.0) - 1.0 * CarbonConcentration.Value()) * 44.0 / 12.0;
             GrowthRespiration = (dryMatter.Structural + dryMatter.Storage) * growthRespFactor;
             
-            AddNewLeafMaterial(StructuralWt: Math.Min(dryMatter.Structural * DMConversionEfficiency.Value(), StructuralDMDemand),
+            AddNewLeafMaterial(StructuralWt: Math.Min(dryMatter.Structural * DMConversionEfficiency.Value(), DMDemand.Structural),
                                StorageWt: dryMatter.Storage * DMConversionEfficiency.Value(),
                                StructuralN: 0,
                                StorageN: 0,
@@ -725,6 +717,7 @@ namespace Models.PMF.Organs
             DMDemand = new BiomassPoolType();
             NSupply = new BiomassSupplyType();
             DMSupply = new BiomassSupplyType();
+            potentialDMAllocation = new BiomassPoolType();
             Clear();
         }
 

@@ -225,8 +225,6 @@ namespace Models.PMF.Organs
         /// <summary>The Stage that leaves are initialised on</summary>
         [Description("The Stage that leaves are initialised on")]
         public string LeafInitialisationStage { get; set; } = "Emergence";
-        
-
 
         #endregion
 
@@ -320,16 +318,6 @@ namespace Models.PMF.Organs
         #endregion
 
         #region Events
-        /// <summary>Called when crop is sown</summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="data">The <see cref="EventArgs"/> instance containing the event data.</param>
-        [EventSubscribe("PlantSowing")]
-        private void OnSowing(object sender, SowPlant2Type data)
-        {
-            MicroClimatePresent = false;
-            Clear();
-        }
-
         /// <summary>Called when [phase changed].</summary>
         [EventSubscribe("PhaseChanged")]
         private void OnPhaseChanged(object sender, PhaseChangedType phaseChange)
@@ -354,9 +342,6 @@ namespace Models.PMF.Organs
             DMDemand.Clear();
             NDemand.Clear();
             potentialDMAllocation.Clear();
-            potentialDMAllocating = 0.0;
-            potentialStructuralDMAllocation = 0.0;
-            potentialMetabolicDMAllocation = 0.0;
             Allocated.Clear();
             Senesced.Clear();
             Detached.Clear();
@@ -446,15 +431,15 @@ namespace Models.PMF.Organs
         [Units("/d")]
         private IFunction dmReallocationFactor = null;
 
-        /// <summary>The DM structural fraction</summary>
-        [ChildLinkByName]
-        [Units("g/g")]
-        private IFunction structuralFraction = null;
-
         /// <summary>The DM demand function</summary>
         [ChildLinkByName]
         [Units("g/m2/d")]
-        private IFunction dmDemandFunction = null;
+        private BiomassDemand dmDemands = null;
+
+        /// <summary>The N demand function</summary>
+        [ChildLinkByName]
+        [Units("g/m2/d")]
+        private BiomassDemand nDemands = null;
 
         /// <summary>The initial biomass dry matter weight</summary>
         [ChildLinkByName]
@@ -513,16 +498,7 @@ namespace Models.PMF.Organs
         public BiomassPoolType NDemand { get; set; }
 
         /// <summary>The dry matter potentially being allocated</summary>
-        private BiomassPoolType potentialDMAllocation = new BiomassPoolType();
-
-        /// <summary>The potential DM allocation</summary>
-        private double potentialDMAllocating = 0.0;
-
-        /// <summary>The potential structural DM allocation</summary>
-        private double potentialStructuralDMAllocation = 0.0;
-
-        /// <summary>The potential metabolic DM allocation</summary>
-        private double potentialMetabolicDMAllocation = 0.0;
+        public BiomassPoolType potentialDMAllocation { get; set; }
 
         /// <summary>Constructor</summary>
         public SimpleLeaf()
@@ -619,37 +595,6 @@ namespace Models.PMF.Organs
             biomassRemovalModel.RemoveBiomass(biomassRemoveType, amountToRemove, Live, Dead, Removed, Detached);
         }
 
-        /// <summary>Computes the amount of structural DM demanded.</summary>
-        public double DemandedDMStructural()
-        {
-            if (dmConversionEfficiency.Value() > 0.0)
-            {
-                double demandedDM = dmDemandFunction.Value() * structuralFraction.Value() / dmConversionEfficiency.Value();
-                return demandedDM;
-            }
-            else
-            { // Conversion efficiency is zero!!!!
-                return 0.0;
-            }
-        }
-
-        /// <summary>Computes the amount of non structural DM demanded.</summary>
-        public double DemandedDMStorage()
-        {
-            // Assumes that StructuralFraction is always greater than zero
-            if (dmConversionEfficiency.Value() > 0.0)
-            {
-                double theoreticalMaximumDM = MathUtilities.Divide(startLive.StructuralWt + DMDemand.Structural, structuralFraction.Value(), 0);
-                double baseAllocated = startLive.StructuralWt + startLive.StorageWt + DMDemand.Structural;
-                double demandedDM = MathUtilities.Divide(Math.Max(0.0, theoreticalMaximumDM - baseAllocated), dmConversionEfficiency.Value(), 0);
-                return demandedDM;
-            }
-            else
-            { // Conversion efficiency is zero!!!!
-                return 0.0;
-            }
-        }
-
         /// <summary>Computes the amount of DM available for retranslocation.</summary>
         public double AvailableDMRetranslocation()
         {
@@ -690,30 +635,33 @@ namespace Models.PMF.Organs
         [EventSubscribe("SetDMDemand")]
         protected virtual void SetDMDemand(object sender, EventArgs e)
         {
-            DMDemand.Structural = DemandedDMStructural() + remobilisationCost.Value();
-            DMDemand.Storage = DemandedDMStorage();
-            DMDemand.Metabolic = 0;
+            if (dmConversionEfficiency.Value() > 0.0)
+            {
+                DMDemand.Structural = dmDemands.Structural.Value() / dmConversionEfficiency.Value() + remobilisationCost.Value();
+                DMDemand.Storage = Math.Max(0, dmDemands.Storage.Value() / dmConversionEfficiency.Value());
+                DMDemand.Metabolic = 0;
+            }
+            else
+            { // Conversion efficiency is zero!!!!
+                DMDemand.Structural = 0;
+                DMDemand.Storage = 0;
+                DMDemand.Metabolic = 0;
+            }
         }
 
         /// <summary>Calculate and return the nitrogen demand (g/m2)</summary>
         [EventSubscribe("SetNDemand")]
         protected virtual void SetNDemand(object sender, EventArgs e)
         {
-            double NDeficit = Math.Max(0.0, maximumNConc.Value() * (Live.Wt + potentialDMAllocating) - Live.N);
-            NDeficit *= nitrogenDemandSwitch.Value();
-
-            NDemand.Structural = Math.Min(NDeficit, potentialStructuralDMAllocation * minimumNConc.Value());
-            NDemand.Metabolic = Math.Min(NDeficit, potentialStructuralDMAllocation * (criticalNConc.Value() - minimumNConc.Value()));
-            NDemand.Storage = Math.Max(0, NDeficit - NDemand.Structural - NDemand.Metabolic);
+            NDemand.Structural = nDemands.Structural.Value();
+            NDemand.Metabolic = nDemands.Metabolic.Value();
+            NDemand.Storage = nDemands.Storage.Value();
         }
 
         /// <summary>Sets the dry matter potential allocation.</summary>
         /// <param name="dryMatter">The potential amount of drymatter allocation</param>
         public void SetDryMatterPotentialAllocation(BiomassPoolType dryMatter)
         {
-            potentialMetabolicDMAllocation = dryMatter.Metabolic;
-            potentialStructuralDMAllocation = dryMatter.Structural;
-            potentialDMAllocating = dryMatter.Structural + dryMatter.Metabolic;
             potentialDMAllocation.Structural = dryMatter.Structural;
             potentialDMAllocation.Metabolic = dryMatter.Metabolic;
             potentialDMAllocation.Storage = dryMatter.Storage;
@@ -797,8 +745,8 @@ namespace Models.PMF.Organs
             {
                 throw new Exception("Respiration is more than total biomass of metabolic and storage in live component.");
             }
-            Live.MetabolicWt = Live.MetabolicWt - (respiration * Live.MetabolicWt / total);
-            Live.StorageWt = Live.StorageWt - (respiration * Live.StorageWt / total);
+            Live.MetabolicWt = Live.MetabolicWt - MathUtilities.Divide(respiration * Live.MetabolicWt , total, 0);
+            Live.StorageWt = Live.StorageWt - MathUtilities.Divide(respiration * Live.StorageWt , total, 0);
         }
 
 
@@ -808,7 +756,7 @@ namespace Models.PMF.Organs
         /// <param name="indent">The level of indentation 1, 2, 3 etc.</param>
         public void Document(List<AutoDocumentation.ITag> tags, int headingLevel, int indent)
         {
-            if (IncludeInDocumentation && structuralFraction != null)
+            if (IncludeInDocumentation)
             {
                 // add a heading.
                 tags.Add(new AutoDocumentation.Heading(Name, headingLevel));
@@ -819,28 +767,8 @@ namespace Models.PMF.Organs
                 // Documment DM demands.
                 tags.Add(new AutoDocumentation.Heading("Dry Matter Demand", headingLevel + 1));
                 tags.Add(new AutoDocumentation.Paragraph("Total Dry matter demand is calculated by the DMDemandFunction.", indent));
-                IModel DMDemand = Apsim.Child(this, "DMDemandFunction");
+                IModel DMDemand = Apsim.Child(this, "dmDemands");
                 AutoDocumentation.DocumentModel(DMDemand, tags, headingLevel + 1, indent);
-                IModel StrucFrac = Apsim.Child(this, "StructuralFraction");
-                if (StrucFrac.GetType() == typeof(Constant))
-                {
-                    if (structuralFraction.Value() == 1.0)
-                    {
-                        tags.Add(new AutoDocumentation.Paragraph("All demand is structural and this organ has no Non-structural demand.", indent));
-                    }
-                    else
-                    {
-                        double StrucPercent = structuralFraction.Value() * 100;
-                        tags.Add(new AutoDocumentation.Paragraph("Of total biomass, " + StrucPercent + "% of this is structural and the remainder is non-structural demand", indent));
-                        tags.Add(new AutoDocumentation.Paragraph("Any Non-structural Demand Capacity (StructuralWt/StructuralFraction) that is not currently occupied is also included in Non-structural DM Demand", indent));
-                    }
-                }
-                else
-                {
-                    tags.Add(new AutoDocumentation.Paragraph("The proportion of total biomass that is partitioned to structural is determined by the StructuralFraction", indent));
-                    AutoDocumentation.DocumentModel(StrucFrac, tags, headingLevel + 1, indent);
-                    tags.Add(new AutoDocumentation.Paragraph("Any Non-structural Demand Capacity (StructuralWt/StructuralFraction) that is not currently occupied is also included in Non-structural DM Demand", indent));
-                }
 
                 // Document Nitrogen Demand
                 tags.Add(new AutoDocumentation.Heading("Nitrogen Demand", headingLevel + 1));
@@ -972,6 +900,7 @@ namespace Models.PMF.Organs
             DMDemand = new BiomassPoolType();
             NSupply = new BiomassSupplyType();
             DMSupply = new BiomassSupplyType();
+            potentialDMAllocation = new BiomassPoolType();
             startLive = new Biomass();
             Allocated = new Biomass();
             Senesced = new Biomass();
@@ -1006,6 +935,7 @@ namespace Models.PMF.Organs
             if (data.Plant == parentPlant)
             {
                 Clear();
+                MicroClimatePresent = false;
                 Live.StructuralWt = initialWtFunction.Value();
                 Live.StorageWt = 0.0;
                 Live.StructuralN = Live.StructuralWt * minimumNConc.Value();

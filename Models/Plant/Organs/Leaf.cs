@@ -92,6 +92,9 @@ namespace Models.PMF.Organs
         /// <summary>Gets or sets the n fixation cost.</summary>
         public double NFixationCost { get { return 0; } }
 
+        /// <summary>The dry matter potentially being allocated</summary>
+        public BiomassPoolType potentialDMAllocation { get; set; }
+
         #region Canopy interface
         /// <summary>Gets the canopy. Should return null if no canopy present.</summary>
         public string CanopyType { get { return Plant.CropType; } }
@@ -1107,20 +1110,20 @@ namespace Models.PMF.Organs
         {
             get
             {
-                if (Leaves.Count == 0)
+                if (Leaves.Count == 0 || Leaves.Last().Apex == null)
                     return 0;
                 else
                     return Leaves.Last().Apex.Number;
             }
         }
-
+         
         /// <summary>Apex group size in plant</summary>
         [Description("Apex group size in plant")]
         public double[] ApexGroupSize
         {
             get
             {
-                if (Leaves.Count == 0)
+                if (Leaves.Count == 0 || Leaves.Last().Apex == null)
                     return new double[0];
                 else
                     return Leaves.Last().Apex.GroupSize;
@@ -1133,7 +1136,7 @@ namespace Models.PMF.Organs
         {
             get
             {
-                if (Leaves.Count == 0)
+                if (Leaves.Count == 0 || Leaves.Last().Apex == null)
                     return new double[0];
                 else
                     return Leaves.Last().Apex.GroupAge;

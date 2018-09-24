@@ -29,7 +29,7 @@ rem For some reason, running dos2unix on a file inside a mounted volume in a doc
 rem doesn't seem to work - some sort of permissions error. Instead, we run the command on a 
 rem file in %tmp%, and then manually move this file where we want it.
 cd DebPackage
-echo 2.0 > %tmp%\debian-binary
+echo 2.0> %tmp%\debian-binary
 dos2unix %tmp%\debian-binary
 move %tmp%\debian-binary .\
 
@@ -63,7 +63,6 @@ xcopy /I /Y /Q %apsimx%\Bin\*.exe .\DebPackage\data\usr\local\lib\apsim\%APSIM_V
 xcopy /I /Y /Q %apsimx%\ApsimNG\Assemblies\Mono.TextEditor.dll.config .\DebPackage\data\usr\local\lib\apsim\%APSIM_VERSION%\Bin
 xcopy /I /Y /Q %apsimx%\ApsimNG\Assemblies\webkit-sharp.dll .\DebPackage\data\usr\local\lib\apsim\%APSIM_VERSION%\Bin
 xcopy /I /Y /Q %apsimx%\ApsimNG\Assemblies\webkit-sharp.dll.config .\DebPackage\data\usr\local\lib\apsim\%APSIM_VERSION%\Bin
-xcopy /I /Y /Q %apsimx%\ApsimNG\Assemblies\MonoMac.dll .\DebPackage\data\usr\local\lib\apsim\%APSIM_VERSION%\Bin
 xcopy /I /Y /Q %apsimx%\Bin\Models.xml .\DebPackage\data\usr\local\lib\apsim\%APSIM_VERSION%\Bin
 xcopy /I /Y /Q %apsimx%\APSIM.bib .\DebPackage\data\usr\local\lib\apsim\%APSIM_VERSION%
 
@@ -125,5 +124,5 @@ if not exist %apsimx%\Setup\Output (
 dir
 ar vr C:\APSIMSetup.deb debian-binary control.tar.gz data.tar.gz
 move C:\APSIMSetup.deb %apsimx%\Setup\Output\
-echo done
-exit %errorlevel%
+echo Finished creating installer.
+exit /b %errorlevel%
