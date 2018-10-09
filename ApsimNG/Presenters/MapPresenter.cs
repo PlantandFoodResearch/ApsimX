@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 namespace UserInterface.Presenters
 {
+    using System;
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
@@ -82,7 +83,8 @@ namespace UserInterface.Presenters
         /// </summary>
         private void PopulateView()
         {
-            this.view.ShowMap(this.map.GetCoordinates());
+            List<string> files = new List<string>();
+            this.view.ShowMap(this.map.GetCoordinates(files), files, this.map.Zoom, this.map.Center);
         }
 
         /// <summary>
@@ -112,8 +114,14 @@ namespace UserInterface.Presenters
         /// <param name="e">Event arguments</param>
         private void OnPositionChanged(object sender, System.EventArgs e)
         {
-            this.explorerPresenter.CommandHistory.Add(new Commands.ChangeProperty(map, "Center", this.view.Center));
-            // this.map.Center = this.view.Center;
+            try
+            {
+                this.explorerPresenter.CommandHistory.Add(new Commands.ChangeProperty(map, "Center", this.view.Center));
+            }
+            catch (Exception err)
+            {
+                explorerPresenter.MainPresenter.ShowError(err);
+            }
         }
 
         /// <summary>

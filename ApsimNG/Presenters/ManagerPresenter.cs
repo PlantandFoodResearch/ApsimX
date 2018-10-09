@@ -13,10 +13,13 @@ namespace UserInterface.Presenters
     using System.Reflection;
     using APSIM.Shared.Utilities;
     using EventArguments;
-    using ICSharpCode.NRefactory.CSharp;
     using Models;
     using Models.Core;
     using Views;
+    using System.IO;
+    using System.Diagnostics;
+    using System.Threading.Tasks;
+    using ICSharpCode.NRefactory.CSharp;
 
     /// <summary>
     /// Presenter for the Manager component
@@ -44,6 +47,11 @@ namespace UserInterface.Presenters
         private ExplorerPresenter explorerPresenter;
 
         /// <summary>
+        /// Handles generation of completion options for the view.
+        /// </summary>
+        private IntellisensePresenter intellisense;
+
+        /// <summary>
         /// Attach the Manager model and ManagerView to this presenter.
         /// </summary>
         /// <param name="model">The model</param>
@@ -54,6 +62,8 @@ namespace UserInterface.Presenters
             this.manager = model as Manager;
             this.managerView = view as IManagerView;
             this.explorerPresenter = explorerPresenter;
+            this.intellisense = new IntellisensePresenter(managerView as ViewBase);
+            intellisense.ItemSelected += OnIntellisenseItemSelected;
 
             this.propertyPresenter.Attach(this.manager.Script, this.managerView.GridView, this.explorerPresenter);
             this.managerView.Editor.ScriptMode = true;
@@ -79,6 +89,8 @@ namespace UserInterface.Presenters
             this.explorerPresenter.CommandHistory.ModelChanged -= this.CommandHistory_ModelChanged;
             this.managerView.Editor.ContextItemsNeeded -= this.OnNeedVariableNames;
             this.managerView.Editor.LeaveEditor -= this.OnEditorLeave;
+            intellisense.ItemSelected -= OnIntellisenseItemSelected;
+            intellisense.Cleanup();
         }
 
         /// <summary>
@@ -88,47 +100,16 @@ namespace UserInterface.Presenters
         /// <param name="e">Context item arguments</param>
         public void OnNeedVariableNames(object sender, NeedContextItemsArgs e)
         {
-            CSharpParser parser = new CSharpParser();
-            SyntaxTree syntaxTree = parser.Parse(this.managerView.Editor.Text); // Manager.Code);
-            syntaxTree.Freeze();
-
-            IEnumerable<FieldDeclaration> fields = syntaxTree.Descendants.OfType<FieldDeclaration>();
-
-            e.ObjectName = e.ObjectName.Trim(" \t".ToCharArray());
-            string typeName = string.Empty;
-
-            // Determine the field name to find. User may have typed 
-            // Soil.SoilWater. In this case the field to look for is Soil
-            string fieldName = e.ObjectName;
-            int posPeriod = e.ObjectName.IndexOf('.');
-            if (posPeriod != -1)
+            try
             {
-                fieldName = e.ObjectName.Substring(0, posPeriod);
+                if (e.ControlShiftSpace)
+                    intellisense.ShowScriptMethodCompletion(manager, e.Code, e.Offset, new Point(e.Coordinates.X, e.Coordinates.Y));
+                else if (intellisense.GenerateScriptCompletions(e.Code, e.Offset, e.ControlSpace))
+                    intellisense.Show(e.Coordinates.X, e.Coordinates.Y);
             }
-               
-            // Look for the field name.
-            foreach (FieldDeclaration field in fields)
+            catch (Exception err)
             {
-                foreach (VariableInitializer var in field.Variables)
-                {
-                    if (fieldName == var.Name)
-                    {
-                        typeName = field.ReturnType.ToString();
-                    }
-                }
-            }
-            
-            // find the properties and methods
-            if (typeName != string.Empty)
-            {
-                Type atype = ReflectionUtilities.GetTypeFromUnqualifiedName(typeName);
-                if (posPeriod != -1)
-                {
-                    string childName = e.ObjectName.Substring(posPeriod + 1);
-                    atype = this.FindType(atype, childName);
-                }
-                    
-                e.AllItems.AddRange(NeedContextItemsArgs.ExamineTypeForContextItems(atype, true, true, false));
+                explorerPresenter.MainPresenter.ShowError(err);
             }
         }
 
@@ -140,7 +121,8 @@ namespace UserInterface.Presenters
         public void OnEditorLeave(object sender, EventArgs e)
         {
             // this.explorerPresenter.CommandHistory.ModelChanged += this.CommandHistory_ModelChanged;
-            this.BuildScript();
+            if (!intellisense.Visible)
+                this.BuildScript();
             if (this.manager.Script != null)
             {
                 this.propertyPresenter.FindAllProperties(this.manager.Script);
@@ -162,13 +144,6 @@ namespace UserInterface.Presenters
             {
                 this.propertyPresenter.UpdateModel(this.manager.Script);
             }
-        }
-
-        /// <summary>Get a screen shot of the manager grid.</summary>
-        /// <returns>An Image object</returns>
-        public Image GetScreenshot()
-        {
-            return this.managerView.GridView.GetScreenshot();
         }
 
         /// <summary>
@@ -223,12 +198,6 @@ namespace UserInterface.Presenters
             }
             catch (Exception err)
             {
-                string msg = err.Message;
-                if (err.InnerException != null)
-                {
-                    msg += " ---> " + err.InnerException.Message;
-                }
-
                 this.explorerPresenter.MainPresenter.ShowError(err);
             }
 
@@ -256,6 +225,19 @@ namespace UserInterface.Presenters
             string newText = formatter.Format(this.managerView.Editor.Text);
             this.managerView.Editor.Text = newText;
             this.explorerPresenter.CommandHistory.Add(new Commands.ChangeProperty(this.manager, "Code", newText));
+        }
+
+        /// <summary>
+        /// Invoked when the user selects an item in the intellisense.
+        /// Inserts the selected item at the caret.
+        /// </summary>
+        /// <param name="sender">Sender object.</param>
+        /// <param name="args">Event arguments.</param>
+        private void OnIntellisenseItemSelected(object sender, IntellisenseItemSelectedArgs args)
+        {
+            managerView.Editor.InsertCompletionOption(args.ItemSelected, args.TriggerWord);
+            if (args.IsMethod)
+                intellisense.ShowScriptMethodCompletion(manager, managerView.Editor.Text, managerView.Editor.Offset, managerView.Editor.GetPositionOfCursor());
         }
     }
 }

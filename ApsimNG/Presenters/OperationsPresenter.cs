@@ -8,6 +8,7 @@ namespace UserInterface.Presenters
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
     using APSIM.Shared.Utilities;
     using EventArguments;
     using Models;
@@ -34,6 +35,11 @@ namespace UserInterface.Presenters
         private ExplorerPresenter explorerPresenter;
 
         /// <summary>
+        /// The intellisense object.
+        /// </summary>
+        private IntellisensePresenter intellisense;
+
+        /// <summary>
         /// Attach model to view.
         /// </summary>
         /// <param name="model">The model object</param>
@@ -44,6 +50,8 @@ namespace UserInterface.Presenters
             this.operations = model as Operations;
             this.view = view as EditorView;
             this.explorerPresenter = explorerPresenter;
+            this.intellisense = new IntellisensePresenter(view as ViewBase);
+            intellisense.ItemSelected += OnIntellisenseItemSelected;
 
             this.PopulateEditorView();
             this.view.ContextItemsNeeded += this.OnContextItemsNeeded;
@@ -59,6 +67,8 @@ namespace UserInterface.Presenters
             this.view.ContextItemsNeeded -= this.OnContextItemsNeeded;
             this.view.TextHasChangedByUser -= this.OnTextHasChangedByUser;
             this.explorerPresenter.CommandHistory.ModelChanged -= this.OnModelChanged;
+            intellisense.ItemSelected -= OnIntellisenseItemSelected;
+            this.intellisense.Cleanup();
         }
 
         /// <summary>
@@ -71,7 +81,8 @@ namespace UserInterface.Presenters
             {
                 // st += operation.Date.ToString("yyyy-MM-dd") + " " + operation.Action + Environment.NewLine;
                 string dateStr = DateUtilities.validateDateString(operation.Date);
-                st += dateStr + " " + operation.Action + Environment.NewLine;
+                string commentChar = operation.Enabled ? string.Empty : "// ";
+                st += commentChar + dateStr + " " + operation.Action + Environment.NewLine;
             }
 
             this.view.Text = st;
@@ -84,22 +95,39 @@ namespace UserInterface.Presenters
         /// <param name="e">Event arguments</param>
         private void OnTextHasChangedByUser(object sender, EventArgs e)
         {
-            this.explorerPresenter.CommandHistory.ModelChanged -= this.OnModelChanged;
-            List<Operation> operations = new List<Operation>();
-            foreach (string line in this.view.Lines)
+            try
             {
-                int pos = line.IndexOf(' ');
-                if (pos != -1)
+                this.explorerPresenter.CommandHistory.ModelChanged -= this.OnModelChanged;
+                List<Operation> operations = new List<Operation>();
+                foreach (string line in this.view.Lines)
                 {
-                    Operation operation = new Operation();
-                    operation.Date = DateUtilities.validateDateString(line.Substring(0, pos));
-                    operation.Action = line.Substring(pos + 1);
-                    operations.Add(operation);
-                }
-            }
+                    string currentLine = line;
+                    bool isComment = line.Trim().StartsWith("//");
+                    if (isComment)
+                    {
+                        int index = line.IndexOf("//");
+                        if (index >= 0)
+                            currentLine = currentLine.Remove(index, 2).Trim();
+                    }
 
-            this.explorerPresenter.CommandHistory.Add(new Commands.ChangeProperty(this.operations, "Schedule", operations));
-            this.explorerPresenter.CommandHistory.ModelChanged += this.OnModelChanged;
+                    int pos = currentLine.IndexOf(' ');
+                    if (pos != -1)
+                    {
+                        Operation operation = new Operation();
+                        operation.Date = DateUtilities.validateDateString(currentLine.Substring(0, pos));
+                        operation.Action = currentLine.Substring(pos + 1);
+                        operation.Enabled = !isComment;
+                        operations.Add(operation);
+                    }
+                }
+
+                this.explorerPresenter.CommandHistory.Add(new Commands.ChangeProperty(this.operations, "Schedule", operations));
+                this.explorerPresenter.CommandHistory.ModelChanged += this.OnModelChanged;
+            }
+            catch (Exception err)
+            {
+                explorerPresenter.MainPresenter.ShowError(err);
+            }
         }
 
         /// <summary>
@@ -109,7 +137,17 @@ namespace UserInterface.Presenters
         /// <param name="e">Event arguments</param>
         private void OnContextItemsNeeded(object sender, NeedContextItemsArgs e)
         {
-            e.AllItems.AddRange(NeedContextItemsArgs.ExamineModelForNames(this.operations, e.ObjectName, true, true, false));
+            try
+            {
+                if (e.ControlShiftSpace)
+                    intellisense.ShowMethodCompletion(operations, e.Code, e.Offset, new Point(e.Coordinates.X, e.Coordinates.Y));
+                else if (intellisense.GenerateGridCompletions(e.Code, e.Offset, operations, true, true, false, e.ControlSpace))
+                    intellisense.Show(e.Coordinates.X, e.Coordinates.Y);
+            }
+            catch (Exception err)
+            {
+                explorerPresenter.MainPresenter.ShowError(err);
+            }
         }
 
         /// <summary>
@@ -119,6 +157,30 @@ namespace UserInterface.Presenters
         private void OnModelChanged(object changedModel)
         {
             this.PopulateEditorView();
+        }
+
+        /// <summary>
+        /// Invoked when the user selects an item in the intellisense.
+        /// Inserts the selected item at the caret.
+        /// </summary>
+        /// <param name="sender">Sender object.</param>
+        /// <param name="args">Event arguments.</param>
+        private void OnIntellisenseItemSelected(object sender, IntellisenseItemSelectedArgs args)
+        {
+            if (string.IsNullOrEmpty(args.TriggerWord))
+                view.InsertAtCaret(args.ItemSelected);
+            else
+            {
+                int position = view.Text.Substring(0, view.Offset).LastIndexOf(args.TriggerWord);
+                view.InsertCompletionOption(args.ItemSelected, args.TriggerWord);
+            }
+
+            if (args.IsMethod)
+            {
+                Point cursor = view.GetPositionOfCursor();
+                intellisense.ShowMethodCompletion(operations, view.Text, view.Offset, new Point(cursor.X, cursor.Y));
+            }
+                
         }
     }
 }
