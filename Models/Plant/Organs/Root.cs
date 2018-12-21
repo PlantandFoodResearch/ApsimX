@@ -26,7 +26,7 @@ namespace Models.PMF.Organs
     /// 
     /// **Dry Matter Demands**
     /// 
-    /// A daily DM demand is provided to the organ abitrator and a DM supply returned. By default, 100% of the dry matter (DM) demanded from the root is structural.  
+    /// A daily DM demand is provided to the organ arbitrator and a DM supply returned. By default, 100% of the dry matter (DM) demanded from the root is structural.  
     /// The daily loss of roots is calculated using a SenescenceRate function.  All senesced material is automatically detached and added to the soil FOM.  
     /// 
     /// **Nitrogen Demands**
@@ -62,6 +62,7 @@ namespace Models.PMF.Organs
     [Description("Root Class")]
     [ViewName("UserInterface.Views.GridView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
+    [ValidParent(ParentType = typeof(Plant))]
     public class Root : Model, IWaterNitrogenUptake, IArbitration, IOrgan, IRemovableBiomass
     {
         /// <summary>Tolerance for biomass comparisons</summary>
@@ -109,6 +110,15 @@ namespace Models.PMF.Organs
         /// <summary>The nitrogen demand switch</summary>
         [ChildLinkByName]
         private IFunction nitrogenDemandSwitch = null;
+
+        /// <summary>The N demand function</summary>
+        [ChildLinkByName(IsOptional = true)]
+        [Units("g/m2/d")]
+        private BiomassDemand nDemands = null;
+
+        /// <summary>The nitrogen root calc switch</summary>
+        [ChildLinkByName(IsOptional = true)]
+        private IFunction NitrogenRootCalcSwitch = null;
 
         /// <summary>The N retranslocation factor</summary>
         [ChildLinkByName(IsOptional = true)]
@@ -545,6 +555,12 @@ namespace Models.PMF.Organs
         [EventSubscribe("SetNDemand")]
         private void SetNDemand(object sender, EventArgs e)
         {
+            if(NitrogenRootCalcSwitch != null && nDemands != null && NitrogenRootCalcSwitch.Value() > 0.9)
+            {
+                //use interface NDemand functions - used for sorghum model
+                CalculateNDemandsUsingSimpleFunctions();
+                return;
+            }
             // This is basically the old/original function with added metabolicN.
             // Calculate N demand based on amount of N needed to bring root N content in each layer up to maximum.
 
@@ -574,6 +590,33 @@ namespace Models.PMF.Organs
             NDemand.Structural = structuralNDemand;
             NDemand.Storage = storageNDemand;
             NDemand.Metabolic = metabolicNDemand;
+
+        }
+
+        /// <summary>alternative calculation that uses similar nDemands interface functions to GenericOrgan.</summary>
+        public void CalculateNDemandsUsingSimpleFunctions()
+        {
+            NDemand.Structural = nDemands.Structural.Value();
+            NDemand.Metabolic = nDemands.Metabolic.Value();
+            NDemand.Storage = nDemands.Storage.Value();
+
+            foreach (ZoneState Z in Zones)
+            {
+                Z.StructuralNDemand = new double[Z.soil.Thickness.Length];
+                Z.StorageNDemand = new double[Z.soil.Thickness.Length];
+                //Note: MetabolicN is assumed to be zero
+
+                //The DM is allocated using CalculateRootActivityValues to proportion between layers
+                double totalPotentialDMAAllocated = 0.0;
+                for (int i = 0; i < Z.LayerLive.Length; i++)
+                    totalPotentialDMAAllocated += Z.PotentialDMAllocated[i];
+
+                for (int i = 0; i < Z.LayerLive.Length; i++)
+                {
+                    Z.StructuralNDemand[i] = NDemand.Structural * Z.PotentialDMAllocated[i] / totalPotentialDMAAllocated;
+                    Z.StorageNDemand[i] = 0; //sorghum isn't using metabolic storage in roots;
+                }
+            }
         }
 
         /// <summary>Sets the dry matter potential allocation.</summary>
@@ -844,6 +887,24 @@ namespace Models.PMF.Organs
             nRetranslocationSupply = AvailableNRetranslocation();
         }
 
+        /// <summary>Computes root total water supply.</summary>
+        public double TotalExtractableWater()
+        {
+            double[] LL = PlantZone.soil.LL(Plant.Name);
+            double[] KL = PlantZone.soil.KL(Plant.Name);
+            double[] SWmm = PlantZone.soil.Water;
+            double[] DZ = PlantZone.soil.Thickness;
+
+            double supply = 0;
+            for (int layer = 0; layer < LL.Length; layer++)
+            {
+                if (layer <= Soil.LayerIndexOfDepth(Depth, PlantZone.soil.Thickness))
+                    supply += Math.Max(0.0, KL[layer] * klModifier.Value(layer) * (SWmm[layer] - LL[layer] * DZ[layer]) *
+                        Soil.ProportionThroughLayer(layer, Depth, DZ));
+            }
+            return supply;
+        }
+
         /// <summary>Computes the amount of DM available for reallocation.</summary>
         private double AvailableDMReallocation()
         {
@@ -1015,17 +1076,19 @@ namespace Models.PMF.Organs
             {
                 foreach (ZoneState Z in Zones)
                     Z.GrowRootDepth();
+
                 // Do Root Senescence
                 RemoveBiomass(null, new OrganBiomassRemovalType() { FractionLiveToResidue = senescenceRate.Value() });
+
+                // Do maintenance respiration
+                MaintenanceRespiration = 0;
+                if (maintenanceRespirationFunction != null && (Live.MetabolicWt + Live.StorageWt) > 0)
+                {
+                    MaintenanceRespiration += Live.MetabolicWt * maintenanceRespirationFunction.Value();
+                    MaintenanceRespiration += Live.StorageWt * maintenanceRespirationFunction.Value();
+                }
+                needToRecalculateLiveDead = true;
             }
-            needToRecalculateLiveDead = false;
-            // Do maintenance respiration
-            MaintenanceRespiration = 0;
-            MaintenanceRespiration += Live.MetabolicWt * maintenanceRespirationFunction.Value();
-            // Live.MetabolicWt *= (1 - maintenanceRespirationFunction.Value());
-            MaintenanceRespiration += Live.StorageWt * maintenanceRespirationFunction.Value();
-            // Live.StorageWt *= (1 - maintenanceRespirationFunction.Value());
-            needToRecalculateLiveDead = true;
         }
 
         /// <summary>Called when crop is ending</summary>

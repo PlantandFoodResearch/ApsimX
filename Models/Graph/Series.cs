@@ -206,7 +206,7 @@ namespace Models.Graph
                 List<string> factorValues = new List<string>();
                 factors.ForEach(factor => factorValues.Add(factor.GetFactorValue(factorName)));
 
-                if (factorValues.Distinct().Count() == 1)
+                if (factors.Count != 1 && factorValues.Distinct().Count() == 1)
                 {
                     // All factor values are the same so remove the factor.
                     factors.ForEach(factor => factor.RemoveFactor(factorName));
@@ -235,15 +235,10 @@ namespace Models.Graph
                 foreach (var factor in factors)
                     foreach (var factorToRemove in factorsToRemove)
                         factor.RemoveFactor(factorToRemove);
-
-                // Remove empty factors
-                factors.RemoveAll(f => f.Factors.Count == 0);
-
-                //// Make sure each factor has the factors we want to keep.
-                //foreach (var factor in factors)
-                //    foreach (var factorToKeep in factorsToKeep)
-                //        factor.AddFactorIfNotExist(factorToKeep, "?");
             }
+
+            // Remove empty factors
+            factors.RemoveAll(f => f.Factors.Count == 0);
         }
 
         /// <summary>

@@ -237,7 +237,7 @@ namespace UserInterface.Commands
                 ExplorerPresenter examplePresenter = ExplorerPresenter.MainPresenter.OpenApsimXFileInTab(exampleFileName, onLeftTabControl: true);
 
                 Memo instructionsMemo = userDocumentation.Children[0] as Memo;
-                string[] instructions = instructionsMemo.MemoText.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                string[] instructions = instructionsMemo.Text.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 foreach (string instruction in instructions)
                 {
                     IModel model = Apsim.Find(examplePresenter.ApsimXFile, instruction);
@@ -373,7 +373,14 @@ namespace UserInterface.Commands
             // Determine the name of the .png file to write.
             string PNGFileName = Path.Combine(graphDirectory,
                                               graphAndTable.xyPairs.Parent.Parent.Name + graphAndTable.xyPairs.Parent.Name + ".png");
-
+            int count = 0;
+            // If there are multiple graphs with the same name, they may overwrite each other.
+            // Therefore, we attempt to generate a unique name. After 20 attempts, we give up.
+            while (File.Exists(PNGFileName) && count < 20)
+            {
+                count++;
+                PNGFileName = Path.Combine(graphDirectory, graphAndTable.xyPairs.Parent.Parent.Name + graphAndTable.xyPairs.Parent.Name + Guid.NewGuid() + ".png");
+            }
             // Setup graph.
             GraphView graph = new GraphView();
             graph.Clear();
