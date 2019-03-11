@@ -19,6 +19,7 @@ namespace Models.CLEM.Resources
     [ValidParent(ParentType = typeof(ProductStore))]
     [Description("This resource represents a manure store. This is a special type of Product Store Type and is needed for manure management and must be named \"Manure\".")]
     [Version(1, 0, 1, "")]
+    [HelpUri(@"content/features/resources/products/manuretype.htm")]
     public class ProductStoreTypeManure: CLEMResourceTypeBase, IResourceWithTransactionType, IResourceType
     {
         /// <summary>
@@ -109,7 +110,7 @@ namespace Models.CLEM.Resources
         [EventSubscribe("CLEMAgeResources")]
         private void OnCLEMAgeResources(object sender, EventArgs e)
         {
-            // decay N and DMD of pools and age by 1 month
+            // decay Amount and Moisture of pools and age by 1 month
             foreach (ManureStoreUncollected store in UncollectedStores)
             {
                 foreach (ManurePool pool in store.Pools)

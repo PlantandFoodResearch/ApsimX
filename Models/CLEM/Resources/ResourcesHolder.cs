@@ -22,6 +22,7 @@ namespace Models.CLEM.Resources
     [ValidParent(ParentType = typeof(ZoneCLEM))]
     [Description("This holds all resource groups used in the CLEM simulation")]
     [Version(1, 0, 1, "")]
+    [HelpUri(@"content/features/resources/resourcesholder.htm")]
     public class ResourcesHolder: CLEMModel, IValidatableObject
     {
         // Scoping rules of Linking in Apsim means that you can only link to 
@@ -54,6 +55,7 @@ namespace Models.CLEM.Resources
 
         private IModel GetGroupByType(Type type)
         {
+            ResourceGroupList = Apsim.Children(this, typeof(IModel));
             return ResourceGroupList.Find(x => x.GetType() == type);
         }
 
@@ -248,7 +250,7 @@ namespace Models.CLEM.Resources
             string[] names = resourceGroupAndItem.Split('.');
             if(names.Count()!=2)
             {
-                string errorMsg = String.Format("@error:Invalid resource group and type string for [{0}], expecting 'Resourcename.ResourceTypeName'. Value provided [{1}] ", requestingModel.Name, resourceGroupAndItem);
+                string errorMsg = String.Format("@error:Invalid resource group and type string for [{0}], expecting 'ResourceName.ResourceTypeName'. Value provided [{1}] ", requestingModel.Name, resourceGroupAndItem);
                 throw new Exception(errorMsg);
             }
 
@@ -400,7 +402,7 @@ namespace Models.CLEM.Resources
             foreach (ResourceRequest request in shortfallRequests)
             {
                 // Check if transmutation would be successful 
-                if (request.AllowTransmutation & (queryOnly || request.TransmutationPossible))
+                if (request.AllowTransmutation && (queryOnly || request.TransmutationPossible))
                 {
                     // get resource type
                     IModel model = this.GetResourceItem(request.ActivityModel, request.ResourceType, request.ResourceTypeName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore) as IModel;
@@ -411,28 +413,15 @@ namespace Models.CLEM.Resources
                         {
                             // check if resources available for activity and transmutation
                             double unitsNeeded = Math.Ceiling((request.Required - request.Available) / trans.AmountPerUnitPurchase);
-                            foreach (TransmutationCost transcost in Apsim.Children(trans, typeof(TransmutationCost)))
+                            foreach (ITransmutationCost transcost in Apsim.Children(trans, typeof(IModel)).Where(a => a is ITransmutationCost).Cast<ITransmutationCost>())
                             {
                                 double transmutationCost = unitsNeeded * transcost.CostPerUnit;
 
                                 // get transcost resource
                                 IResourceType transResource = null;
-                                if (transcost.ResourceName == "Labour")
+                                if (transcost.ResourceType.Name != "Labour")
                                 {
-                                    // get by labour group filter under the transmutation cost
-                                    ResourceRequest labourRequest = new ResourceRequest();
-                                    labourRequest.ActivityModel = request.ActivityModel;
-                                    labourRequest.ResourceType = typeof(Labour);
-                                    labourRequest.FilterDetails = Apsim.Children(transcost, typeof(LabourFilterGroup)).ToList<object>();
-                                    transResource = this.GetResourceItem(labourRequest, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore) as IResourceType;
-
-                                    // TODO: put group name in the transcost resource type name
-                                    // this still needs to be checked
-                                    transcost.ResourceTypeName = (transResource as LabourType).Name;
-                                }
-                                else
-                                {
-                                    transResource = this.GetResourceItem(request.ActivityModel, transcost.ResourceType, transcost.ResourceTypeName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore) as IResourceType;
+                                    transResource = this.GetResourceItem(request.ActivityModel, transcost.ResourceTypeName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore) as IResourceType;
                                 }
 
                                 if (!queryOnly)
@@ -446,11 +435,21 @@ namespace Models.CLEM.Resources
                                     transRequest.ActivityModel = request.ActivityModel;
 
                                     // used to pass request, but this is not the transmutation cost
-                                    transResource.Remove(transRequest);
+
+                                    if (transcost.ResourceType.Name == "Labour")
+                                    {
+                                        transRequest.ResourceType = typeof(Labour);
+                                        transRequest.FilterDetails = Apsim.Children(transcost as IModel, typeof(LabourFilterGroup)).ToList<object>();
+                                        CLEMActivityBase.TakeLabour(transRequest, true, transRequest.ActivityModel, this, OnPartialResourcesAvailableActionTypes.UseResourcesAvailable);
+                                    }
+                                    else
+                                    {
+                                        transResource.Remove(transRequest);
+                                    }
                                 }
                                 else
                                 {
-                                    double activityCost = requests.Where(a => a.ResourceType == transcost.ResourceType & a.ResourceTypeName == transcost.ResourceTypeName).Sum(a => a.Required);
+                                    double activityCost = requests.Where(a => a.ResourceType == transcost.ResourceType && a.ResourceTypeName == transcost.ResourceTypeName).Sum(a => a.Required);
                                     if (transmutationCost + activityCost <= transResource.Amount)
                                     {
                                         request.TransmutationPossible = true;

@@ -22,6 +22,7 @@ namespace UserInterface.Presenters
     using Commands;
     using System.Drawing;
     using Models.CLEM.Resources;
+    using Models.Storage;
 
     /// <summary>
     /// <para>
@@ -43,7 +44,7 @@ namespace UserInterface.Presenters
         /// Linked storage reader
         /// </summary>
         [Link]
-        private IStorageReader storage = null;
+        private IDataStore storage = null;
 
         /// <summary>
         /// The model we're going to examine for properties.
@@ -231,8 +232,9 @@ namespace UserInterface.Presenters
 
                         if (Attribute.IsDefined(member, typeof(SeparatorAttribute)))
                         {
-                            SeparatorAttribute separator = Attribute.GetCustomAttribute(member, typeof(SeparatorAttribute)) as SeparatorAttribute;
-                            properties.Add(new VariableObject(separator.ToString()));  // use a VariableObject for separators
+                            SeparatorAttribute[] separators = Attribute.GetCustomAttributes(member, typeof(SeparatorAttribute)) as SeparatorAttribute[];
+                            foreach (SeparatorAttribute separator in separators)
+                                properties.Add(new VariableObject(separator.ToString()));  // use a VariableObject for separators
                         }
 
                         //If the above conditions have been met and,
@@ -394,7 +396,7 @@ namespace UserInterface.Presenters
                          properties[i].Display.Type == DisplayType.TableName)
                 {
                     cell.EditorType = EditorTypeEnum.DropDown;
-                    cell.DropDownStrings = storage.TableNames.ToArray();
+                    cell.DropDownStrings = storage.Reader.TableNames.ToArray();
                 }
                 else if (properties[i].Display != null && 
                          properties[i].Display.Type == DisplayType.CultivarName)
@@ -471,8 +473,8 @@ namespace UserInterface.Presenters
                     List<string> fieldNames = new List<string>();
                     Simulation clemParent = Apsim.Parent(this.model, typeof(Simulation)) as Simulation;
                     // get GRASP file names
-                    fieldNames.AddRange(Apsim.Children(clemParent, typeof(FileGRASP)).Select(a => a.Name).ToList());
-                    fieldNames.AddRange(Apsim.Children(clemParent, typeof(FileSQLiteGRASP)).Select(a => a.Name).ToList());
+                    fieldNames.AddRange(Apsim.ChildrenRecursively(clemParent, typeof(FileGRASP)).Select(a => a.Name).ToList());
+                    fieldNames.AddRange(Apsim.ChildrenRecursively(clemParent, typeof(FileSQLiteGRASP)).Select(a => a.Name).ToList());
                     if (fieldNames.Count != 0)
                     {
                         cell.DropDownStrings = fieldNames.ToArray();
@@ -585,8 +587,8 @@ namespace UserInterface.Presenters
                     {
                         string tableName = cell.Value.ToString();
                         DataTable data = null;
-                        if (storage.TableNames.Contains(tableName))
-                            data = storage.RunQuery("SELECT * FROM " + tableName + " LIMIT 1");
+                        if (storage.Reader.TableNames.Contains(tableName))
+                            data = storage.Reader.GetDataUsingSql("SELECT * FROM " + tableName + " LIMIT 1");
                         if (data != null)
                         {
                             fieldNames = DataTableUtilities.GetColumnNames(data).ToList();
@@ -651,16 +653,38 @@ namespace UserInterface.Presenters
             List<string> result = new List<string>();
             ZoneCLEM zoneCLEM = Apsim.Parent(this.model, typeof(ZoneCLEM)) as ZoneCLEM;
             ResourcesHolder resHolder = Apsim.Child(zoneCLEM, typeof(ResourcesHolder)) as ResourcesHolder;
-            foreach (Type resGroupType in resourceNameResourceGroups)
+            if (resourceNameResourceGroups != null)
             {
-                IModel resGroup = Apsim.Child(resHolder, resGroupType);
-                if (resGroup != null)  //see if this group type is included in this particular simulation.
+                // resource groups specified (use them)
+                foreach (Type resGroupType in resourceNameResourceGroups)
+                {
+                    IModel resGroup = Apsim.Child(resHolder, resGroupType);
+                    if (resGroup != null)  //see if this group type is included in this particular simulation.
+                    {
+                        foreach (IModel item in resGroup.Children)
+                        {
+                            if (item.GetType() != typeof(Memo))
+                            {
+                                result.Add(resGroup.Name + "." + item.Name);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // no resource groups specified so use all avaliable resources
+                foreach (IModel resGroup in Apsim.Children(resHolder, typeof(IModel)))
                 {
                     foreach (IModel item in resGroup.Children)
                     {
-                        result.Add(resGroup.Name + "." + item.Name);
+                        if (item.GetType() != typeof(Memo))
+                        {
+                            result.Add(resGroup.Name + "." + item.Name);
+                        }
                     }
                 }
+
             }
             return result.ToArray();
         }

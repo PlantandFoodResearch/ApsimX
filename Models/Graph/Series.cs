@@ -16,6 +16,8 @@ namespace Models.Graph
     using Models.Core;
     using Models.Factorial;
     using Storage;
+    using Models.Core.Run;
+    using Models.CLEM;
 
     /// <summary>The class represents a single series on a graph</summary>
     [ValidParent(ParentType = typeof(Graph))]
@@ -121,13 +123,13 @@ namespace Models.Graph
         /// <summary>Called by the graph presenter to get a list of all actual series to put on the graph.</summary>
         /// <param name="definitions">A list of definitions to add to.</param>
         /// <param name="storage">Storage service</param>
-        public void GetSeriesToPutOnGraph(IStorageReader storage, List<SeriesDefinition> definitions)
+        public void GetSeriesToPutOnGraph(IDataStore storage, List<SeriesDefinition> definitions)
         {
             List<SeriesDefinition> ourDefinitions = new List<SeriesDefinition>();
 
             // If this series doesn't have a table name then it must be getting its data from other models.
-            if (TableName == null)
-                ourDefinitions.Add(CreateDefinition(Name, null, Colour, Marker, Line, null));
+            if (TableName == null || !storage.Reader.ColumnNames(TableName).Contains("SimulationID"))
+                ourDefinitions.Add(CreateDefinition(Name, null, Colour, Marker, Line, null, storage.Reader));
             else
             {
                 // Find a parent that heads the scope that we're going to graph
@@ -281,7 +283,7 @@ namespace Models.Graph
         /// <summary>Find a parent to base our series on.</summary>
         private IModel FindParent()
         {
-            Type[] parentTypesToMatch = new Type[] { typeof(Simulation), typeof(Zone), typeof(Experiment),
+            Type[] parentTypesToMatch = new Type[] { typeof(Simulation), typeof(Zone), typeof(ZoneCLEM), typeof(Experiment),
                                                      typeof(Folder), typeof(Simulations) };
 
             IModel obj = Parent;
@@ -322,7 +324,7 @@ namespace Models.Graph
         /// <param name="factors">The simulation/zone pairs to change</param>
         /// <param name="storage">Storage reader</param>
         /// <param name="baseData">Base data</param>
-        private List<SeriesDefinition> ConvertToSeriesDefinitions(List<ISimulationGeneratorFactors> factors, IStorageReader storage, DataTable baseData)
+        private List<SeriesDefinition> ConvertToSeriesDefinitions(List<ISimulationGeneratorFactors> factors, IDataStore storage, DataTable baseData)
         {
             // Create an appropriate painter object
             SimulationZonePainter.IPainter painter;
@@ -418,8 +420,8 @@ namespace Models.Graph
                 seriesDefinition.yFieldName = YFieldName;
                 seriesDefinition.xAxis = XAxis;
                 seriesDefinition.yAxis = YAxis;
-                seriesDefinition.xFieldUnits = storage.GetUnits(TableName, XFieldName);
-                seriesDefinition.yFieldUnits = storage.GetUnits(TableName, YFieldName);
+                seriesDefinition.xFieldUnits = storage.Reader.Units(TableName, XFieldName);
+                seriesDefinition.yFieldUnits = storage.Reader.Units(TableName, YFieldName);
                 seriesDefinition.showInLegend = ShowInLegend;
                 if (factor.Factors.Count == 1 && factor.Factors[0].Key == "Graph series")
                     seriesDefinition.title = Name;
@@ -437,7 +439,7 @@ namespace Models.Graph
                 DataView data = new DataView(baseData);
                 try
                 {
-                    data.RowFilter = CreateRowFilter(storage, new ISimulationGeneratorFactors[] { factor },
+                    data.RowFilter = CreateRowFilter(new ISimulationGeneratorFactors[] { factor },
                                                      DataTableUtilities.GetColumnNames(baseData));
                 }
                 catch
@@ -469,8 +471,9 @@ namespace Models.Graph
         /// <param name="line">The line type.</param>
         /// <param name="marker">The marker type.</param>
         /// <param name="simulationNames">A list of simulations to include in data.</param>
+        /// <param name="storage">Storage reader.</param>
         /// <returns>The newly created definition.</returns>
-        private SeriesDefinition CreateDefinition(string title, string filter, Color colour, MarkerType marker, LineType line, string[] simulationNames)
+        private SeriesDefinition CreateDefinition(string title, string filter, Color colour, MarkerType marker, LineType line, string[] simulationNames, IStorageReader storage)
         {
             SeriesDefinition definition = new SeriesDefinition();
             definition.SimulationNames = simulationNames;
@@ -501,6 +504,25 @@ namespace Models.Graph
                     definition.x2 = GetDataFromModels(X2FieldName);
                 if (!String.IsNullOrEmpty(Y2FieldName))
                     definition.y2 = GetDataFromModels(Y2FieldName);
+            }
+            else
+            {
+                List<string> fieldNames = new List<string>();
+                if (!string.IsNullOrWhiteSpace(XFieldName))
+                    fieldNames.Add(XFieldName);
+                if (!string.IsNullOrWhiteSpace(YFieldName))
+                    fieldNames.Add(YFieldName);
+                if (!string.IsNullOrWhiteSpace(X2FieldName))
+                    fieldNames.Add(X2FieldName);
+                if (!string.IsNullOrWhiteSpace(Y2FieldName))
+                    fieldNames.Add(Y2FieldName);
+
+                DataTable data = storage.GetData(TableName, fieldNames: fieldNames, filter: Filter);
+
+                definition.x = GetDataFromTable(data, XFieldName);
+                definition.y = GetDataFromTable(data, YFieldName);
+                definition.x2 = GetDataFromTable(data, X2FieldName);
+                definition.y2 = GetDataFromTable(data, Y2FieldName);
             }
 
             return definition;
@@ -598,9 +620,9 @@ namespace Models.Graph
         /// </summary>
         /// <param name="factors">The list of simulation / zone pairs.</param>
         /// <param name="storage">Storage service</param>
-        private DataTable GetBaseData(IStorageReader storage, List<ISimulationGeneratorFactors> factors)
+        private DataTable GetBaseData(IDataStore storage, List<ISimulationGeneratorFactors> factors)
         {
-            var columnsInTable = storage.ColumnNames(TableName).ToList();
+            var columnsInTable = storage.Reader.ColumnNames(TableName).ToList();
             columnsInTable.Add("SimulationName");
             List<string> fieldNames = new List<string>();
             foreach (ISimulationGeneratorFactors factor in factors)
@@ -614,7 +636,7 @@ namespace Models.Graph
                 fieldNames.Add(YFieldName);
             if (YFieldName != null)
             {
-                if (storage.ColumnNames(TableName).Contains(YFieldName + "Error"))
+                if (storage.Reader.ColumnNames(TableName).Contains(YFieldName + "Error"))
                     fieldNames.Add(YFieldName + "Error");
             }
             if (X2FieldName != null)
@@ -628,16 +650,16 @@ namespace Models.Graph
 
             string filterToUse;
             if (Filter == null || Filter == string.Empty)
-                filterToUse = CreateRowFilter(storage, factors, columnsInTable);
+                filterToUse = CreateRowFilter(factors, columnsInTable);
             else
             {
-                var f = CreateRowFilter(storage, factors, columnsInTable);
+                var f = CreateRowFilter(factors, columnsInTable);
                 if (f != null)
                     filterToUse = Filter + " AND (" + f + ")";
                 else
                     filterToUse = Filter;
             }
-            return storage.GetData(tableName: TableName, checkpointName: Checkpoint, fieldNames: fieldNames.Distinct(), filter: filterToUse);
+            return storage.Reader.GetData(tableName: TableName, checkpointName: Checkpoint, fieldNames: fieldNames.Distinct(), filter: filterToUse);
         }
 
 
@@ -657,10 +679,9 @@ namespace Models.Graph
         /// <summary>
         /// Create a row filter for the specified factors.
         /// </summary>
-        /// <param name="storage">Storage service</param>
         /// <param name="factors">A list of factors to build a filter for.</param>
         /// <param name="columnsInTable">Columns in table</param>
-        private string CreateRowFilter(IStorageReader storage, IEnumerable<ISimulationGeneratorFactors> factors, IEnumerable<string> columnsInTable)
+        private string CreateRowFilter(IEnumerable<ISimulationGeneratorFactors> factors, IEnumerable<string> columnsInTable)
         {
             string factorFilters = null;
 

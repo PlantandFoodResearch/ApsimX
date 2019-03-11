@@ -281,7 +281,7 @@ namespace Models.CLEM.Activities
         {
             // Get resources needed and use substitution if needed and provided, then move through children getting their resources.
 
-            if ((model.GetType() == typeof(ActivitiesHolder)&this.AllocationStyle== ResourceAllocationStyle.Automatic)|| (model.GetType() != typeof(ActivitiesHolder)))
+            if ((model.GetType() == typeof(ActivitiesHolder)&&this.AllocationStyle== ResourceAllocationStyle.Automatic)|| (model.GetType() != typeof(ActivitiesHolder)))
             {
                 // this will be perfomred if
                 // (a) the call has come from the Activity Holder and is therefore using the GetResourcesRequired event and the allocation style is automatic, or
@@ -366,7 +366,7 @@ namespace Models.CLEM.Activities
                 // if no resources required perform Activity if code is present.
                 // if resources are returned (all available or UseResourcesAvailable action) perform Activity
                 // if reportErrorAndStop or SkipActivity do not perform Activity
-                if (tookRequestedResources | (ResourceRequestList.Count == 0))
+                if (tookRequestedResources || (ResourceRequestList.Count == 0))
                 {
                     DoActivity();
                 }
@@ -496,8 +496,11 @@ namespace Models.CLEM.Activities
         /// </summary>
         /// <param name="request">Resource request details</param>
         /// <param name="removeFromResource">Determines if only calculating available labour or labour removed</param>
+        /// <param name="callingModel">Model calling this method</param>
+        /// <param name="resourceHolder">Location of resource holder</param>
+        /// <param name="partialAction">Action on partial resources available</param>
         /// <returns></returns>
-        private double TakeLabour(ResourceRequest request, bool removeFromResource)
+        public static double TakeLabour(ResourceRequest request, bool removeFromResource, IModel callingModel, ResourcesHolder resourceHolder, OnPartialResourcesAvailableActionTypes partialAction )
         {
             double amountProvided = 0;
             double amountNeeded = request.Required;
@@ -506,11 +509,24 @@ namespace Models.CLEM.Activities
             LabourRequirement lr;
             if (current!=null)
             {
-                lr = current.Parent as LabourRequirement;
+                if (current.Parent is LabourRequirement)
+                {
+                    lr = current.Parent as LabourRequirement;
+                }
+                else
+                {
+                    // coming from Transmutation request
+                    lr = new LabourRequirement()
+                    {
+                        ApplyToAll = false,
+                        MaximumPerPerson = 1000,
+                        MinimumPerPerson = 0
+                    };
+                }
             }
             else
             {
-                lr = Apsim.Children(this, typeof(LabourRequirement)).FirstOrDefault() as LabourRequirement;
+                lr = Apsim.Children(callingModel, typeof(LabourRequirement)).FirstOrDefault() as LabourRequirement;
             }
 
             int currentIndex = 0;
@@ -538,14 +554,14 @@ namespace Models.CLEM.Activities
             };
 
             // start with top most LabourFilterGroup
-            while (current != null & amountProvided < amountNeeded)
+            while (current != null && amountProvided < amountNeeded)
             {
-                List<LabourType> items = (Resources.GetResourceGroupByType(request.ResourceType) as Labour).Items;
-                items = items.Where(a => (a.LastActivityRequestID != request.ActivityID) | (a.LastActivityRequestID == request.ActivityID & a.LastActivityRequestAmount < lr.MaximumPerPerson)).ToList();
+                List<LabourType> items = (resourceHolder.GetResourceGroupByType(request.ResourceType) as Labour).Items;
+                items = items.Where(a => (a.LastActivityRequestID != request.ActivityID) || (a.LastActivityRequestID == request.ActivityID && a.LastActivityRequestAmount < lr.MaximumPerPerson)).ToList();
                 items = items.Filter(current as Model);
 
                 // search for people who can do whole task first
-                while (amountProvided < amountNeeded & items.Where(a => a.LabourCurrentlyAvailableForActivity(request.ActivityID, lr.MaximumPerPerson) >= request.Required).Count() > 0)
+                while (amountProvided < amountNeeded && items.Where(a => a.LabourCurrentlyAvailableForActivity(request.ActivityID, lr.MaximumPerPerson) >= request.Required).Count() > 0)
                 {
                     // get labour least available but with the amount needed
                     LabourType lt = items.Where(a => a.LabourCurrentlyAvailableForActivity(request.ActivityID, lr.MaximumPerPerson) >= request.Required).OrderBy(a => a.LabourCurrentlyAvailableForActivity(request.ActivityID, lr.MaximumPerPerson)).FirstOrDefault();
@@ -563,6 +579,7 @@ namespace Models.CLEM.Activities
 
                     amountProvided += amount;
                     removeRequest.Required = amount;
+//                    removeRequest.ResourceType = lt;
                     if (removeFromResource)
                     {
                         lt.LastActivityRequestID = request.ActivityID;
@@ -572,7 +589,7 @@ namespace Models.CLEM.Activities
                 }
 
                 // if still needed and allow partial resource use.
-                if (this.OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseResourcesAvailable)
+                if (partialAction == OnPartialResourcesAvailableActionTypes.UseResourcesAvailable)
                 {
                     if (amountProvided < amountNeeded)
                     {
@@ -646,7 +663,7 @@ namespace Models.CLEM.Activities
                 request.Available = Math.Min(request.Resource.Amount, request.Required);
             }
 
-            if(removeFromResource & request.Resource != null)
+            if(removeFromResource && request.Resource != null)
             {
                 request.Resource.Remove(request);
             }
@@ -683,7 +700,7 @@ namespace Models.CLEM.Activities
                     if (request.ResourceType == typeof(Labour))
                     {
                         // get available labour based on rules.
-                        request.Available = TakeLabour(request, false);
+                        request.Available = TakeLabour(request, false, this, Resources, this.OnPartialResourcesAvailableAction);
                     }
                     else
                     {
@@ -702,11 +719,11 @@ namespace Models.CLEM.Activities
             }
 
             // check if need to do transmutations
-            int countTransmutationsSuccessful = shortfallRequests.Where(a => a.TransmutationPossible == true & a.AllowTransmutation).Count();
-            bool allTransmutationsSuccessful = (shortfallRequests.Where(a => a.TransmutationPossible == false & a.AllowTransmutation).Count() == 0);
+            int countTransmutationsSuccessful = shortfallRequests.Where(a => a.TransmutationPossible == true && a.AllowTransmutation).Count();
+            bool allTransmutationsSuccessful = (shortfallRequests.Where(a => a.TransmutationPossible == false && a.AllowTransmutation).Count() == 0);
 
             // OR at least one transmutation successful and PerformWithPartialResources
-            if (((countShortfallRequests > 0) & (countShortfallRequests == countTransmutationsSuccessful)) || (countTransmutationsSuccessful > 0 & OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseResourcesAvailable))
+            if (((countShortfallRequests > 0) && (countShortfallRequests == countTransmutationsSuccessful)) || (countTransmutationsSuccessful > 0 && OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseResourcesAvailable))
             {
                 // do transmutations.
                 Resources.TransmutateShortfall(shortfallRequests, false);
@@ -785,7 +802,7 @@ namespace Models.CLEM.Activities
                         if (request.ResourceType == typeof(Labour))
                         {
                             // get available labour based on rules.
-                            request.Available = TakeLabour(request, true);
+                            request.Available = TakeLabour(request, true, this, Resources, this.OnPartialResourcesAvailableAction);
                         }
                         else
                         {
@@ -921,6 +938,10 @@ namespace Models.CLEM.Activities
         /// Indicates activity occurred but was not needed
         /// </summary>
         NotNeeded,
+        /// <summary>
+        /// Indicates activity cuased a warning and was not perfromed
+        /// </summary>
+        Warning,
         /// <summary>
         /// Indicates activity was place holder or parent activity
         /// </summary>

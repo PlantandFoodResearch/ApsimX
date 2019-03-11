@@ -16,6 +16,7 @@ namespace UserInterface.Presenters
     using Models.CLEM.Resources;
     using Utility;
     using Views;
+    using Models.Storage;
 
     /// <summary>
     /// <para>
@@ -37,7 +38,7 @@ namespace UserInterface.Presenters
         /// Linked storage reader
         /// </summary>
         [Link]
-        private IStorageReader storage = null;
+        private IDataStore storage = null;
 
         /// <summary>
         /// The underlying grid control to work with.
@@ -412,7 +413,7 @@ namespace UserInterface.Presenters
                 if (this.properties[propListIndex][i].Display != null && this.properties[propListIndex][i].Display.Type == DisplayType.TableName)
                 {
                     cell.EditorType = EditorTypeEnum.DropDown;
-                    cell.DropDownStrings = this.storage.TableNames.ToArray();
+                    cell.DropDownStrings = this.storage.Reader.TableNames.ToArray();
                 }
                 else if (this.properties[propListIndex][i].Display != null && this.properties[propListIndex][i].Display.Type == DisplayType.CultivarName)
                 {
@@ -554,9 +555,9 @@ namespace UserInterface.Presenters
                     {
                         string tableName = cell.Value.ToString();
                         DataTable data = null;
-                        if (storage.TableNames.Contains(tableName))
+                        if (storage.Reader.TableNames.Contains(tableName))
                         {
-                            data = this.storage.RunQuery("SELECT * FROM " + tableName + " LIMIT 1");
+                            data = this.storage.Reader.GetDataUsingSql("SELECT * FROM " + tableName + " LIMIT 1");
                         }
 
                         if (data != null)
@@ -608,9 +609,9 @@ namespace UserInterface.Presenters
 
         /// <summary>
         /// Gets the names of all the items for each ResourceGroup whose items you want to put into a dropdown list.
-        /// Se
         /// eg. "AnimalFoodStore,HumanFoodStore,ProductStore"
         /// Will create a dropdown list with all the items from the AnimalFoodStore, HumanFoodStore and ProductStore.
+        /// A blank list of ResourceNameResourceGroups will result in all available resources types being created in the list
         /// 
         /// To help uniquely identify items in the dropdown list will need to add the ResourceGroup name to the item name.
         /// eg. The names in the drop down list will become AnimalFoodStore.Wheat, HumanFoodStore.Wheat, ProductStore.Wheat, etc. 
@@ -623,6 +624,7 @@ namespace UserInterface.Presenters
             List<string> result = new List<string>();
             ZoneCLEM zoneCLEM = Apsim.Parent(this.model, typeof(ZoneCLEM)) as ZoneCLEM;
             ResourcesHolder resHolder = Apsim.Child(zoneCLEM, typeof(ResourcesHolder)) as ResourcesHolder;
+
             foreach (Type resGroupType in resourceNameResourceGroups)
             {
                 IModel resGroup = Apsim.Child(resHolder, resGroupType);

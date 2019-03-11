@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Serialization;
+using Models.CLEM.Activities;
 using Models.Core;
 using Models.Core.Attributes;
 
@@ -15,6 +17,7 @@ namespace Models.CLEM.Resources
     [ValidParent(ParentType = typeof(RuminantType))]
     [Description("This holds the list of initial cohorts for a given (parent) ruminant herd or type.")]
     [Version(1, 0, 1, "")]
+    [HelpUri(@"content/features/resources/ruminant/ruminantcohorts.htm")]
     public class RuminantInitialCohorts : CLEMModel
     {
         /// <summary>
@@ -68,7 +71,7 @@ namespace Models.CLEM.Resources
         public override string ModelSummaryInnerOpeningTags(bool formatForParentControl)
         {
             string html = "";
-            html += "<table><tr><th>Name</th><th>Gender</th><th>Age</th><th>Weight</th><th>Number</th><th>Suckling</th><th>Sire</th></tr>";
+            html += "<table><tr><th>Name</th><th>Gender</th><th>Age</th><th>Weight</th><th>Norm.Wt.</th><th>Number</th><th>Suckling</th><th>Sire</th></tr>";
             return html;
         }
 
