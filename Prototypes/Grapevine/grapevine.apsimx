@@ -56,12 +56,12 @@
                 {
                   "$type": "Models.PMF.Phen.GenericPhase, Models",
                   "Start": "EndoDormancy",
-                  "End": "EncoDormancy",
+                  "End": "EcoDormancy",
                   "Name": "Dormancy",
                   "Children": [
                     {
                       "$type": "Models.Functions.Constant, Models",
-                      "FixedValue": 0.1,
+                      "FixedValue": 1.0,
                       "Units": null,
                       "Name": "Target",
                       "Children": [],
@@ -85,13 +85,13 @@
                 },
                 {
                   "$type": "Models.PMF.Phen.GenericPhase, Models",
-                  "Start": "EncoDormancy",
+                  "Start": "EcoDormancy",
                   "End": "StartFlowering",
                   "Name": "Veg",
                   "Children": [
                     {
                       "$type": "Models.Functions.Constant, Models",
-                      "FixedValue": 50.0,
+                      "FixedValue": 40.7,
                       "Units": null,
                       "Name": "Target",
                       "Children": [],
@@ -121,7 +121,7 @@
                   "Children": [
                     {
                       "$type": "Models.Functions.Constant, Models",
-                      "FixedValue": 3.0,
+                      "FixedValue": 0.1,
                       "Units": null,
                       "Name": "Target",
                       "Children": [],
@@ -155,7 +155,7 @@
                       "Children": [
                         {
                           "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 31.0,
+                          "FixedValue": 39.8,
                           "Units": null,
                           "Name": "Base",
                           "Children": [],
@@ -247,7 +247,7 @@
                 },
                 {
                   "$type": "Models.Functions.OnEventFunction, Models",
-                  "SetEvent": "EncoDormancy",
+                  "SetEvent": "EcoDormancy",
                   "ReSetEvent": "EndoDormancy",
                   "Name": "CurrentSeason",
                   "Children": [
@@ -361,56 +361,21 @@
                   "IncludeInDocumentation": true,
                   "Enabled": true,
                   "ReadOnly": false
-                }
-              ],
-              "IncludeInDocumentation": true,
-              "Enabled": true,
-              "ReadOnly": false
-            },
-            {
-              "$type": "Models.PMF.Organs.ReproductiveOrgan, Models",
-              "GrowthRespiration": 0.0,
-              "MaintenanceRespiration": 0.0,
-              "DMDemand": null,
-              "NDemand": null,
-              "DMSupply": null,
-              "NSupply": null,
-              "RipeStage": "Ripe",
-              "potentialDMAllocation": null,
-              "Live": {
-                "$type": "Models.PMF.Biomass, Models",
-                "DMDOfStructural": 0.6,
-                "Name": "Biomass",
-                "Children": [],
-                "IncludeInDocumentation": true,
-                "Enabled": true,
-                "ReadOnly": false
-              },
-              "Dead": {
-                "$type": "Models.PMF.Biomass, Models",
-                "DMDOfStructural": 0.6,
-                "Name": "Biomass",
-                "Children": [],
-                "IncludeInDocumentation": true,
-                "Enabled": true,
-                "ReadOnly": false
-              },
-              "Name": "Berry",
-              "Children": [
+                },
                 {
                   "$type": "Models.Functions.DivideFunction, Models",
                   "Name": "MeanTempInitiation",
                   "Children": [
                     {
-                      "$type": "Models.Functions.AccumulateFunction, Models",
-                      "StartStageName": "StartFlowering",
-                      "EndStageName": "Veraison",
-                      "ResetStageName": "StartFlowering",
+                      "$type": "Models.Functions.AccumulateByNumericPhase, Models",
+                      "StartStageName": 2.76,
+                      "EndStageName": 4.678,
+                      "ResetStageName": "EcoDormancy",
                       "FractionRemovedOnCut": 0.0,
                       "FractionRemovedOnHarvest": 0.0,
                       "FractionRemovedOnGraze": 0.0,
                       "FractionRemovedOnPrune": 0.0,
-                      "Name": "Temperature",
+                      "Name": "AccumulateByNumericPhase",
                       "Children": [
                         {
                           "$type": "Models.Functions.AirTemperatureFunction, Models",
@@ -443,127 +408,10 @@
                       "ReadOnly": false
                     },
                     {
-                      "$type": "Models.Functions.AccumulateFunction, Models",
-                      "StartStageName": "StartFlowering",
-                      "EndStageName": "Veraison",
-                      "ResetStageName": "StartFlowering",
-                      "FractionRemovedOnCut": 0.0,
-                      "FractionRemovedOnHarvest": 0.0,
-                      "FractionRemovedOnGraze": 0.0,
-                      "FractionRemovedOnPrune": 0.0,
-                      "Name": "Time",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 1.0,
-                          "Units": "days/day",
-                          "Name": "Days",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "IncludeInDocumentation": true,
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.Functions.DivideFunction, Models",
-                  "Name": "MeanTempFlowering",
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.AccumulateFunction, Models",
-                      "StartStageName": "StartFlowering",
-                      "EndStageName": "FruitSet",
-                      "ResetStageName": "StartFlowering",
-                      "FractionRemovedOnCut": 0.0,
-                      "FractionRemovedOnHarvest": 0.0,
-                      "FractionRemovedOnGraze": 0.0,
-                      "FractionRemovedOnPrune": 0.0,
-                      "Name": "Temperature",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.AirTemperatureFunction, Models",
-                          "Name": "AirTemperatureFunction",
-                          "Children": [
-                            {
-                              "$type": "Models.Functions.XYPairs, Models",
-                              "X": [
-                                0.0,
-                                40.0
-                              ],
-                              "Y": [
-                                0.0,
-                                40.0
-                              ],
-                              "Name": "XYPairs",
-                              "Children": [],
-                              "IncludeInDocumentation": true,
-                              "Enabled": true,
-                              "ReadOnly": false
-                            }
-                          ],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        },
-                        {
-                          "$type": "Models.Functions.AccumulateFunction, Models",
-                          "StartStageName": "StartFlowering",
-                          "EndStageName": "FruitSet",
-                          "ResetStageName": "StartFlowering",
-                          "FractionRemovedOnCut": 0.0,
-                          "FractionRemovedOnHarvest": 0.0,
-                          "FractionRemovedOnGraze": 0.0,
-                          "FractionRemovedOnPrune": 0.0,
-                          "Name": "Temperature",
-                          "Children": [
-                            {
-                              "$type": "Models.Functions.AirTemperatureFunction, Models",
-                              "Name": "AirTemperatureFunction",
-                              "Children": [
-                                {
-                                  "$type": "Models.Functions.XYPairs, Models",
-                                  "X": [
-                                    0.0,
-                                    40.0
-                                  ],
-                                  "Y": [
-                                    0.0,
-                                    40.0
-                                  ],
-                                  "Name": "XYPairs",
-                                  "Children": [],
-                                  "IncludeInDocumentation": true,
-                                  "Enabled": true,
-                                  "ReadOnly": false
-                                }
-                              ],
-                              "IncludeInDocumentation": true,
-                              "Enabled": true,
-                              "ReadOnly": false
-                            }
-                          ],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.AccumulateFunction, Models",
-                      "StartStageName": "StartFlowering",
-                      "EndStageName": "FruitSet",
-                      "ResetStageName": "StartFlowering",
+                      "$type": "Models.Functions.AccumulateByNumericPhase, Models",
+                      "StartStageName": 2.76,
+                      "EndStageName": 4.678,
+                      "ResetStageName": "EcoDormancy",
                       "FractionRemovedOnCut": 0.0,
                       "FractionRemovedOnHarvest": 0.0,
                       "FractionRemovedOnGraze": 0.0,
@@ -593,12 +441,12 @@
                 {
                   "$type": "Models.Functions.OnEventFunction, Models",
                   "SetEvent": "Veraison",
-                  "ReSetEvent": "StartFlowering",
+                  "ReSetEvent": "",
                   "Name": "MeanTempInitiationY0",
                   "Children": [
                     {
                       "$type": "Models.Functions.Constant, Models",
-                      "FixedValue": 13.0,
+                      "FixedValue": 15.0,
                       "Units": null,
                       "Name": "PreEventValue",
                       "Children": [],
@@ -608,7 +456,7 @@
                     },
                     {
                       "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Berry].MeanTempInitiation.Value()",
+                      "VariableName": "[Phenology].MeanTempInitiation.Value()",
                       "Name": "PostEventValue",
                       "Children": [],
                       "IncludeInDocumentation": true,
@@ -621,408 +469,126 @@
                   "ReadOnly": false
                 },
                 {
-                  "$type": "Models.Functions.MultiplyFunction, Models",
-                  "Name": "BunchesPerPlant",
+                  "$type": "Models.Functions.OnEventFunction, Models",
+                  "SetEvent": "Veraison",
+                  "ReSetEvent": "",
+                  "Name": "YieldEstimation",
                   "Children": [
-                    {
-                      "$type": "Models.Memo, Models",
-                      "Text": "\r\nNumbers were guessed based on Eltom 2013 Fig. 6.3. However, this is based on the mean daily temperature from 12 days pre-budbreak. the model only work forward, and can not know the budburst date before it actually happens. Furthermore, for the moment, it always require to calculate from certain phenological stage instead of actual date. \r\n\r\nFlowers per bunch is affected by the temperature and CHO during initiation, which affects the number of primary branches, temperature and CHO during bud burst, which affect the secondary braches and flower initiation, ",
-                      "Name": "Memo",
-                      "Children": [],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
                     {
                       "$type": "Models.Functions.Constant, Models",
-                      "FixedValue": 300.0,
+                      "FixedValue": 10.0,
                       "Units": null,
-                      "Name": "meanFlowersPerBunch",
+                      "Name": "PreEventValue",
                       "Children": [],
                       "IncludeInDocumentation": true,
                       "Enabled": true,
                       "ReadOnly": false
                     },
                     {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Berry].MeanTempInitiationY0.Value()",
-                      "Name": "TempInitiation",
+                      "$type": "Models.Functions.AddFunction, Models",
+                      "Name": "PostEventValue",
                       "Children": [
                         {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            0.0,
-                            10.0,
-                            14.0,
-                            15.0,
-                            17.0,
-                            20.0,
-                            40.0
-                          ],
-                          "Y": [
-                            0.0,
-                            0.76,
-                            1.0,
-                            1.0588,
-                            1.176,
-                            1.35,
-                            1.4
-                          ],
-                          "Name": "XYPairs",
+                          "$type": "Models.Functions.Constant, Models",
+                          "FixedValue": 0.0,
+                          "Units": null,
+                          "Name": "Constant",
                           "Children": [],
                           "IncludeInDocumentation": true,
                           "Enabled": true,
                           "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Berry].MeanTempBudBurst.Value()",
-                      "Name": "TempBudBurst",
-                      "Children": [
+                        },
                         {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            8.0,
-                            10.0,
-                            11.0,
-                            11.6,
-                            12.2,
-                            14.0
+                          "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                          "XProperty": "[Phenology].MeanTempInitiationY0",
+                          "Name": "LinearInterpolationFunction",
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.XYPairs, Models",
+                              "X": [
+                                15.0,
+                                20.0,
+                                25.0
+                              ],
+                              "Y": [
+                                9.0,
+                                12.0,
+                                15.0
+                              ],
+                              "Name": "XYPairs",
+                              "Children": [
+                                {
+                                  "$type": "Models.Graph.Graph, Models",
+                                  "Caption": null,
+                                  "Axis": [
+                                    {
+                                      "$type": "Models.Graph.Axis, Models",
+                                      "Type": 0,
+                                      "Title": "Y",
+                                      "Inverted": false,
+                                      "Minimum": "NaN",
+                                      "Maximum": "NaN",
+                                      "Interval": "NaN",
+                                      "DateTimeAxis": false,
+                                      "CrossesAtZero": false
+                                    },
+                                    {
+                                      "$type": "Models.Graph.Axis, Models",
+                                      "Type": 3,
+                                      "Title": "X",
+                                      "Inverted": false,
+                                      "Minimum": "NaN",
+                                      "Maximum": "NaN",
+                                      "Interval": "NaN",
+                                      "DateTimeAxis": false,
+                                      "CrossesAtZero": false
+                                    }
+                                  ],
+                                  "LegendPosition": 3,
+                                  "DisabledSeries": [],
+                                  "Name": "Graph",
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Graph.Series, Models",
+                                      "Type": 1,
+                                      "XAxis": 3,
+                                      "YAxis": 0,
+                                      "ColourArgb": -65536,
+                                      "FactorToVaryColours": null,
+                                      "FactorToVaryMarkers": null,
+                                      "FactorToVaryLines": null,
+                                      "Marker": 11,
+                                      "MarkerSize": 0,
+                                      "Line": 0,
+                                      "LineThickness": 0,
+                                      "Checkpoint": "Current",
+                                      "TableName": null,
+                                      "XFieldName": ".Simulations.Replacements.Grapevine.Phenology.YieldEstimation.PostEventValue.XYPairs.X",
+                                      "YFieldName": ".Simulations.Replacements.Grapevine.Phenology.YieldEstimation.PostEventValue.XYPairs.Y",
+                                      "X2FieldName": null,
+                                      "Y2FieldName": null,
+                                      "ShowInLegend": false,
+                                      "IncludeSeriesNameInLegend": false,
+                                      "Cumulative": false,
+                                      "CumulativeX": false,
+                                      "Filter": null,
+                                      "Name": "Series",
+                                      "Children": [],
+                                      "IncludeInDocumentation": true,
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "IncludeInDocumentation": true,
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "IncludeInDocumentation": true,
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
                           ],
-                          "Y": [
-                            1.5,
-                            1.5,
-                            1.3,
-                            1.0,
-                            0.7,
-                            0.7
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Berry].MeanCHOInitiationY0.Value()",
-                      "Name": "CHOInitiation",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            0.0,
-                            1.0
-                          ],
-                          "Y": [
-                            0.0,
-                            1.0
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Berry].MeanCHOBudBurst.Value()",
-                      "Name": "CHOBudBurst",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            0.0,
-                            1.0
-                          ],
-                          "Y": [
-                            0.0,
-                            1.0
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "IncludeInDocumentation": true,
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.Functions.MultiplyFunction, Models",
-                  "Name": "BerriesPerBunch",
-                  "Children": [
-                    {
-                      "$type": "Models.Memo, Models",
-                      "Text": "\r\nPercentage of fruit set were guessed based on mean daily temperature during anthesis (Eltom 2013 Fig. 6.5, y = 0.5*x-8 (wrong equation)). temperature range is 15.5 to 16.2 degree. \r\n\r\nThe minimum function was try to cap the maximum berry number and the predicted yield. Due to the size of the peducle or bunch frame, it was not able to sustain lots of berries at harvest even so there was more at fruit set.  ",
-                      "Name": "Memo",
-                      "Children": [],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Berry].FlowersPerBunch.Value()",
-                      "Name": "FlowersPerBunch",
-                      "Children": [],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Berry].MeanTempFlowering.Value()",
-                      "Name": "TempFlowering",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            14.0,
-                            15.5,
-                            15.8,
-                            16.0,
-                            16.2,
-                            20.0
-                          ],
-                          "Y": [
-                            0.14,
-                            0.15,
-                            0.3,
-                            0.42,
-                            0.5,
-                            0.55
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Berry].MeanCHOFlowering.Value()",
-                      "Name": "CHOFlowering",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            0.0,
-                            1.0
-                          ],
-                          "Y": [
-                            0.0,
-                            1.0
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Berry].MeanTempFlowering.Value()",
-                      "Name": "flowerNum",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            14.0,
-                            15.5,
-                            15.8,
-                            16.0,
-                            16.2,
-                            20.0
-                          ],
-                          "Y": [
-                            0.14,
-                            0.15,
-                            0.3,
-                            0.42,
-                            0.5,
-                            0.55
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "IncludeInDocumentation": true,
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.Functions.MultiplyFunction, Models",
-                  "Name": "NumberFunction",
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Structure].MainStemPopn",
-                      "Name": "Shoots",
-                      "Children": [],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Structure].MainStemPopn/0.23",
-                      "Name": "PercentBudBurst",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            0.0,
-                            20.0,
-                            40.0,
-                            108.0
-                          ],
-                          "Y": [
-                            0.0,
-                            1.0,
-                            0.85,
-                            0.65
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Berry].BunchesPerShoot.Value()",
-                      "Name": "BunchesPerShoot",
-                      "Children": [],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Berry].BerriesPerBunch.Value()",
-                      "Name": "BerriesPerBunch",
-                      "Children": [],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "IncludeInDocumentation": true,
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.Functions.MultiplyFunction, Models",
-                  "Name": "PotentialBerrySizeAdj",
-                  "Children": [
-                    {
-                      "$type": "Models.Memo, Models",
-                      "Text": "\r\nTemperature or rainful during flowering to fruitset would affect the pollination. a good pollination will result in a high fertility and large seed. the size of the seeds would affect the potential size of the berry. See Adam Friend's thesis. \r\n\r\nPollination alone results in the development of small, hard green berries (live green ovaries or LGO). Further development requires fertilization of grape ovaries and subsequent seed development (Friend et al. 2009). Should ovules not fully develop, leaving seed traces,  the berries will ripen, but remain small, while successful fertilization of one or more ovule will result in complete berry development, with the berry mass generally reflecting seed mass. The success of fertilization depends on the pollen viability and environmental factors such as temperature, carbohydrate availability and vine nutrition.\r\n\r\n\r\n\r\n(Ojeda et al. 2001) analysed the effects of water deficits after anthesis on pericarp cell division and enlargement of cv. Syrah berries. They found water deficits after anthesis did not affect cell division, but mainly limiting cell expansion. These results support the hypothesis that early water deficits modify the structural properties of the cell components and consequently cell wall extensibility, thereby limiting the subsequent enlargement of pericarp cells even with good water status after véraison. (Korkutal et al. 2011) shown water deficit with predawn water potential smaller than -0.6 MPa starting from 17 E-L stage did not affect the pollen viability and pollen germination ratios, but reduced berry set ratio, and delayed berry development.",
-                      "Name": "Memo",
-                      "Children": [],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Berry].MeanTempFlowering.Value()",
-                      "Name": "TempFlowering",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            14.0,
-                            15.6,
-                            15.8,
-                            16.0,
-                            16.2,
-                            20.0,
-                            30.0
-                          ],
-                          "Y": [
-                            0.8,
-                            0.95,
-                            1.0,
-                            1.05,
-                            1.1,
-                            1.2,
-                            1.3
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
-                          "IncludeInDocumentation": true,
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "IncludeInDocumentation": true,
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                      "XProperty": "[Grapevine].Leaf.Fw",
-                      "Name": "WaterFlowering",
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.XYPairs, Models",
-                          "X": [
-                            0.0,
-                            1.0
-                          ],
-                          "Y": [
-                            0.0,
-                            1.0
-                          ],
-                          "Name": "XYPairs",
-                          "Children": [],
                           "IncludeInDocumentation": true,
                           "Enabled": true,
                           "ReadOnly": false
@@ -1099,7 +665,11 @@
             "[Grapevine].Phenology.FloweringDOY.Value()",
             "[Grapevine].Phenology.VeraisonDOY.Value()",
             "[Grapevine].Phenology.CurrentStageName",
-            "[Grapevine].Phenology.AccumulatedTT"
+            "[Grapevine].Phenology.AccumulatedTT",
+            "[Grapevine].Phenology.DoyJuly1st",
+            "[Grapevine].Phenology.MeanTempInitiation",
+            "[Grapevine].Phenology.MeanTempInitiationY0",
+            "[Grapevine].Phenology.YieldEstimation"
           ],
           "EventNames": [
             "[Clock].DoReport"
@@ -1128,12 +698,13 @@
     {
       "$type": "Models.Core.Simulation, Models",
       "Descriptors": null,
+      "Services": [],
       "Name": "YieldPrediction",
       "Children": [
         {
           "$type": "Models.Weather, Models",
           "FileName": "Site1004_RPC.met",
-          "ExcelWorkSheetName": null,
+          "ExcelWorkSheetName": "",
           "Name": "Weather",
           "Children": [],
           "IncludeInDocumentation": true,
