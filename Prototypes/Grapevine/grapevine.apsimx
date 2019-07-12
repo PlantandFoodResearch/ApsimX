@@ -185,6 +185,36 @@
                 {
                   "$type": "Models.PMF.Phen.GenericPhase, Models",
                   "Start": "Veraison",
+                  "End": "Mature",
+                  "Name": "Ripening",
+                  "Children": [
+                    {
+                      "$type": "Models.Functions.VariableReference, Models",
+                      "VariableName": "[Phenology].ThermalTime.Value()",
+                      "Name": "Progression",
+                      "Children": [],
+                      "IncludeInDocumentation": true,
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Functions.Constant, Models",
+                      "FixedValue": 10.0,
+                      "Units": null,
+                      "Name": "Target",
+                      "Children": [],
+                      "IncludeInDocumentation": true,
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "IncludeInDocumentation": true,
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.PMF.Phen.GenericPhase, Models",
+                  "Start": "Mature",
                   "End": "LeafFall",
                   "Name": "LeafDeath",
                   "Children": [
@@ -199,7 +229,7 @@
                     },
                     {
                       "$type": "Models.Functions.Constant, Models",
-                      "FixedValue": 100.0,
+                      "FixedValue": 40.0,
                       "Units": null,
                       "Name": "Target",
                       "Children": [],
@@ -216,7 +246,7 @@
                   "$type": "Models.PMF.Phen.GotoPhase, Models",
                   "Start": "LeafDeath",
                   "End": "Unused",
-                  "PhaseNameToGoto": "EndoDormancy",
+                  "PhaseNameToGoto": "Dormancy",
                   "Name": "GotoPhase",
                   "Children": [],
                   "IncludeInDocumentation": true,
@@ -364,12 +394,12 @@
                 },
                 {
                   "$type": "Models.Functions.DivideFunction, Models",
-                  "Name": "MeanTempInitiation",
+                  "Name": "MeanTmax",
                   "Children": [
                     {
                       "$type": "Models.Functions.AccumulateByNumericPhase, Models",
-                      "StartStageName": 2.76,
-                      "EndStageName": 4.678,
+                      "StartStageName": 2.68,
+                      "EndStageName": 4.677,
                       "ResetStageName": "EcoDormancy",
                       "FractionRemovedOnCut": 0.0,
                       "FractionRemovedOnHarvest": 0.0,
@@ -378,26 +408,10 @@
                       "Name": "AccumulateByNumericPhase",
                       "Children": [
                         {
-                          "$type": "Models.Functions.AirTemperatureFunction, Models",
-                          "Name": "AirTemperatureFunction",
-                          "Children": [
-                            {
-                              "$type": "Models.Functions.XYPairs, Models",
-                              "X": [
-                                0.0,
-                                40.0
-                              ],
-                              "Y": [
-                                0.0,
-                                40.0
-                              ],
-                              "Name": "XYPairs",
-                              "Children": [],
-                              "IncludeInDocumentation": true,
-                              "Enabled": true,
-                              "ReadOnly": false
-                            }
-                          ],
+                          "$type": "Models.Functions.VariableReference, Models",
+                          "VariableName": "[Management].ExtraVariables.Script.Tmax",
+                          "Name": "Tmax",
+                          "Children": [],
                           "IncludeInDocumentation": true,
                           "Enabled": true,
                           "ReadOnly": false
@@ -409,8 +423,68 @@
                     },
                     {
                       "$type": "Models.Functions.AccumulateByNumericPhase, Models",
-                      "StartStageName": 2.76,
-                      "EndStageName": 4.678,
+                      "StartStageName": 2.68,
+                      "EndStageName": 4.677,
+                      "ResetStageName": "EcoDormancy",
+                      "FractionRemovedOnCut": 0.0,
+                      "FractionRemovedOnHarvest": 0.0,
+                      "FractionRemovedOnGraze": 0.0,
+                      "FractionRemovedOnPrune": 0.0,
+                      "Name": "Days",
+                      "Children": [
+                        {
+                          "$type": "Models.Functions.Constant, Models",
+                          "FixedValue": 1.0,
+                          "Units": "days/day",
+                          "Name": "Days",
+                          "Children": [],
+                          "IncludeInDocumentation": true,
+                          "Enabled": true,
+                          "ReadOnly": false
+                        }
+                      ],
+                      "IncludeInDocumentation": true,
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "IncludeInDocumentation": true,
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.DivideFunction, Models",
+                  "Name": "MeanRad",
+                  "Children": [
+                    {
+                      "$type": "Models.Functions.AccumulateByNumericPhase, Models",
+                      "StartStageName": 2.806,
+                      "EndStageName": 4.865,
+                      "ResetStageName": "EcoDormancy",
+                      "FractionRemovedOnCut": 0.0,
+                      "FractionRemovedOnHarvest": 0.0,
+                      "FractionRemovedOnGraze": 0.0,
+                      "FractionRemovedOnPrune": 0.0,
+                      "Name": "AccumulateByNumericPhase",
+                      "Children": [
+                        {
+                          "$type": "Models.Functions.VariableReference, Models",
+                          "VariableName": "[Management].ExtraVariables.Script.Radn",
+                          "Name": "Radn",
+                          "Children": [],
+                          "IncludeInDocumentation": true,
+                          "Enabled": true,
+                          "ReadOnly": false
+                        }
+                      ],
+                      "IncludeInDocumentation": true,
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Functions.AccumulateByNumericPhase, Models",
+                      "StartStageName": 2.806,
+                      "EndStageName": 4.865,
                       "ResetStageName": "EcoDormancy",
                       "FractionRemovedOnCut": 0.0,
                       "FractionRemovedOnHarvest": 0.0,
@@ -440,9 +514,9 @@
                 },
                 {
                   "$type": "Models.Functions.OnEventFunction, Models",
-                  "SetEvent": "Veraison",
+                  "SetEvent": "Mature",
                   "ReSetEvent": "",
-                  "Name": "MeanTempInitiationY0",
+                  "Name": "MeanTmaxIni",
                   "Children": [
                     {
                       "$type": "Models.Functions.Constant, Models",
@@ -456,7 +530,37 @@
                     },
                     {
                       "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Phenology].MeanTempInitiation.Value()",
+                      "VariableName": "[Phenology].MeanTmax",
+                      "Name": "PostEventValue",
+                      "Children": [],
+                      "IncludeInDocumentation": true,
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "IncludeInDocumentation": true,
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.OnEventFunction, Models",
+                  "SetEvent": "Mature",
+                  "ReSetEvent": "",
+                  "Name": "MeanRadnIni",
+                  "Children": [
+                    {
+                      "$type": "Models.Functions.Constant, Models",
+                      "FixedValue": 15.0,
+                      "Units": null,
+                      "Name": "PreEventValue",
+                      "Children": [],
+                      "IncludeInDocumentation": true,
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Functions.VariableReference, Models",
+                      "VariableName": "[Phenology].MeanRad",
                       "Name": "PostEventValue",
                       "Children": [],
                       "IncludeInDocumentation": true,
@@ -500,8 +604,198 @@
                         },
                         {
                           "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                          "XProperty": "[Phenology].MeanTempInitiationY0",
-                          "Name": "LinearInterpolationFunction",
+                          "XProperty": "[Phenology].MeanTmaxIni",
+                          "Name": "TmaxIni",
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.XYPairs, Models",
+                              "X": [
+                                15.0,
+                                20.0,
+                                25.0
+                              ],
+                              "Y": [
+                                9.0,
+                                12.0,
+                                15.0
+                              ],
+                              "Name": "XYPairs",
+                              "Children": [
+                                {
+                                  "$type": "Models.Graph.Graph, Models",
+                                  "Caption": null,
+                                  "Axis": [
+                                    {
+                                      "$type": "Models.Graph.Axis, Models",
+                                      "Type": 0,
+                                      "Title": "Y",
+                                      "Inverted": false,
+                                      "Minimum": "NaN",
+                                      "Maximum": "NaN",
+                                      "Interval": "NaN",
+                                      "DateTimeAxis": false,
+                                      "CrossesAtZero": false
+                                    },
+                                    {
+                                      "$type": "Models.Graph.Axis, Models",
+                                      "Type": 3,
+                                      "Title": "X",
+                                      "Inverted": false,
+                                      "Minimum": "NaN",
+                                      "Maximum": "NaN",
+                                      "Interval": "NaN",
+                                      "DateTimeAxis": false,
+                                      "CrossesAtZero": false
+                                    }
+                                  ],
+                                  "LegendPosition": 3,
+                                  "DisabledSeries": [],
+                                  "Name": "Graph",
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Graph.Series, Models",
+                                      "Type": 1,
+                                      "XAxis": 3,
+                                      "YAxis": 0,
+                                      "ColourArgb": -65536,
+                                      "FactorToVaryColours": null,
+                                      "FactorToVaryMarkers": null,
+                                      "FactorToVaryLines": null,
+                                      "Marker": 11,
+                                      "MarkerSize": 0,
+                                      "Line": 0,
+                                      "LineThickness": 0,
+                                      "Checkpoint": "Current",
+                                      "TableName": null,
+                                      "XFieldName": ".Simulations.Replacements.Grapevine.Phenology.YieldEstimation.PostEventValue.XYPairs.X",
+                                      "YFieldName": ".Simulations.Replacements.Grapevine.Phenology.YieldEstimation.PostEventValue.XYPairs.Y",
+                                      "X2FieldName": null,
+                                      "Y2FieldName": null,
+                                      "ShowInLegend": false,
+                                      "IncludeSeriesNameInLegend": false,
+                                      "Cumulative": false,
+                                      "CumulativeX": false,
+                                      "Filter": null,
+                                      "Name": "Series",
+                                      "Children": [],
+                                      "IncludeInDocumentation": true,
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "IncludeInDocumentation": true,
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "IncludeInDocumentation": true,
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "IncludeInDocumentation": true,
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                          "XProperty": "[Phenology].MeanTmaxIni",
+                          "Name": "RadIni",
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.XYPairs, Models",
+                              "X": [
+                                15.0,
+                                20.0,
+                                25.0
+                              ],
+                              "Y": [
+                                9.0,
+                                12.0,
+                                15.0
+                              ],
+                              "Name": "XYPairs",
+                              "Children": [
+                                {
+                                  "$type": "Models.Graph.Graph, Models",
+                                  "Caption": null,
+                                  "Axis": [
+                                    {
+                                      "$type": "Models.Graph.Axis, Models",
+                                      "Type": 0,
+                                      "Title": "Y",
+                                      "Inverted": false,
+                                      "Minimum": "NaN",
+                                      "Maximum": "NaN",
+                                      "Interval": "NaN",
+                                      "DateTimeAxis": false,
+                                      "CrossesAtZero": false
+                                    },
+                                    {
+                                      "$type": "Models.Graph.Axis, Models",
+                                      "Type": 3,
+                                      "Title": "X",
+                                      "Inverted": false,
+                                      "Minimum": "NaN",
+                                      "Maximum": "NaN",
+                                      "Interval": "NaN",
+                                      "DateTimeAxis": false,
+                                      "CrossesAtZero": false
+                                    }
+                                  ],
+                                  "LegendPosition": 3,
+                                  "DisabledSeries": [],
+                                  "Name": "Graph",
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Graph.Series, Models",
+                                      "Type": 1,
+                                      "XAxis": 3,
+                                      "YAxis": 0,
+                                      "ColourArgb": -65536,
+                                      "FactorToVaryColours": null,
+                                      "FactorToVaryMarkers": null,
+                                      "FactorToVaryLines": null,
+                                      "Marker": 11,
+                                      "MarkerSize": 0,
+                                      "Line": 0,
+                                      "LineThickness": 0,
+                                      "Checkpoint": "Current",
+                                      "TableName": null,
+                                      "XFieldName": ".Simulations.Replacements.Grapevine.Phenology.YieldEstimation.PostEventValue.XYPairs.X",
+                                      "YFieldName": ".Simulations.Replacements.Grapevine.Phenology.YieldEstimation.PostEventValue.XYPairs.Y",
+                                      "X2FieldName": null,
+                                      "Y2FieldName": null,
+                                      "ShowInLegend": false,
+                                      "IncludeSeriesNameInLegend": false,
+                                      "Cumulative": false,
+                                      "CumulativeX": false,
+                                      "Filter": null,
+                                      "Name": "Series",
+                                      "Children": [],
+                                      "IncludeInDocumentation": true,
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "IncludeInDocumentation": true,
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "IncludeInDocumentation": true,
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "IncludeInDocumentation": true,
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                          "XProperty": "[Phenology].MeanTmax",
+                          "Name": "Tmax",
                           "Children": [
                             {
                               "$type": "Models.Functions.XYPairs, Models",
@@ -647,6 +941,28 @@
               "IncludeInDocumentation": true,
               "Enabled": true,
               "ReadOnly": false
+            },
+            {
+              "$type": "Models.Manager, Models",
+              "Code": "using System;\r\nusing Models.Core;\r\nusing Models.PMF;\r\nusing Models;\r\nusing System.Xml.Serialization;\r\nusing APSIM.Shared.Utilities;\r\n\r\nnamespace Models\r\n{\r\n    [Serializable] \r\n  //  [System.Xml.Serialization.XmlInclude(typeof(Model))]\r\n    public class Script : Model\r\n    {\r\n        [Link] Clock Clock;\r\n        [Link] Weather Met;\r\n       \r\n        [Description(\"Tmax\")]         \r\n        public double Tmax { get; set; } \r\n        [Description(\"Tmin\")]         \r\n        public double Tmin { get; set; }  //mm\r\n        [Description(\"Radn\")]         \r\n        public double Radn { get; set; }  //mm\r\n\r\n        [EventSubscribe(\"StartOfDay\")]\r\n        private void StartOfDay(object sender, EventArgs e)\r\n        {\r\n               Tmax = Met.MaxT;\r\n               Tmin = Met.MinT;\r\n               Radn = Met.Radn;\r\n        }\r\n        \r\n     }\r\n}\r\n",
+              "Parameters": [
+                {
+                  "Key": "Tmax",
+                  "Value": "0"
+                },
+                {
+                  "Key": "Tmin",
+                  "Value": "0"
+                },
+                {
+                  "Key": "Radn",
+                  "Value": "0"
+                }
+              ],
+              "Name": "ExtraVariables",
+              "IncludeInDocumentation": true,
+              "Enabled": true,
+              "ReadOnly": false
             }
           ],
           "IncludeInDocumentation": true,
@@ -667,14 +983,43 @@
             "[Grapevine].Phenology.CurrentStageName",
             "[Grapevine].Phenology.AccumulatedTT",
             "[Grapevine].Phenology.DoyJuly1st",
-            "[Grapevine].Phenology.MeanTempInitiation",
-            "[Grapevine].Phenology.MeanTempInitiationY0",
-            "[Grapevine].Phenology.YieldEstimation"
+            "[Grapevine].Phenology.MeanTmax as meanTmax",
+            "[Grapevine].Phenology.MeanTmaxIni as TmaxIni",
+            "[Grapevine].Phenology.YieldEstimation as Yield",
+            "[Grapevine].Phenology.MeanRadnIni as RadnIni",
+            "[Management].ExtraVariables.Script.Tmax as metTmax"
           ],
           "EventNames": [
             "[Clock].DoReport"
           ],
           "Name": "Report",
+          "Children": [],
+          "IncludeInDocumentation": true,
+          "Enabled": true,
+          "ReadOnly": false
+        },
+        {
+          "$type": "Models.Report.Report, Models",
+          "VariableNames": [
+            "[Clock].Today.Year",
+            "[Grapevine].DOYFromJuly1st.Value()",
+            "[Grapevine].Phenology.CurrentSeason.Value()",
+            "[Grapevine].Phenology.Stage",
+            "[Grapevine].Phenology.FloweringDOY.Value()",
+            "[Grapevine].Phenology.VeraisonDOY.Value()",
+            "[Grapevine].Phenology.CurrentStageName",
+            "[Grapevine].Phenology.AccumulatedTT",
+            "[Grapevine].Phenology.DoyJuly1st",
+            "[Grapevine].Phenology.MeanTmax as meanTmax",
+            "[Grapevine].Phenology.MeanTmaxIni as TmaxIni",
+            "[Grapevine].Phenology.YieldEstimation as Yield",
+            "[Grapevine].Phenology.MeanRad as RadnIni",
+            "[Management].ExtraVariables.Script.Tmax"
+          ],
+          "EventNames": [
+            "[Grapevine].Pruning"
+          ],
+          "Name": "HarvestReport",
           "Children": [],
           "IncludeInDocumentation": true,
           "Enabled": true,
