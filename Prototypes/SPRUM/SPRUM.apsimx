@@ -1,6 +1,6 @@
 {
   "$type": "Models.Core.Simulations, Models",
-  "ExplorerWidth": 297,
+  "ExplorerWidth": 285,
   "Version": 148,
   "Name": "Simulations",
   "Children": [
@@ -2792,7 +2792,7 @@
             },
             {
               "$type": "Models.Functions.Constant, Models",
-              "FixedValue": 1.0,
+              "FixedValue": 0.0,
               "Units": null,
               "Name": "LegumePropn",
               "Children": [],
@@ -3445,6 +3445,7 @@
                     "[Clock].Today",
                     "[SPRUM].IsAlive",
                     "[SPRUM].DaysAfterSowing",
+                    "[SPRUM].Nodule.NFixed",
                     "[SPRUM].Phenology.CurrentPhaseName",
                     "[SPRUM].Phenology.Stage",
                     "[SPRUM].Product.Wt",
@@ -3865,8 +3866,8 @@
                   "Position": 0,
                   "Inverted": false,
                   "CrossesAtZero": false,
-                  "Minimum": null,
-                  "Maximum": null,
+                  "Minimum": 0.0,
+                  "Maximum": "NaN",
                   "Interval": null
                 }
               ],
@@ -4046,6 +4047,70 @@
               ],
               "Enabled": true,
               "ReadOnly": false
+            },
+            {
+              "$type": "Models.Graph, Models",
+              "Caption": null,
+              "Axis": [
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": "SPRUM.DaysAfterSowing",
+                  "Position": 3,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                },
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": "SPRUM.Root.NUptake",
+                  "Position": 0,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                }
+              ],
+              "LegendPosition": 0,
+              "LegendOrientation": 0,
+              "AnnotationLocation": 0,
+              "DisabledSeries": [],
+              "LegendOutsideGraph": false,
+              "Name": "Fixation",
+              "Children": [
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -3376729,
+                  "FactorToVaryColours": "Legume",
+                  "FactorToVaryMarkers": "NReplacement",
+                  "FactorToVaryLines": null,
+                  "Marker": 0,
+                  "MarkerSize": 0,
+                  "Line": 0,
+                  "LineThickness": 0,
+                  "TableName": "Report",
+                  "XFieldName": "SPRUM.Stover.Photosynthesis",
+                  "YFieldName": "SPRUM.Nodule.NFixed",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": false,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": true,
+                  "CumulativeX": true,
+                  "Filter": null,
+                  "Name": "Uptake",
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
             }
           ],
           "Enabled": true,
@@ -4076,51 +4141,6 @@
               "$type": "Models.Factorial.Permutation, Models",
               "Name": "Permutation",
               "Children": [
-                {
-                  "$type": "Models.Factorial.Factor, Models",
-                  "Specification": "",
-                  "Name": "PotentialYield",
-                  "Children": [
-                    {
-                      "$type": "Models.Factorial.CompositeFactor, Models",
-                      "Specifications": [
-                        "[SowAndHarvest].Script.PotGrowth = 0.5"
-                      ],
-                      "Paths": null,
-                      "Values": null,
-                      "Name": "Low",
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Factorial.CompositeFactor, Models",
-                      "Specifications": [
-                        "[SowAndHarvest].Script.PotGrowth = 0.75"
-                      ],
-                      "Paths": null,
-                      "Values": null,
-                      "Name": "Mid",
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Factorial.CompositeFactor, Models",
-                      "Specifications": [
-                        "[SowAndHarvest].Script.PotGrowth = 1.0"
-                      ],
-                      "Paths": null,
-                      "Values": null,
-                      "Name": "High",
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
                 {
                   "$type": "Models.Factorial.Factor, Models",
                   "Specification": "",
@@ -4158,6 +4178,51 @@
                       "Paths": null,
                       "Values": null,
                       "Name": "Grass",
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Factorial.Factor, Models",
+                  "Specification": "",
+                  "Name": "NReplacement",
+                  "Children": [
+                    {
+                      "$type": "Models.Factorial.CompositeFactor, Models",
+                      "Specifications": [
+                        "[ApplyFertOnDates].Script.Amount = 100"
+                      ],
+                      "Paths": null,
+                      "Values": null,
+                      "Name": "0kgN",
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Factorial.CompositeFactor, Models",
+                      "Specifications": [
+                        "[ApplyFertOnDates].Script.Amount = 300"
+                      ],
+                      "Paths": null,
+                      "Values": null,
+                      "Name": "300kgN",
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Factorial.CompositeFactor, Models",
+                      "Specifications": [
+                        "[ApplyFertOnDates].Script.Amount = 600"
+                      ],
+                      "Paths": null,
+                      "Values": null,
+                      "Name": "600kgN",
                       "Children": [],
                       "Enabled": true,
                       "ReadOnly": false
@@ -4271,18 +4336,18 @@
                         200.0
                       ],
                       "NO3N": [
-                        0.0,
-                        0.0,
-                        0.0,
+                        1.0,
+                        1.0,
+                        1.0,
                         0.0,
                         0.0,
                         0.0,
                         0.0
                       ],
                       "NH4N": [
-                        0.0,
-                        0.0,
-                        0.0,
+                        0.1,
+                        0.1,
+                        0.1,
                         0.0,
                         0.0,
                         0.0,
@@ -4693,6 +4758,7 @@
                     "[Clock].Today",
                     "[SPRUM].IsAlive",
                     "[SPRUM].DaysAfterSowing",
+                    "[SPRUM].Nodule.NFixed",
                     "[SPRUM].Phenology.CurrentPhaseName",
                     "[SPRUM].Phenology.Stage",
                     "[SPRUM].Product.Wt",
@@ -4943,8 +5009,8 @@
                   "XAxis": 3,
                   "YAxis": 0,
                   "ColourArgb": -16736653,
-                  "FactorToVaryColours": "PotentialYield",
-                  "FactorToVaryMarkers": "Legume",
+                  "FactorToVaryColours": "Legume",
+                  "FactorToVaryMarkers": "NReplacement",
                   "FactorToVaryLines": null,
                   "Marker": 0,
                   "MarkerSize": 0,
@@ -5007,8 +5073,8 @@
                   "XAxis": 3,
                   "YAxis": 0,
                   "ColourArgb": -3376729,
-                  "FactorToVaryColours": "Legume",
-                  "FactorToVaryMarkers": "PotentialYield",
+                  "FactorToVaryColours": "NReplacement",
+                  "FactorToVaryMarkers": "Legume",
                   "FactorToVaryLines": null,
                   "Marker": 0,
                   "MarkerSize": 0,
@@ -5071,7 +5137,7 @@
                   "XAxis": 3,
                   "YAxis": 0,
                   "ColourArgb": -1663232,
-                  "FactorToVaryColours": "PotentialYield",
+                  "FactorToVaryColours": "Legume",
                   "FactorToVaryMarkers": "NReplacement",
                   "FactorToVaryLines": null,
                   "Marker": 0,
@@ -5135,7 +5201,7 @@
                   "XAxis": 3,
                   "YAxis": 0,
                   "ColourArgb": -11094807,
-                  "FactorToVaryColours": "PotentialYield",
+                  "FactorToVaryColours": "Legume",
                   "FactorToVaryMarkers": "NReplacement",
                   "FactorToVaryLines": null,
                   "Marker": 0,
@@ -5209,7 +5275,7 @@
                   "XAxis": 3,
                   "YAxis": 0,
                   "ColourArgb": -3376729,
-                  "FactorToVaryColours": "PotentialYield",
+                  "FactorToVaryColours": "Legume",
                   "FactorToVaryMarkers": "NReplacement",
                   "FactorToVaryLines": null,
                   "Marker": 0,
@@ -5273,7 +5339,7 @@
                   "XAxis": 3,
                   "YAxis": 0,
                   "ColourArgb": -16736653,
-                  "FactorToVaryColours": "PotentialYield",
+                  "FactorToVaryColours": "Legume",
                   "FactorToVaryMarkers": "NReplacement",
                   "FactorToVaryLines": null,
                   "Marker": 0,
@@ -5291,6 +5357,70 @@
                   "CumulativeX": false,
                   "Filter": null,
                   "Name": "TotalN",
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Graph, Models",
+              "Caption": null,
+              "Axis": [
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": "SPRUM.DaysAfterSowing",
+                  "Position": 3,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                },
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": "SPRUM.Root.NUptake",
+                  "Position": 0,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                }
+              ],
+              "LegendPosition": 0,
+              "LegendOrientation": 0,
+              "AnnotationLocation": 0,
+              "DisabledSeries": [],
+              "LegendOutsideGraph": false,
+              "Name": "Fixation",
+              "Children": [
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -3376729,
+                  "FactorToVaryColours": "Legume",
+                  "FactorToVaryMarkers": "NReplacement",
+                  "FactorToVaryLines": null,
+                  "Marker": 0,
+                  "MarkerSize": 0,
+                  "Line": 0,
+                  "LineThickness": 0,
+                  "TableName": "Report",
+                  "XFieldName": "SPRUM.Stover.Photosynthesis",
+                  "YFieldName": "SPRUM.Nodule.NFixed",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": false,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": true,
+                  "CumulativeX": true,
+                  "Filter": null,
+                  "Name": "Uptake",
                   "Children": [],
                   "Enabled": true,
                   "ReadOnly": false
