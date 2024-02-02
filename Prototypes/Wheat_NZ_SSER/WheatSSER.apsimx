@@ -282,6 +282,2021 @@
                   "ReadOnly": false
                 },
                 {
+                  "$type": "Models.Core.Folder, Models",
+                  "ShowInDocs": false,
+                  "GraphsPerPage": 6,
+                  "Name": "BioticStressFolder",
+                  "ResourceName": null,
+                  "Children": [
+                    {
+                      "$type": "Models.LifeCycle.Infestation, Models",
+                      "TypeOfInfestation": 1,
+                      "InfestingOrganisumName": "Septoria",
+                      "InfestingPhaseName": "Adult",
+                      "InfestationDate": "15-Nov",
+                      "InfestationEndDate": null,
+                      "ChronoAgeOfImmigrants": 0,
+                      "PhysAgeOfImmigrants": 0.2,
+                      "Name": "Infestation",
+                      "ResourceName": null,
+                      "Children": [
+                        {
+                          "$type": "Models.Functions.Constant, Models",
+                          "FixedValue": 1.0,
+                          "Units": null,
+                          "Name": "NumberOfImmigrants",
+                          "ResourceName": null,
+                          "Children": [],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        }
+                      ],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.LifeCycle.LifeCycle, Models",
+                      "Name": "Septoria",
+                      "ResourceName": null,
+                      "Children": [
+                        {
+                          "$type": "Models.Memo, Models",
+                          "Text": "***Adding a Life Cycle***\n\nThe first step in building a population model is to build the LifeCycle. \n\nTo do this, go to the FIELD object, right click and select **Add Model > LifeCycle** \n\n***Initiating the LifeCycle Model***\n\nThe initial populations of all stages of individuals needs to be initiated with some individuals.\n\nThis is done at the **LifeCycle** level. \n\nSelect the LifeCycle model and then for \"Initial population at each LifeStage\" enter **\"1,0\"** for the two LifeStages (Juvenile and Adult) that we are using in our example, i.d., we have 1 juvenile and 0 adults. \n\n***Adding a Life Stage***\n\nThe LifeStage icon represents one LifeStage of the species being modelled.  A number of \nenvironmental factors (eg. temperature, moisture, predators, availability of food, diseases, \netc.) influence the species’ rate of development, survival and reproduction.  The LifeCycle model can be \nset to simulate these processes by adding functions to the LifeStage, each of which \ncontrols some aspect of the LifeStage. \n\nEach LifeStage defines a particular stage (eg. egg, pupa, adult, etc.) together with its \nenvironment and attributes.  The number of stages is set by the user.  \n\nFor the PseudoAphid two stages are required (juvenile and adult); however several stages could be used depending \nupon the detail required by the model or the life cycle of the organism.  Many insects may \nrequire a number of LifeStages depending upon the instars that are present.  For example, a \nmodel of a tree fern would probably include stages corresponding to spore, gametophyte, \ngamete and sporophyte.  However, it is conceivable that a user may wish to condense two of \nthese three stages into one for a particular model and might end up with the three stages of \nspore, gametophyte-gamete and sporophyte.  Exactly how the model is constructed depends \ncompletely on the requirements and applications of the user.\n\n**To add a LifeStage to the life cycle** right click on the LifeCycle and select **Add model > select LifeStage**. \n\nFor this tutorial:\n\nAdd a lifstage and rename it to **Juvenile**.\n\nAdd a second LifeStage and rename to **Adult**.\n\n",
+                          "Name": "Memo",
+                          "ResourceName": null,
+                          "Children": [],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "Egg",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Septoria].Egg.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "1stInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Septoria].1stInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "2ndInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Septoria].2ndInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "3rdInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Septoria].3rdInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "4thInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Septoria].4thInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "5thInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Septoria].5thInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "Adult",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 5.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Septoria].Adult.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Septoria].Adult.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                  "Name": "Maturity",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        0.3,
+                                        0.5,
+                                        0.8,
+                                        0.9,
+                                        1.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        1.0,
+                                        0.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "XYPairs",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[Septoria].Adult.CurrentCohort.PhysiologicalAge",
+                                      "Name": "XValue",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.1,
+                                  "Units": "individuals / population",
+                                  "Name": "DailyLayingRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
+                              "NameOfLifeCycleForProgeny": "Septoria",
+                              "NameOfPhaseForProgeny": "Egg",
+                              "Name": "RegularProgeny",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.8,
+                                  "Units": null,
+                                  "Name": "ProportionOfProgeny",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
+                              "NameOfLifeCycleForProgeny": "ResistantSeptoria",
+                              "NameOfPhaseForProgeny": "Egg",
+                              "Name": "ResistantProgeny",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.2,
+                                  "Units": null,
+                                  "Name": "ProportionOfProgeny",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        }
+                      ],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.LifeCycle.LifeCycle, Models",
+                      "Name": "ResistantSeptoria",
+                      "ResourceName": null,
+                      "Children": [
+                        {
+                          "$type": "Models.Memo, Models",
+                          "Text": "***Adding a Life Cycle***\n\nThe first step in building a population model is to build the LifeCycle. \n\nTo do this, go to the FIELD object, right click and select **Add Model > LifeCycle** \n\n***Initiating the LifeCycle Model***\n\nThe initial populations of all stages of individuals needs to be initiated with some individuals.\n\nThis is done at the **LifeCycle** level. \n\nSelect the LifeCycle model and then for \"Initial population at each LifeStage\" enter **\"1,0\"** for the two LifeStages (Juvenile and Adult) that we are using in our example, i.d., we have 1 juvenile and 0 adults. \n\n***Adding a Life Stage***\n\nThe LifeStage icon represents one LifeStage of the species being modelled.  A number of \nenvironmental factors (eg. temperature, moisture, predators, availability of food, diseases, \netc.) influence the species’ rate of development, survival and reproduction.  The LifeCycle model can be \nset to simulate these processes by adding functions to the LifeStage, each of which \ncontrols some aspect of the LifeStage. \n\nEach LifeStage defines a particular stage (eg. egg, pupa, adult, etc.) together with its \nenvironment and attributes.  The number of stages is set by the user.  \n\nFor the PseudoAphid two stages are required (juvenile and adult); however several stages could be used depending \nupon the detail required by the model or the life cycle of the organism.  Many insects may \nrequire a number of LifeStages depending upon the instars that are present.  For example, a \nmodel of a tree fern would probably include stages corresponding to spore, gametophyte, \ngamete and sporophyte.  However, it is conceivable that a user may wish to condense two of \nthese three stages into one for a particular model and might end up with the three stages of \nspore, gametophyte-gamete and sporophyte.  Exactly how the model is constructed depends \ncompletely on the requirements and applications of the user.\n\n**To add a LifeStage to the life cycle** right click on the LifeCycle and select **Add model > select LifeStage**. \n\nFor this tutorial:\n\nAdd a lifstage and rename it to **Juvenile**.\n\nAdd a second LifeStage and rename to **Adult**.\n\n",
+                          "Name": "Memo",
+                          "ResourceName": null,
+                          "Children": [],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "Egg",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ResistantSeptoria].Egg.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "1stInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ResistantSeptoria].1stInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "2ndInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ResistantSeptoria].2ndInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "3rdInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ResistantSeptoria].3rdInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "4thInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ResistantSeptoria].4thInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "5thInstar",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 2.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ResistantSeptoria].5thInstar.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.LifeCycle.LifeCyclePhase, Models",
+                          "LifeCyclePhaseForGraduates": null,
+                          "CurrentCohort": null,
+                          "Immigrants": 0.0,
+                          "DevelopmentRate": 0.0,
+                          "Mortalities": 0.0,
+                          "Graduates": 0.0,
+                          "Progeny": 0.0,
+                          "Emigrants": 0.0,
+                          "Name": "Adult",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.DivideFunction, Models",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 0,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        15.0,
+                                        27.0,
+                                        32.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.ThreeHourAirTemperature, Models",
+                                      "TempRangeFactors": null,
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 5.0,
+                                  "Units": "individuals /d",
+                                  "Name": "DurationAtOptTemp",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ResistantSeptoria].Adult.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "individuals / population",
+                                  "Name": "MortanityRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ResistantSeptoria].Adult.CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                  "Name": "Maturity",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        0.3,
+                                        0.5,
+                                        0.8,
+                                        0.9,
+                                        1.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.0,
+                                        1.0,
+                                        1.0,
+                                        0.0,
+                                        0.0
+                                      ],
+                                      "XVariableName": null,
+                                      "Name": "XYPairs",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[ResistantSeptoria].Adult.CurrentCohort.PhysiologicalAge",
+                                      "Name": "XValue",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.1,
+                                  "Units": "individuals / population",
+                                  "Name": "DailyLayingRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
+                              "NameOfLifeCycleForProgeny": "Septoria",
+                              "NameOfPhaseForProgeny": "Egg",
+                              "Name": "RegularProgeny",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.5,
+                                  "Units": null,
+                                  "Name": "ProportionOfProgeny",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
+                              "NameOfLifeCycleForProgeny": "ResistantSeptoria",
+                              "NameOfPhaseForProgeny": "Egg",
+                              "Name": "ResistantProgeny",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.5,
+                                  "Units": null,
+                                  "Name": "ProportionOfProgeny",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals /d",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        }
+                      ],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
                   "$type": "Models.Report, Models",
                   "VariableNames": [
                     "[Clock].Today as ReportDate",
@@ -316,6 +2331,36 @@
                   ],
                   "GroupByVariableName": null,
                   "Name": "Output",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Report, Models",
+                  "VariableNames": [
+                    "[Clock].Today",
+                    "[Clock].Today.DayOfYear",
+                    "[Septoria].Egg.TotalPopulation",
+                    "[Septoria].1stInstar.TotalPopulation",
+                    "[Septoria].2ndInstar.TotalPopulation",
+                    "[Septoria].3rdInstar.TotalPopulation",
+                    "[Septoria].4thInstar.TotalPopulation",
+                    "[Septoria].5thInstar.TotalPopulation",
+                    "[Septoria].Adult.TotalPopulation",
+                    "[ResistantSeptoria].Egg.TotalPopulation",
+                    "[ResistantSeptoria].1stInstar.TotalPopulation",
+                    "[ResistantSeptoria].2ndInstar.TotalPopulation",
+                    "[ResistantSeptoria].3rdInstar.TotalPopulation",
+                    "[ResistantSeptoria].4thInstar.TotalPopulation",
+                    "[ResistantSeptoria].5thInstar.TotalPopulation",
+                    "[ResistantSeptoria].Adult.TotalPopulation"
+                  ],
+                  "EventNames": [
+                    "[Clock].DoReport"
+                  ],
+                  "GroupByVariableName": null,
+                  "Name": "ReportPests",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
@@ -1211,7 +3256,7 @@
           "AnnotationLocation": 0,
           "DisabledSeries": [],
           "LegendOutsideGraph": false,
-          "Name": "Graph",
+          "Name": "CropGraph",
           "ResourceName": null,
           "Children": [
             {
@@ -1230,6 +3275,74 @@
               "TableName": "Output",
               "XFieldName": "Year",
               "YFieldName": "Wheat.AboveGround.Wt",
+              "X2FieldName": null,
+              "Y2FieldName": null,
+              "ShowInLegend": true,
+              "IncludeSeriesNameInLegend": false,
+              "Cumulative": false,
+              "CumulativeX": false,
+              "Filter": null,
+              "Name": "Series",
+              "ResourceName": null,
+              "Children": [],
+              "Enabled": true,
+              "ReadOnly": false
+            }
+          ],
+          "Enabled": true,
+          "ReadOnly": false
+        },
+        {
+          "$type": "Models.Graph, Models",
+          "Caption": null,
+          "Axis": [
+            {
+              "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+              "Title": null,
+              "Position": 3,
+              "Inverted": false,
+              "CrossesAtZero": false,
+              "LabelOnOneLine": false,
+              "Minimum": null,
+              "Maximum": null,
+              "Interval": null
+            },
+            {
+              "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+              "Title": null,
+              "Position": 0,
+              "Inverted": false,
+              "CrossesAtZero": false,
+              "LabelOnOneLine": false,
+              "Minimum": 0.0,
+              "Maximum": "NaN",
+              "Interval": null
+            }
+          ],
+          "LegendPosition": 0,
+          "LegendOrientation": 0,
+          "AnnotationLocation": 0,
+          "DisabledSeries": [],
+          "LegendOutsideGraph": false,
+          "Name": "PestGraph",
+          "ResourceName": null,
+          "Children": [
+            {
+              "$type": "Models.Series, Models",
+              "Type": 1,
+              "XAxis": 3,
+              "YAxis": 0,
+              "ColourArgb": -16777216,
+              "FactorToVaryColours": "SimulationName",
+              "FactorToVaryMarkers": null,
+              "FactorToVaryLines": "SimulationName",
+              "Marker": 11,
+              "MarkerSize": 0,
+              "Line": 4,
+              "LineThickness": 0,
+              "TableName": "ReportPests",
+              "XFieldName": "Clock.Today",
+              "YFieldName": "ResistantSeptoria.Egg.TotalPopulation",
               "X2FieldName": null,
               "Y2FieldName": null,
               "ShowInLegend": true,
