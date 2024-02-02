@@ -2404,6 +2404,48 @@
                   "ReadOnly": false
                 },
                 {
+                  "$type": "Models.Report, Models",
+                  "VariableNames": [
+                    "[Clock].Today as ReportDate",
+                    "[Clock].Today.Year as Year",
+                    "",
+                    "[FactorLabels].Script.AGENT_NO as AGENT_NO",
+                    "[FactorLabels].Script.Lat as Lat",
+                    "[FactorLabels].Script.Lon as Lon",
+                    "[FactorLabels].Script.GCM as GCM",
+                    "[FactorLabels].Script.RCP as RCP",
+                    "[FactorLabels].Script.TS as TimeSlice",
+                    "[FactorLabels].Script.SoilStamp as SoilStamp",
+                    "",
+                    "",
+                    "",
+                    "[Clock].Today",
+                    "[Wheat].LAI",
+                    "[Wheat].Phenology.Zadok.Stage",
+                    "[Wheat].Phenology.CurrentStageName",
+                    "[Wheat].AboveGround.Wt",
+                    "[Wheat].AboveGround.N",
+                    "[Wheat].AboveGround.Wt*10",
+                    "[Wheat].Grain.Total.Wt*10",
+                    "[Wheat].Grain.Protein",
+                    "[Wheat].Grain.Size",
+                    "[Wheat].Grain.Number",
+                    "[Wheat].Grain.Total.Wt",
+                    "[Wheat].Grain.Total.N",
+                    "[Wheat].Total.Wt"
+                  ],
+                  "EventNames": [
+                    "",
+                    "[Clock].EndOfDay"
+                  ],
+                  "GroupByVariableName": null,
+                  "Name": "DailyOutputs",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
                   "$type": "Models.Fertiliser, Models",
                   "Name": "Fertiliser",
                   "ResourceName": "Fertiliser",
@@ -3673,6 +3715,74 @@
                   "ReadOnly": false
                 }
               ],
+              "Enabled": true,
+              "ReadOnly": false
+            }
+          ],
+          "Enabled": true,
+          "ReadOnly": false
+        },
+        {
+          "$type": "Models.Graph, Models",
+          "Caption": null,
+          "Axis": [
+            {
+              "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+              "Title": null,
+              "Position": 3,
+              "Inverted": false,
+              "CrossesAtZero": false,
+              "LabelOnOneLine": false,
+              "Minimum": null,
+              "Maximum": null,
+              "Interval": null
+            },
+            {
+              "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+              "Title": null,
+              "Position": 0,
+              "Inverted": false,
+              "CrossesAtZero": false,
+              "LabelOnOneLine": false,
+              "Minimum": null,
+              "Maximum": null,
+              "Interval": null
+            }
+          ],
+          "LegendPosition": 0,
+          "LegendOrientation": 0,
+          "AnnotationLocation": 0,
+          "DisabledSeries": [],
+          "LegendOutsideGraph": false,
+          "Name": "DailyBiomass",
+          "ResourceName": null,
+          "Children": [
+            {
+              "$type": "Models.Series, Models",
+              "Type": 1,
+              "XAxis": 3,
+              "YAxis": 0,
+              "ColourArgb": -16777216,
+              "FactorToVaryColours": "SimulationName",
+              "FactorToVaryMarkers": null,
+              "FactorToVaryLines": null,
+              "Marker": 11,
+              "MarkerSize": 0,
+              "Line": 0,
+              "LineThickness": 0,
+              "TableName": "DailyOutputs",
+              "XFieldName": "Clock.Today",
+              "YFieldName": "Wheat.AboveGround.Wt*10",
+              "X2FieldName": null,
+              "Y2FieldName": null,
+              "ShowInLegend": true,
+              "IncludeSeriesNameInLegend": false,
+              "Cumulative": false,
+              "CumulativeX": false,
+              "Filter": null,
+              "Name": "Series",
+              "ResourceName": null,
+              "Children": [],
               "Enabled": true,
               "ReadOnly": false
             }
