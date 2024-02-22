@@ -4491,6 +4491,15 @@
       ],
       "Enabled": true,
       "ReadOnly": false
+    },
+    {
+      "$type": "Models.Memo, Models",
+      "Text": "Objective:\n\n- Simulate effect of contrasting genotypes\n- Simulate effect of biotic stress (Septoria and Rust as case-studies)\n\nFrom PJ:\nAs discussed I think some phenological options of interest for the wheat work would be:\nVariation in grain fill duration\n-\t‘normal’ vs extended grain fill (stay green type)\nUnderstanding how flowering time might interact with climate change scenarios (similar to your maize example)\n-\tEarly vs late flowering\nUse of photoperiod sensitivity instead of vernalisation to control flowering over winter\n\nProbably not useful in this space but perhaps understanding starch synthesis at higher temps (understand that is a future risk)\n\nHopefully that gives some starting points.\n",
+      "Name": "Memo",
+      "ResourceName": null,
+      "Children": [],
+      "Enabled": true,
+      "ReadOnly": false
     }
   ],
   "Enabled": true,
