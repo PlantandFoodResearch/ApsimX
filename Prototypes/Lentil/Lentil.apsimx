@@ -302,235 +302,32 @@
                   "ReadOnly": false
                 },
                 {
-                  "$type": "Models.Functions.SubDailyInterpolation, Models",
-                  "agregationMethod": 0,
-                  "Name": "Cooling",
+                  "$type": "Models.Functions.Constant, Models",
+                  "FixedValue": 0.5,
+                  "Units": null,
+                  "Name": "Earlyness",
                   "ResourceName": null,
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.WangEngelTempFunction, Models",
-                      "MinTemp": 0.0,
-                      "OptTemp": 2.0,
-                      "MaxTemp": 13.0,
-                      "RefTemp": 0.0,
-                      "MaximumTemperatureWeighting": 0.5,
-                      "Units": null,
-                      "Name": "Response",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.HourlySinPpAdjusted, Models",
-                      "Name": "InterpolationMethod",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
+                  "Children": [],
                   "Enabled": true,
                   "ReadOnly": false
                 },
                 {
-                  "$type": "Models.Functions.AccumulateFunction, Models",
-                  "StartStageName": "Germination",
-                  "EndStageName": "Vernalised",
-                  "ResetStageName": null,
-                  "FractionRemovedOnCut": 0.0,
-                  "FractionRemovedOnHarvest": 0.0,
-                  "FractionRemovedOnGraze": 0.0,
-                  "FractionRemovedOnPrune": 0.0,
-                  "Name": "AccumulatedCooling",
+                  "$type": "Models.Functions.Constant, Models",
+                  "FixedValue": 0.5,
+                  "Units": null,
+                  "Name": "PpSensitivity",
                   "ResourceName": null,
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Phenology].Cooling",
-                      "Name": "Cooling",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
+                  "Children": [],
                   "Enabled": true,
                   "ReadOnly": false
                 },
                 {
-                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                  "Name": "RelativeCoolingAchieved",
+                  "$type": "Models.Functions.Constant, Models",
+                  "FixedValue": 0.5,
+                  "Units": "",
+                  "Name": "VernSensitivity",
                   "ResourceName": null,
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.XYPairs, Models",
-                      "X": [
-                        0.0,
-                        10.0,
-                        30.0,
-                        60.0
-                      ],
-                      "Y": [
-                        0.0,
-                        0.5,
-                        0.8,
-                        1.0
-                      ],
-                      "Name": "XYPairs",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Memo, Models",
-                      "Text": "These parameters are overridden by cultivar parameter descriptions to capture the difference between individual cultivars in terms of their phenological development.  Responses shown here are only indicative.  See cultivar descriptions for more information.",
-                      "Name": "Memo",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Phenology].AccumulatedCooling",
-                      "Name": "XValue",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.Functions.MovingAverageFunction, Models",
-                  "NumberOfDays": 7,
-                  "StageToStartMovingAverage": "Germination",
-                  "Name": "RunningMeanTemp",
-                  "ResourceName": null,
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[IWeather].MeanT",
-                      "Name": "MeanTemp",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                  "Name": "PreemergentThermalTime",
-                  "ResourceName": null,
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.XYPairs, Models",
-                      "X": [
-                        0.0,
-                        25.0,
-                        50.0
-                      ],
-                      "Y": [
-                        0.0,
-                        1.0,
-                        0.0
-                      ],
-                      "Name": "XYPairs",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Memo, Models",
-                      "Text": "These parameters are overridden by cultivar parameter descriptions to capture the difference between individual cultivars in terms of their phenological development.  Responses shown here are only indicative.  See cultivar descriptions for more information.",
-                      "Name": "Memo",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[IWeather].MeanT",
-                      "Name": "XValue",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.Functions.SubDailyInterpolation, Models",
-                  "agregationMethod": 0,
-                  "Name": "VegetativeThermalTime",
-                  "ResourceName": null,
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.WangEngelTempFunction, Models",
-                      "MinTemp": 0.0,
-                      "OptTemp": 30.0,
-                      "MaxTemp": 40.0,
-                      "RefTemp": 0.0,
-                      "MaximumTemperatureWeighting": 0.5,
-                      "Units": null,
-                      "Name": "Response",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.HourlySinPpAdjusted, Models",
-                      "Name": "InterpolationMethod",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.Functions.SubDailyInterpolation, Models",
-                  "agregationMethod": 0,
-                  "Name": "ReproductiveThermalTime",
-                  "ResourceName": null,
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.WangEngelTempFunction, Models",
-                      "MinTemp": 0.0,
-                      "OptTemp": 30.0,
-                      "MaxTemp": 40.0,
-                      "RefTemp": 0.0,
-                      "MaximumTemperatureWeighting": 0.5,
-                      "Units": null,
-                      "Name": "Response",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.HourlySinPpAdjusted, Models",
-                      "Name": "InterpolationMethod",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
+                  "Children": [],
                   "Enabled": true,
                   "ReadOnly": false
                 },
@@ -603,28 +400,136 @@
                       "ResourceName": null,
                       "Children": [
                         {
-                          "$type": "Models.Functions.SubDailyInterpolation, Models",
-                          "agregationMethod": 0,
-                          "Name": "VegetativeThermalTime",
+                          "$type": "Models.Functions.MultiplyFunction, Models",
+                          "Name": "MultiplyFunction",
                           "ResourceName": null,
                           "Children": [
                             {
-                              "$type": "Models.Functions.WangEngelTempFunction, Models",
-                              "MinTemp": 0.0,
-                              "OptTemp": 30.0,
-                              "MaxTemp": 40.0,
-                              "RefTemp": 0.0,
-                              "MaximumTemperatureWeighting": 0.5,
-                              "Units": null,
-                              "Name": "Response",
+                              "$type": "Models.Functions.SubDailyInterpolation, Models",
+                              "agregationMethod": 0,
+                              "Name": "WangEagleTempScale",
                               "ResourceName": null,
-                              "Children": [],
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.WangEngelTempFunction, Models",
+                                  "MinTemp": 10.0,
+                                  "OptTemp": 30.0,
+                                  "MaxTemp": 40.0,
+                                  "RefTemp": 0.0,
+                                  "MaximumTemperatureWeighting": 0.5,
+                                  "Units": null,
+                                  "Name": "Response",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.HourlySinPpAdjusted, Models",
+                                  "Name": "InterpolationMethod",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.XYPairs, Models",
+                                  "X": [
+                                    0.0,
+                                    30.0,
+                                    40.0,
+                                    "NaN"
+                                  ],
+                                  "Y": [
+                                    0.0,
+                                    30.0,
+                                    0.0,
+                                    "NaN"
+                                  ],
+                                  "Name": "LinearResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Graph, Models",
+                                      "Caption": null,
+                                      "Axis": [
+                                        {
+                                          "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                                          "Title": "Y",
+                                          "Position": 0,
+                                          "Inverted": false,
+                                          "CrossesAtZero": false,
+                                          "LabelOnOneLine": false,
+                                          "Minimum": null,
+                                          "Maximum": null,
+                                          "Interval": null
+                                        },
+                                        {
+                                          "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                                          "Title": "X",
+                                          "Position": 3,
+                                          "Inverted": false,
+                                          "CrossesAtZero": false,
+                                          "LabelOnOneLine": false,
+                                          "Minimum": null,
+                                          "Maximum": null,
+                                          "Interval": null
+                                        }
+                                      ],
+                                      "LegendPosition": 5,
+                                      "LegendOrientation": 0,
+                                      "AnnotationLocation": 0,
+                                      "DisabledSeries": [],
+                                      "LegendOutsideGraph": false,
+                                      "Name": "Graph",
+                                      "ResourceName": null,
+                                      "Children": [
+                                        {
+                                          "$type": "Models.Series, Models",
+                                          "Type": 1,
+                                          "XAxis": 3,
+                                          "YAxis": 0,
+                                          "ColourArgb": -65536,
+                                          "FactorToVaryColours": null,
+                                          "FactorToVaryMarkers": null,
+                                          "FactorToVaryLines": null,
+                                          "Marker": 11,
+                                          "MarkerSize": 0,
+                                          "Line": 0,
+                                          "LineThickness": 0,
+                                          "TableName": null,
+                                          "XFieldName": ".Simulations.Replacements.Lentil.Phenology.ThermalTime.PostEmergence.VegetativeThermalTime.Response.XYPairs.X",
+                                          "YFieldName": ".Simulations.Replacements.Lentil.Phenology.ThermalTime.PostEmergence.VegetativeThermalTime.Response.XYPairs.Y",
+                                          "X2FieldName": null,
+                                          "Y2FieldName": null,
+                                          "ShowInLegend": false,
+                                          "IncludeSeriesNameInLegend": false,
+                                          "Cumulative": false,
+                                          "CumulativeX": false,
+                                          "Filter": null,
+                                          "Name": "Series",
+                                          "ResourceName": null,
+                                          "Children": [],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        }
+                                      ],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.HourlySinPpAdjusted, Models",
-                              "Name": "InterpolationMethod",
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 30.0,
+                              "Units": null,
+                              "Name": "OptTemp",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -731,12 +636,145 @@
                   "ReadOnly": false
                 },
                 {
+                  "$type": "Models.Functions.AccumulateFunction, Models",
+                  "StartStageName": "Germination",
+                  "EndStageName": "Vernalised",
+                  "ResetStageName": null,
+                  "FractionRemovedOnCut": 0.0,
+                  "FractionRemovedOnHarvest": 0.0,
+                  "FractionRemovedOnGraze": 0.0,
+                  "FractionRemovedOnPrune": 0.0,
+                  "Name": "AccumulatedVernalisation",
+                  "ResourceName": null,
+                  "Children": [
+                    {
+                      "$type": "Models.Functions.SubDailyInterpolation, Models",
+                      "agregationMethod": 0,
+                      "Name": "DailyVernalisation",
+                      "ResourceName": null,
+                      "Children": [
+                        {
+                          "$type": "Models.Functions.WangEngelTempFunction, Models",
+                          "MinTemp": 0.0,
+                          "OptTemp": 2.0,
+                          "MaxTemp": 13.0,
+                          "RefTemp": 0.0,
+                          "MaximumTemperatureWeighting": 0.5,
+                          "Units": null,
+                          "Name": "Response",
+                          "ResourceName": null,
+                          "Children": [],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.Functions.HourlySinPpAdjusted, Models",
+                          "Name": "InterpolationMethod",
+                          "ResourceName": null,
+                          "Children": [],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        }
+                      ],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                  "Name": "VernalisationSaturation",
+                  "ResourceName": null,
+                  "Children": [
+                    {
+                      "$type": "Models.Functions.XYPairs, Models",
+                      "X": [
+                        0.0,
+                        10.0,
+                        30.0,
+                        60.0
+                      ],
+                      "Y": [
+                        0.0,
+                        0.5,
+                        0.8,
+                        1.0
+                      ],
+                      "Name": "XYPairs",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Memo, Models",
+                      "Text": "These parameters are overridden by cultivar parameter descriptions to capture the difference between individual cultivars in terms of their phenological development.  Responses shown here are only indicative.  See cultivar descriptions for more information.",
+                      "Name": "Memo",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Functions.VariableReference, Models",
+                      "VariableName": "[Phenology].AccumulatedVernalisation",
+                      "Name": "XValue",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
                   "$type": "Models.Functions.PhotoperiodFunction, Models",
                   "Twilight": -6.0,
                   "DayLength": 0.0,
                   "Name": "Photoperiod",
                   "ResourceName": null,
                   "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                  "Name": "PpResponse",
+                  "ResourceName": null,
+                  "Children": [
+                    {
+                      "$type": "Models.Functions.XYPairs, Models",
+                      "X": [
+                        8.0,
+                        16.0,
+                        "NaN",
+                        "NaN"
+                      ],
+                      "Y": [
+                        1.0,
+                        0.0,
+                        "NaN",
+                        "NaN"
+                      ],
+                      "Name": "XYPairs",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Functions.VariableReference, Models",
+                      "VariableName": "[Lentil].Phenology.Photoperiod",
+                      "Name": "XValue",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
                   "Enabled": true,
                   "ReadOnly": false
                 },
@@ -840,50 +878,31 @@
                       "ReadOnly": false
                     },
                     {
-                      "$type": "Models.Functions.MultiplyFunction, Models",
+                      "$type": "Models.Functions.SubtractFunction, Models",
                       "Name": "Target",
                       "ResourceName": null,
                       "Children": [
                         {
-                          "$type": "Models.Functions.SubtractFunction, Models",
-                          "Name": "Target",
+                          "$type": "Models.Functions.MultiplyFunction, Models",
+                          "Name": "UnVernalised",
                           "ResourceName": null,
                           "Children": [
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 12.0,
-                              "Units": null,
-                              "Name": "WithoutCooling",
+                              "FixedValue": 1000.0,
+                              "Units": "",
+                              "Name": "SpeciesMaxUnvernalisedDuration",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.MultiplyFunction, Models",
-                              "Name": "CoolingReduction",
+                              "$type": "Models.Functions.VariableReference, Models",
+                              "VariableName": "[Phenology].Earlyness",
+                              "Name": "GenotypeRelativeEarlyness",
                               "ResourceName": null,
-                              "Children": [
-                                {
-                                  "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 6.0,
-                                  "Units": "",
-                                  "Name": "CoolingSensitivity",
-                                  "ResourceName": null,
-                                  "Children": [],
-                                  "Enabled": true,
-                                  "ReadOnly": false
-                                },
-                                {
-                                  "$type": "Models.Functions.VariableReference, Models",
-                                  "VariableName": "[Phenology].RelativeCoolingAchieved",
-                                  "Name": "RelativeCoolingAchieved",
-                                  "ResourceName": null,
-                                  "Children": [],
-                                  "Enabled": true,
-                                  "ReadOnly": false
-                                }
-                              ],
+                              "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             }
@@ -892,34 +911,124 @@
                           "ReadOnly": false
                         },
                         {
-                          "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                          "Name": "PpResponse",
+                          "$type": "Models.Functions.MultiplyFunction, Models",
+                          "Name": "VernalisationReduction",
                           "ResourceName": null,
                           "Children": [
                             {
-                              "$type": "Models.Functions.XYPairs, Models",
-                              "X": [
-                                8.0,
-                                16.0,
-                                "NaN",
-                                "NaN"
-                              ],
-                              "Y": [
-                                1.0,
-                                0.0,
-                                "NaN",
-                                "NaN"
-                              ],
-                              "Name": "XYPairs",
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "PotentialVernalisationResponse",
                               "ResourceName": null,
-                              "Children": [],
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.MultiplyFunction, Models",
+                                  "Name": "SpeciesMaxVernalisationReduction",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[Phenology].Juvenile.Target.UnVernalised",
+                                      "Name": "UnvernalisedDuration",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 0.5,
+                                      "Units": "",
+                                      "Name": "ProportionOfUnvernalisedDuration",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Phenology].VernSensitivity",
+                                  "Name": "GenotypeRelativeVernSensitivity",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
                               "$type": "Models.Functions.VariableReference, Models",
-                              "VariableName": "[Lentil].Phenology.Photoperiod",
-                              "Name": "XValue",
+                              "VariableName": "[Phenology].VernalisationSaturation",
+                              "Name": "RelativeVernalisationSaturation",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            }
+                          ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.Functions.MultiplyFunction, Models",
+                          "Name": "LongPpReduction",
+                          "ResourceName": null,
+                          "Children": [
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "PotentialPpResponse",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.MultiplyFunction, Models",
+                                  "Name": "SpeciesMaxPpReduction",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[Phenology].Juvenile.Target.UnVernalised",
+                                      "Name": "UnvernalisedDuration",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 0.5,
+                                      "Units": "",
+                                      "Name": "ProportionOfUnvernalisedDuration",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Phenology].PpSensitivity",
+                                  "Name": "GenotypeRelativePpSensitivity",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.VariableReference, Models",
+                              "VariableName": "[Phenology].VernalisationSaturation",
+                              "Name": "PpResponse",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -960,35 +1069,15 @@
                       "ResourceName": null,
                       "Children": [
                         {
-                          "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 0.0,
-                          "Units": null,
-                          "Name": "ShortPpSensitivity",
-                          "ResourceName": null,
-                          "Children": [],
-                          "Enabled": true,
-                          "ReadOnly": false
-                        },
-                        {
-                          "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                          "Name": "PpResponse",
+                          "$type": "Models.Functions.MultiplyFunction, Models",
+                          "Name": "TargetAtShortPp",
                           "ResourceName": null,
                           "Children": [
                             {
-                              "$type": "Models.Functions.XYPairs, Models",
-                              "X": [
-                                8.0,
-                                16.0,
-                                "NaN",
-                                "NaN"
-                              ],
-                              "Y": [
-                                1.0,
-                                0.0,
-                                "NaN",
-                                "NaN"
-                              ],
-                              "Name": "XYPairs",
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 1000.0,
+                              "Units": null,
+                              "Name": "SpeciesMaxShortDayDuration",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -996,14 +1085,23 @@
                             },
                             {
                               "$type": "Models.Functions.VariableReference, Models",
-                              "VariableName": "[Lentil].Phenology.Photoperiod",
-                              "Name": "XValue",
+                              "VariableName": "[Phenology].PpSensitivity",
+                              "Name": "GenotypeRelativePpSensitivity",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             }
                           ],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.Functions.VariableReference, Models",
+                          "VariableName": "[Lentil].Phenology.PpResponse",
+                          "Name": "Shape",
+                          "ResourceName": null,
+                          "Children": [],
                           "Enabled": true,
                           "ReadOnly": false
                         }
@@ -1577,6 +1675,45 @@
                       "FixedValue": 1.0,
                       "Units": null,
                       "Name": "OneDay",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.OnEventFunction, Models",
+                  "SetEvent": "StartFlowering",
+                  "ReSetEvent": "never",
+                  "Name": "StartFloweringTt",
+                  "ResourceName": null,
+                  "Children": [
+                    {
+                      "$type": "Models.Memo, Models",
+                      "Text": "\r\nA function is used to provide flowering date as days after sowing(DAS).",
+                      "Name": "memo",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Functions.Constant, Models",
+                      "FixedValue": 0.0,
+                      "Units": null,
+                      "Name": "PreEventValue",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Functions.VariableReference, Models",
+                      "VariableName": "[Phenology].AccumulatedTt",
+                      "Name": "PostEventValue",
                       "ResourceName": null,
                       "Children": [],
                       "Enabled": true,
@@ -2239,7 +2376,7 @@
                               "Children": [
                                 {
                                   "$type": "Models.Functions.VariableReference, Models",
-                                  "VariableName": "[Phenology].VegetativeThermalTime",
+                                  "VariableName": "[Phenology].ThermalTime",
                                   "Name": "TT",
                                   "ResourceName": null,
                                   "Children": [],
@@ -2884,7 +3021,7 @@
                       "Children": [
                         {
                           "$type": "Models.Functions.VariableReference, Models",
-                          "VariableName": "[Phenology].VegetativeThermalTime",
+                          "VariableName": "[Phenology].ThermalTime",
                           "Name": "ThermalTime",
                           "ResourceName": null,
                           "Children": [],
@@ -7499,9 +7636,24 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    ""
+                    "[Phenology].Earlyness.FixedValue = .5",
+                    "[Phenology].VernSensitivity.FixedValue = 0.7",
+                    "[Phenology].PpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Precoz",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.PMF.Cultivar, Models",
+                  "Command": [
+                    "[Phenology].Earlyness.FixedValue = 1",
+                    "[Phenology].VernSensitivity.FixedValue = 0",
+                    "[Phenology].PpSensitivity.FixedValue = 0"
+                  ],
+                  "Name": "Laird",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
@@ -7547,8 +7699,8 @@
             "[Lentil].Leaf.NodeNumber",
             "[Lentil].Phenology.Stage",
             "[Lentil].Phenology.Photoperiod",
-            "[Lentil].Phenology.AccumulatedCooling",
-            "[Lentil].Phenology.RelativeCoolingAchieved",
+            "[Lentil].Phenology.AccumulatedVernalisation",
+            "[Lentil].Phenology.VernalisationSaturation",
             "[Lentil].Stem.Wt",
             "[Lentil].Grain.Wt",
             "[Lentil].Shell.Wt",
@@ -32036,6 +32188,19 @@
                       "Children": [],
                       "Enabled": true,
                       "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Factorial.CompositeFactor, Models",
+                      "Specifications": [
+                        "[Experiment].Script.CultivarName=Laird"
+                      ],
+                      "Paths": null,
+                      "Values": null,
+                      "Name": "Laird",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
                     }
                   ],
                   "Enabled": true,
@@ -32941,7 +33106,8 @@
                   "VariableNames": [
                     "[Experiment].Script.TransitionDay",
                     "[Lentil].Phenology.StartFloweringDAS",
-                    "[Lentil].Phenology.EmergenceDAS"
+                    "[Lentil].Phenology.EmergenceDAS",
+                    "[Lentil].Phenology.StartFloweringTt"
                   ],
                   "EventNames": [
                     "",
@@ -33367,7 +33533,7 @@
           "$type": "Models.Core.Folder, Models",
           "ShowInDocs": false,
           "GraphsPerPage": 6,
-          "Name": "Flowering",
+          "Name": "Precoz",
           "ResourceName": null,
           "Children": [
             {
@@ -33427,7 +33593,7 @@
                   "IncludeSeriesNameInLegend": false,
                   "Cumulative": false,
                   "CumulativeX": false,
-                  "Filter": "[FinalT] = \"12oC\" and [FinalPp] = \"11h\"",
+                  "Filter": "[FinalT] = \"12oC\" and [FinalPp] = \"11h\" and [Cv] = \"Precoz\"",
                   "Name": "Predicted",
                   "ResourceName": null,
                   "Children": [],
@@ -33456,7 +33622,7 @@
                   "IncludeSeriesNameInLegend": false,
                   "Cumulative": false,
                   "CumulativeX": false,
-                  "Filter": "[FinalT] = 12 and [FinalPp] = 11",
+                  "Filter": "[FinalT] = 12 and [FinalPp] = 11 and [Cultivar] = \"Precoz\"",
                   "Name": "Observed",
                   "ResourceName": null,
                   "Children": [],
@@ -33524,7 +33690,7 @@
                   "IncludeSeriesNameInLegend": false,
                   "Cumulative": false,
                   "CumulativeX": false,
-                  "Filter": "[FinalT] = \"12oC\" and [FinalPp] = \"16h\"",
+                  "Filter": "[FinalT] = \"12oC\" and [FinalPp] = \"16h\" and [Cv] = \"Precoz\"",
                   "Name": "Predicted",
                   "ResourceName": null,
                   "Children": [],
@@ -33553,7 +33719,7 @@
                   "IncludeSeriesNameInLegend": false,
                   "Cumulative": false,
                   "CumulativeX": false,
-                  "Filter": "[FinalT] = 12 and [FinalPp] = 16",
+                  "Filter": "[FinalT] = 12 and [FinalPp] = 16 and [Cultivar] = \"Precoz\"",
                   "Name": "Observed",
                   "ResourceName": null,
                   "Children": [],
@@ -33621,7 +33787,7 @@
                   "IncludeSeriesNameInLegend": false,
                   "Cumulative": false,
                   "CumulativeX": false,
-                  "Filter": "[FinalT] = \"19oC\" and [FinalPp] = \"11h\"",
+                  "Filter": "[FinalT] = \"19oC\" and [FinalPp] = \"11h\" and [Cv] = \"Precoz\"",
                   "Name": "Predicted",
                   "ResourceName": null,
                   "Children": [],
@@ -33650,7 +33816,7 @@
                   "IncludeSeriesNameInLegend": false,
                   "Cumulative": false,
                   "CumulativeX": false,
-                  "Filter": "[FinalT] = 19 and [FinalPp] = 11",
+                  "Filter": "[FinalT] = 19 and [FinalPp] = 11 and [Cultivar] = \"Precoz\"",
                   "Name": "Observed",
                   "ResourceName": null,
                   "Children": [],
@@ -33718,7 +33884,7 @@
                   "IncludeSeriesNameInLegend": false,
                   "Cumulative": false,
                   "CumulativeX": false,
-                  "Filter": "[FinalT] = \"19oC\" and [FinalPp] = \"16h\"",
+                  "Filter": "[FinalT] = \"19oC\" and [FinalPp] = \"16h\" and [Cv] = \"Precoz\"",
                   "Name": "Predicted",
                   "ResourceName": null,
                   "Children": [],
@@ -33747,7 +33913,7 @@
                   "IncludeSeriesNameInLegend": false,
                   "Cumulative": false,
                   "CumulativeX": false,
-                  "Filter": "[FinalT] = 19 and [FinalPp] = 16",
+                  "Filter": "[FinalT] = 19 and [FinalPp] = 16 and [Cultivar] = \"Precoz\"",
                   "Name": "Observed",
                   "ResourceName": null,
                   "Children": [],
@@ -34044,6 +34210,405 @@
           ],
           "Enabled": true,
           "ReadOnly": false
+        },
+        {
+          "$type": "Models.Core.Folder, Models",
+          "ShowInDocs": false,
+          "GraphsPerPage": 6,
+          "Name": "Laird",
+          "ResourceName": null,
+          "Children": [
+            {
+              "$type": "Models.Graph, Models",
+              "Caption": null,
+              "Axis": [
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 3,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                },
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 0,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": 0.0,
+                  "Maximum": 2000.0,
+                  "Interval": null
+                }
+              ],
+              "LegendPosition": 0,
+              "LegendOrientation": 0,
+              "AnnotationLocation": 0,
+              "DisabledSeries": [],
+              "LegendOutsideGraph": false,
+              "Name": "12oC11h",
+              "ResourceName": null,
+              "Children": [
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": "InitT",
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "InitPp",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 0,
+                  "LineThickness": 0,
+                  "TableName": "spec",
+                  "XFieldName": "Durat",
+                  "YFieldName": "Lentil.Phenology.StartFloweringTt",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": "[FinalT] = \"12oC\" and [FinalPp] = \"11h\" and [Cv] = \"Laird\"",
+                  "Name": "Predicted",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": "InitT",
+                  "FactorToVaryMarkers": "InitPp",
+                  "FactorToVaryLines": null,
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "Roberts_etal_1988",
+                  "XFieldName": "Experiment.Script.TransitionDay",
+                  "YFieldName": "Lentil.Phenology.StartFloweringTt",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": "[FinalT] = 12 and [FinalPp] = 11 and [Cultivar] = \"Laird\"",
+                  "Name": "Observed",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Graph, Models",
+              "Caption": null,
+              "Axis": [
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 3,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                },
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 0,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": "NaN",
+                  "Maximum": 2000.0,
+                  "Interval": "NaN"
+                }
+              ],
+              "LegendPosition": 0,
+              "LegendOrientation": 0,
+              "AnnotationLocation": 0,
+              "DisabledSeries": [],
+              "LegendOutsideGraph": false,
+              "Name": "12oC16h",
+              "ResourceName": null,
+              "Children": [
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": "InitT",
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "InitPp",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 0,
+                  "LineThickness": 0,
+                  "TableName": "spec",
+                  "XFieldName": "Durat",
+                  "YFieldName": "Lentil.Phenology.StartFloweringTt",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": "[FinalT] = \"12oC\" and [FinalPp] = \"16h\" and [Cv] = \"Laird\"",
+                  "Name": "Predicted",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": "InitT",
+                  "FactorToVaryMarkers": "InitPp",
+                  "FactorToVaryLines": null,
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "Roberts_etal_1988",
+                  "XFieldName": "Experiment.Script.TransitionDay",
+                  "YFieldName": "Lentil.Phenology.StartFloweringTt",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": "[FinalT] = 12 and [FinalPp] = 16 and [Cultivar] = \"Laird\"",
+                  "Name": "Observed",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Graph, Models",
+              "Caption": null,
+              "Axis": [
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 3,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                },
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 0,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": 0.0,
+                  "Maximum": 2000.0,
+                  "Interval": null
+                }
+              ],
+              "LegendPosition": 0,
+              "LegendOrientation": 0,
+              "AnnotationLocation": 0,
+              "DisabledSeries": [],
+              "LegendOutsideGraph": false,
+              "Name": "19oC11h",
+              "ResourceName": null,
+              "Children": [
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": "InitT",
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "InitPp",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 0,
+                  "LineThickness": 0,
+                  "TableName": "spec",
+                  "XFieldName": "Durat",
+                  "YFieldName": "Lentil.Phenology.StartFloweringTt",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": "[FinalT] = \"19oC\" and [FinalPp] = \"11h\" and [Cv] = \"Laird\"",
+                  "Name": "Predicted",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": "InitT",
+                  "FactorToVaryMarkers": "InitPp",
+                  "FactorToVaryLines": null,
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "Roberts_etal_1988",
+                  "XFieldName": "Experiment.Script.TransitionDay",
+                  "YFieldName": "Lentil.Phenology.StartFloweringTt",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": "[FinalT] = 19 and [FinalPp] = 11 and [Cultivar] = \"Laird\"",
+                  "Name": "Observed",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Graph, Models",
+              "Caption": null,
+              "Axis": [
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 3,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                },
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 0,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": 0.0,
+                  "Maximum": 2000.0,
+                  "Interval": null
+                }
+              ],
+              "LegendPosition": 0,
+              "LegendOrientation": 0,
+              "AnnotationLocation": 0,
+              "DisabledSeries": [],
+              "LegendOutsideGraph": false,
+              "Name": "19oC16h",
+              "ResourceName": null,
+              "Children": [
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": "InitT",
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "InitPp",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 0,
+                  "LineThickness": 0,
+                  "TableName": "spec",
+                  "XFieldName": "Durat",
+                  "YFieldName": "Lentil.Phenology.StartFloweringTt",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": "[FinalT] = \"19oC\" and [FinalPp] = \"16h\" and [Cv] = \"Laird\"",
+                  "Name": "Predicted",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": "InitT",
+                  "FactorToVaryMarkers": "InitPp",
+                  "FactorToVaryLines": null,
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "Roberts_etal_1988",
+                  "XFieldName": "Experiment.Script.TransitionDay",
+                  "YFieldName": "Lentil.Phenology.StartFloweringTt",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": "[FinalT] = 19 and [FinalPp] = 16 and [Cultivar] = \"Laird\"",
+                  "Name": "Observed",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            }
+          ],
+          "Enabled": true,
+          "ReadOnly": false
         }
       ],
       "Enabled": true,
@@ -34235,7 +34800,7 @@
               "Latitude": -27.0,
               "Longitude": 0.0,
               "DayLength": 16.0,
-              "SunRise": 0.0,
+              "SunRise": 4.0,
               "TempLag": 0.0,
               "Name": "ControlledEnvironment",
               "ResourceName": null,
@@ -34889,11 +35454,6 @@
                     "                summary.WriteMessage(this,\"Wheat crop sown\", MessageType.Diagnostic);",
                     "            }",
                     "",
-                    "            if((phenology.AccumulatedTT >= 90)&&(Emerged==false))",
-                    "            {",
-                    "                lentil.Phenology.SetEmergenceDate(clock.Today.ToString(\"dd-MMM\", CultureInfo.InvariantCulture));",
-                    "                Emerged =true;",
-                    "            }",
                     "",
                     "            DAS += 1;",
                     "            if (DAS <= TransitionDay)",
@@ -34926,7 +35486,7 @@
                     },
                     {
                       "Key": "SowingDepth",
-                      "Value": "100"
+                      "Value": "20"
                     },
                     {
                       "Key": "TransitionDay",
@@ -36548,12 +37108,6 @@
                     "                summary.WriteMessage(this,\"Wheat crop sown\", MessageType.Diagnostic);",
                     "            }",
                     "",
-                    "            if((phenology.AccumulatedTT >= 90)&&(Emerged==false))",
-                    "            {",
-                    "                lentil.Phenology.SetEmergenceDate(clock.Today.ToString(\"dd-MMM\", CultureInfo.InvariantCulture));",
-                    "                Emerged =true;",
-                    "            }",
-                    "",
                     "            DAS += 1;",
                     "            if (DAS <= TransitionDay)",
                     "            {",
@@ -36580,19 +37134,19 @@
                   ],
                   "Parameters": [
                     {
+                      "Key": "InitTempMax",
+                      "Value": "0"
+                    },
+                    {
                       "Key": "CultivarName",
                       "Value": "Ace"
                     },
                     {
                       "Key": "SowingDepth",
-                      "Value": "100"
+                      "Value": "20"
                     },
                     {
                       "Key": "TransitionDay",
-                      "Value": "0"
-                    },
-                    {
-                      "Key": "InitTempMax",
                       "Value": "0"
                     },
                     {
