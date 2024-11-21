@@ -58,7 +58,7 @@ namespace Models.Climate
         /// </summary>
         [Units("°C")]
         [JsonIgnore]
-        public double MeanT { get { return (MaxT + MinT) / 2; } }
+        public double MeanT { get { return MathUtilities.Average(SubDailyTemperature); } }
 
         /// <summary>
         /// Hourly temperature values assuming t = Tmin when dark and t=Tmax when light (oC)
