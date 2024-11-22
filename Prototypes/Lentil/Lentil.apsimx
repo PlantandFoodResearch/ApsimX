@@ -303,9 +303,9 @@
                 },
                 {
                   "$type": "Models.Functions.Constant, Models",
-                  "FixedValue": 0.5,
+                  "FixedValue": 0.0,
                   "Units": null,
-                  "Name": "Earlyness",
+                  "Name": "JuvenileBase",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
@@ -323,9 +323,9 @@
                 },
                 {
                   "$type": "Models.Functions.Constant, Models",
-                  "FixedValue": 0.5,
+                  "FixedValue": 0.0,
                   "Units": null,
-                  "Name": "PpSensitivityVegetative",
+                  "Name": "InductiveBase",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
@@ -335,7 +335,27 @@
                   "$type": "Models.Functions.Constant, Models",
                   "FixedValue": 0.5,
                   "Units": null,
-                  "Name": "PpSensitivityReproductive",
+                  "Name": "InductivePpSensitivity",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.Constant, Models",
+                  "FixedValue": 0.0,
+                  "Units": null,
+                  "Name": "EarlyReproductiveBase",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.Constant, Models",
+                  "FixedValue": 0.5,
+                  "Units": null,
+                  "Name": "EarlyReproductivePpSensitivity",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
@@ -752,7 +772,7 @@
                 },
                 {
                   "$type": "Models.Functions.MovingAverageFunction, Models",
-                  "NumberOfDays": 14,
+                  "NumberOfDays": 1,
                   "StageToStartMovingAverage": "Emergence",
                   "Name": "PpResponse",
                   "ResourceName": null,
@@ -904,30 +924,11 @@
                       "ResourceName": null,
                       "Children": [
                         {
-                          "$type": "Models.Functions.MultiplyFunction, Models",
-                          "Name": "LongDayFullyVernalisedBase",
+                          "$type": "Models.Functions.VariableReference, Models",
+                          "VariableName": "[Phenology].JuvenileBase",
+                          "Name": "JuvenileBase",
                           "ResourceName": null,
-                          "Children": [
-                            {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": "",
-                              "Name": "SpeciesMaxUnvernalisedDuration",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.VariableReference, Models",
-                              "VariableName": "[Phenology].Earlyness",
-                              "Name": "GenotypeRelativeEarlyness",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            }
-                          ],
+                          "Children": [],
                           "Enabled": true,
                           "ReadOnly": false
                         },
@@ -988,7 +989,7 @@
                 {
                   "$type": "Models.PMF.Phen.GenericPhase, Models",
                   "Start": "Vernalised",
-                  "End": "StartReproductive",
+                  "End": "FirstBud",
                   "IsEmerged": true,
                   "Name": "Inductive",
                   "ResourceName": null,
@@ -1008,30 +1009,11 @@
                       "ResourceName": null,
                       "Children": [
                         {
-                          "$type": "Models.Functions.MultiplyFunction, Models",
-                          "Name": "LongDayBase",
+                          "$type": "Models.Functions.VariableReference, Models",
+                          "VariableName": "[Phenology].InductiveBase",
+                          "Name": "InductiveBase",
                           "ResourceName": null,
-                          "Children": [
-                            {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 1000.0,
-                              "Units": "",
-                              "Name": "SpeciesMaxLongDayDuration",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.VariableReference, Models",
-                              "VariableName": "[Phenology].Earlyness",
-                              "Name": "GenotypeRelativeEarlyness",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            }
-                          ],
+                          "Children": [],
                           "Enabled": true,
                           "ReadOnly": false
                         },
@@ -1057,7 +1039,7 @@
                                 },
                                 {
                                   "$type": "Models.Functions.VariableReference, Models",
-                                  "VariableName": "[Phenology].PpSensitivityVegetative",
+                                  "VariableName": "[Phenology].InductivePpSensitivity",
                                   "Name": "GenotypeRelativePpSensitivity",
                                   "ResourceName": null,
                                   "Children": [],
@@ -1092,40 +1074,9 @@
                 {
                   "$type": "Models.PMF.Phen.GenericPhase, Models",
                   "Start": "FirstBud",
-                  "End": "StartPodDevelopment",
-                  "IsEmerged": true,
-                  "Name": "EarlyReproductive",
-                  "ResourceName": null,
-                  "Children": [
-                    {
-                      "$type": "Models.Functions.Constant, Models",
-                      "FixedValue": 0.0,
-                      "Units": null,
-                      "Name": "Target",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.Functions.VariableReference, Models",
-                      "VariableName": "[Phenology].ThermalTime",
-                      "Name": "Progression",
-                      "ResourceName": null,
-                      "Children": [],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    }
-                  ],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.PMF.Phen.GenericPhase, Models",
-                  "Start": "FirstBud",
                   "End": "StartFlowering",
                   "IsEmerged": true,
-                  "Name": "BudDevelopment",
+                  "Name": "EarlyReprodictive",
                   "ResourceName": null,
                   "Children": [
                     {
@@ -1143,10 +1094,9 @@
                       "ResourceName": null,
                       "Children": [
                         {
-                          "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 180.0,
-                          "Units": null,
-                          "Name": "LongDayBase",
+                          "$type": "Models.Functions.VariableReference, Models",
+                          "VariableName": "[Phenology].EarlyReproductiveBase",
+                          "Name": "EarlyReproductiveBase",
                           "ResourceName": null,
                           "Children": [],
                           "Enabled": true,
@@ -1174,7 +1124,7 @@
                                 },
                                 {
                                   "$type": "Models.Functions.VariableReference, Models",
-                                  "VariableName": "[Phenology].PpSensitivityReproductive",
+                                  "VariableName": "[Phenology].EarlyReproductivePpSensitivity",
                                   "Name": "GenotypeRelativePpSensitivity",
                                   "ResourceName": null,
                                   "Children": [],
@@ -7698,10 +7648,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].Earlyness.FixedValue = .3",
-                    "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].PpSensitivityVegetative.FixedValue = 0.1",
-                    "[Phenology].PpSensitivityReproductive.FixedValue = 0.1"
+                    "[Phenology].JuvenileBase.FixedValue = 100 ",
+                    "[Phenology].VernSensitivity.FixedValue = .5",
+                    "[Phenology].InductiveBase.FixedValue = 100",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.5",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
                   ],
                   "Name": "Precoz",
                   "ResourceName": null,
@@ -7712,10 +7664,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].Earlyness.FixedValue = .5",
-                    "[Phenology].VernSensitivity.FixedValue = 1",
-                    "[Phenology].PpSensitivityVegetative.FixedValue = .3",
-                    "[Phenology].PpSensitivityReproductive.FixedValue =0.5"
+                    "[Phenology].JuvenileBase.FixedValue = 100 ",
+                    "[Phenology].VernSensitivity.FixedValue = .5",
+                    "[Phenology].InductiveBase.FixedValue = 100",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.5",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
                   ],
                   "Name": "Laird",
                   "ResourceName": null,
@@ -7726,10 +7680,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].Earlyness.FixedValue = .4",
-                    "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].PpSensitivityVegetative.FixedValue = 1.6",
-                    "[Phenology].PpSensitivityReproductive.FixedValue = 0"
+                    "[Phenology].JuvenileBase.FixedValue = 100 ",
+                    "[Phenology].VernSensitivity.FixedValue = .5",
+                    "[Phenology].InductiveBase.FixedValue = 100",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.5",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
                   ],
                   "Name": "Syrian",
                   "ResourceName": null,
@@ -7740,10 +7696,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].Earlyness.FixedValue = 1",
-                    "[Phenology].VernSensitivity.FixedValue = 1",
-                    "[Phenology].PpSensitivityVegetative.FixedValue = 1",
-                    "[Phenology].PpSensitivityReproductive.FixedValue = 0.1"
+                    "[Phenology].JuvenileBase.FixedValue = 100 ",
+                    "[Phenology].VernSensitivity.FixedValue = .5",
+                    "[Phenology].InductiveBase.FixedValue = 100",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.5",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
                   ],
                   "Name": "Ethiopian",
                   "ResourceName": null,
@@ -39252,6 +39210,15 @@
           "ReadOnly": false
         }
       ],
+      "Enabled": true,
+      "ReadOnly": false
+    },
+    {
+      "$type": "Models.Playlist, Models",
+      "Text": "*Precoz*",
+      "Name": "Playlist",
+      "ResourceName": null,
+      "Children": [],
       "Enabled": true,
       "ReadOnly": false
     }
