@@ -7741,6 +7741,7 @@
           "$type": "Models.Report, Models",
           "VariableNames": [
             "[Clock].Today",
+            "[Simulation].Name",
             "[IWeather].MeanT",
             "[Lentil].AboveGround.Wt",
             "[Lentil].Leaf.CoverGreen",
@@ -7771,6 +7772,7 @@
           "$type": "Models.Report, Models",
           "VariableNames": [
             "[Clock].Today as Date",
+            "[Simulation].Name",
             "[Lentil].SowingData.Cultivar",
             "[Lentil].SowingDate",
             "[Lentil].Phenology.EmergenceDAS",
