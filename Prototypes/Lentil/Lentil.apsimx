@@ -442,7 +442,7 @@
                               "Children": [
                                 {
                                   "$type": "Models.Functions.WangEngelTempFunction, Models",
-                                  "MinTemp": 0.0,
+                                  "MinTemp": 2.0,
                                   "OptTemp": 25.0,
                                   "MaxTemp": 35.0,
                                   "RefTemp": 0.0,
@@ -7648,12 +7648,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 100 ",
-                    "[Phenology].VernSensitivity.FixedValue = .5",
-                    "[Phenology].InductiveBase.FixedValue = 100",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.5",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
+                    "[Phenology].JuvenileBase.FixedValue = 500",
+                    "[Phenology].VernSensitivity.FixedValue = 0",
+                    "[Phenology].InductiveBase.FixedValue = 68",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.1",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 0",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Precoz",
                   "ResourceName": null,
@@ -7664,12 +7664,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 100 ",
-                    "[Phenology].VernSensitivity.FixedValue = .5",
-                    "[Phenology].InductiveBase.FixedValue = 100",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.5",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
+                    "[Phenology].JuvenileBase.FixedValue = 447",
+                    "[Phenology].VernSensitivity.FixedValue = 0",
+                    "[Phenology].InductiveBase.FixedValue = 332",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.11",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 21",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.27"
                   ],
                   "Name": "Laird",
                   "ResourceName": null,
