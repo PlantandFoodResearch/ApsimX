@@ -264,9 +264,9 @@ def findModel(Parent,PathElements):
         Parent = findNextChild(Parent,pe)
     return Parent    
 
-def StopReporting(WheatApsimx,modelPath):
+def StopReporting(Apsimx,modelPath):
     PathElements = modelPath.split('.')
-    report = findModel(WheatApsimx,PathElements)
+    report = findModel(Apsimx,PathElements)
     report["EventNames"] = []
 
 def removeModel(Parent,modelPath):
@@ -315,6 +315,8 @@ def ApplyParamReplacementSet(paramValues,paramNames):
 
     AppendModeltoModelofType(WorkingLentilApsimx,"Models.Core.Folder, Models","Replacements",SetCropParams)
 
+    
+    
     with open(WorkingLentilFilePath,'w') as WorkingLentilApsimxJSON:
         json.dump(WorkingLentilApsimx,WorkingLentilApsimxJSON,indent=2)
         
@@ -338,6 +340,9 @@ def Preparefile():
         WorkingLentilApsimx = json.load(BaseLentilApsimxJSON)
     BaseLentilApsimxJSON.close()
     AppendModeltoModelofTypeAndDeleteOldIfPresent(WorkingLentilApsimx,'Models.Core.Zone, Models',BlankManager)
+    StopReporting(WorkingLentilApsimx,'Replacements.DailyReport')
+    removeModel(WorkingLentilApsimx,'DataStore.DailyObsPred')
+    
     with open(WorkingLentilFilePath,'w') as WorkingLentilApsimxJSON:
         json.dump(WorkingLentilApsimx,WorkingLentilApsimxJSON,indent=2)
     #print('File Prep Complete')
@@ -468,14 +473,8 @@ while (rounds<10):
             print(str(rounds))
             print(str(currentBest))
         except:
-            FailedCultivars.append(c)
+            FailedCultivars.append(-c)
     rounds += 1
-
-CheckPoint = load("./OptFiles/"+"Precoz"+" FitsCheckpoint"+Version+".pkl")
-
-CheckPoint
-
-CheckPoint
 
 # +
 ShortParams = pd.Series(index=paramNames+['NSE'],data=['JuvBase','VrnSens','IndBase','IndPpSens','ERbase','ERPpSens','NSE'])
@@ -527,12 +526,12 @@ def PlotCultivar(obsPreSet,c,ret,ParamCombs):
     plt.ylabel('Best NSE achieved')
     plt.xlabel('Itteration')
     plt.ylim(-2,1)
-    for r in range(0,7):
-        x1 = r * 40
-        x2 = r * 40 + 25
+    for r in range(0,10):
+        x1 = r * 25 
+        x2 = x1 + 20
         plt.fill_between([x1,x2],1,-2,color='b',alpha=0.1)
-        x1 +=25
-        x2 +=15
+        x1 = x2
+        x2 + x1+5
         plt.fill_between([x1,x2],1,-2,color='yellow',alpha=0.1)
     try:
         x0 = list(CampInputs.loc[c,paramNames].values)
@@ -595,7 +594,7 @@ def PlotCultivar(obsPreSet,c,ret,ParamCombs):
 # -
 
 
-#Version = '5'
+Version = '2'
 BestSet = pd.DataFrame(columns = paramNames+['NSE','Rank','InitAgree','CombScore'])
 for c in Cultivars:
     IttersObsPred = pd.read_pickle("./OptFiles/"+c+"_IttersObsPred"+Version+".pkl")

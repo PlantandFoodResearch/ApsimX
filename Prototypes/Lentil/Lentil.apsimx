@@ -5,6 +5,15 @@
   "ResourceName": null,
   "Children": [
     {
+      "$type": "Models.Playlist, Models",
+      "Text": "*Syrian*",
+      "Name": "Playlist",
+      "ResourceName": null,
+      "Children": [],
+      "Enabled": true,
+      "ReadOnly": false
+    },
+    {
       "$type": "Models.Storage.DataStore, Models",
       "useFirebird": false,
       "CustomFileName": null,
@@ -772,7 +781,7 @@
                 },
                 {
                   "$type": "Models.Functions.MovingAverageFunction, Models",
-                  "NumberOfDays": 1,
+                  "NumberOfDays": 30,
                   "StageToStartMovingAverage": "Emergence",
                   "Name": "PpResponse",
                   "ResourceName": null,
@@ -7648,11 +7657,11 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 500",
+                    "[Phenology].JuvenileBase.FixedValue = 100",
                     "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductiveBase.FixedValue = 68",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.1",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 0",
+                    "[Phenology].InductiveBase.FixedValue = 371.8",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.207",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Precoz",
@@ -7664,12 +7673,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 447",
+                    "[Phenology].JuvenileBase.FixedValue = 308.27",
                     "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductiveBase.FixedValue = 332",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.11",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 21",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.27"
+                    "[Phenology].InductiveBase.FixedValue = 464.5",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.1175",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.7"
                   ],
                   "Name": "Laird",
                   "ResourceName": null,
@@ -7680,10 +7689,10 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 100 ",
+                    "[Phenology].JuvenileBase.FixedValue = 400",
                     "[Phenology].VernSensitivity.FixedValue = .5",
-                    "[Phenology].InductiveBase.FixedValue = 100",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.5",
+                    "[Phenology].InductiveBase.FixedValue = 0",
+                    "[Phenology].InductivePpSensitivity.FixedValue =1.5",
                     "[Phenology].EarlyReproductiveBase.FixedValue = 100",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
                   ],
@@ -7878,6 +7887,86 @@
               "TableName": "HarvestObsPred",
               "XFieldName": "Observed.Lentil.Grain.Wt",
               "YFieldName": "Predicted.Lentil.Grain.Wt",
+              "X2FieldName": null,
+              "Y2FieldName": null,
+              "ShowInLegend": true,
+              "IncludeSeriesNameInLegend": false,
+              "Cumulative": false,
+              "CumulativeX": false,
+              "Filter": null,
+              "Name": "Predicted",
+              "ResourceName": null,
+              "Children": [
+                {
+                  "$type": "Models.Regression, Models",
+                  "ForEachSeries": false,
+                  "showOneToOne": true,
+                  "showEquation": true,
+                  "Name": "Regression",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            }
+          ],
+          "Enabled": true,
+          "ReadOnly": false
+        },
+        {
+          "$type": "Models.Graph, Models",
+          "Caption": null,
+          "Axis": [
+            {
+              "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+              "Title": null,
+              "Position": 3,
+              "Inverted": false,
+              "CrossesAtZero": false,
+              "LabelOnOneLine": false,
+              "Minimum": "NaN",
+              "Maximum": "NaN",
+              "Interval": null
+            },
+            {
+              "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+              "Title": null,
+              "Position": 0,
+              "Inverted": false,
+              "CrossesAtZero": false,
+              "LabelOnOneLine": false,
+              "Minimum": null,
+              "Maximum": null,
+              "Interval": null
+            }
+          ],
+          "LegendPosition": 2,
+          "LegendOrientation": 0,
+          "AnnotationLocation": 0,
+          "DisabledSeries": [],
+          "LegendOutsideGraph": false,
+          "Name": "StartBuddingDAS",
+          "ResourceName": null,
+          "Children": [
+            {
+              "$type": "Models.Series, Models",
+              "Type": 1,
+              "XAxis": 3,
+              "YAxis": 0,
+              "ColourArgb": 0,
+              "FactorToVaryColours": "Cv",
+              "FactorToVaryMarkers": "Experiment",
+              "FactorToVaryLines": null,
+              "Marker": 0,
+              "MarkerSize": 0,
+              "Line": 4,
+              "LineThickness": 0,
+              "TableName": "HarvestObsPred",
+              "XFieldName": "Observed.Lentil.Phenology.StartBuddingDAS",
+              "YFieldName": "Predicted.Lentil.Phenology.StartBuddingDAS",
               "X2FieldName": null,
               "Y2FieldName": null,
               "ShowInLegend": true,
@@ -39213,15 +39302,6 @@
           "ReadOnly": false
         }
       ],
-      "Enabled": true,
-      "ReadOnly": false
-    },
-    {
-      "$type": "Models.Playlist, Models",
-      "Text": "*Precoz*",
-      "Name": "Playlist",
-      "ResourceName": null,
-      "Children": [],
       "Enabled": true,
       "ReadOnly": false
     }
