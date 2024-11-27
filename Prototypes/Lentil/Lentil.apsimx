@@ -781,7 +781,7 @@
                 },
                 {
                   "$type": "Models.Functions.MovingAverageFunction, Models",
-                  "NumberOfDays": 30,
+                  "NumberOfDays": 100,
                   "StageToStartMovingAverage": "Emergence",
                   "Name": "PpResponse",
                   "ResourceName": null,
@@ -7657,10 +7657,10 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 100",
-                    "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductiveBase.FixedValue = 371.8",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.207",
+                    "[Phenology].JuvenileBase.FixedValue = 50",
+                    "[Phenology].VernSensitivity.FixedValue = 0.2",
+                    "[Phenology].InductiveBase.FixedValue = 300",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.2",
                     "[Phenology].EarlyReproductiveBase.FixedValue = 100",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
@@ -7678,7 +7678,7 @@
                     "[Phenology].InductiveBase.FixedValue = 464.5",
                     "[Phenology].InductivePpSensitivity.FixedValue = 0.1175",
                     "[Phenology].EarlyReproductiveBase.FixedValue = 100",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.7"
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 1.0"
                   ],
                   "Name": "Laird",
                   "ResourceName": null,
@@ -8215,8 +8215,7 @@
                           "$type": "Models.Factorial.CompositeFactor, Models",
                           "Specifications": [
                             "[Experiment].Script.FinalTempMax = 18.0",
-                            "[Experiment].Script.FinalTempMin = 5.0",
-                            "[Experiment].Script.FinalTempLag = -2"
+                            "[Experiment].Script.FinalTempMin = 5.0"
                           ],
                           "Paths": null,
                           "Values": null,
@@ -8230,8 +8229,7 @@
                           "$type": "Models.Factorial.CompositeFactor, Models",
                           "Specifications": [
                             "[Experiment].Script.FinalTempMax = 24.0",
-                            "[Experiment].Script.FinalTempMin = 13.0",
-                            "[Experiment].Script.FinalTempLag = 3.0"
+                            "[Experiment].Script.FinalTempMin = 13.0"
                           ],
                           "Paths": null,
                           "Values": null,
@@ -8254,7 +8252,8 @@
                         {
                           "$type": "Models.Factorial.CompositeFactor, Models",
                           "Specifications": [
-                            "[Experiment].Script.FinalPp = 16.0"
+                            "[Experiment].Script.FinalPp = 16.0",
+                            "[Experiment].Script.FinalTempLag = 3"
                           ],
                           "Paths": null,
                           "Values": null,
@@ -8267,8 +8266,8 @@
                         {
                           "$type": "Models.Factorial.CompositeFactor, Models",
                           "Specifications": [
-                            "",
-                            "[Experiment].Script.FinalPp = 11.0"
+                            "[Experiment].Script.FinalPp = 11.0",
+                            "[Experiment].Script.FinalTempLag = -2"
                           ],
                           "Paths": null,
                           "Values": null,
