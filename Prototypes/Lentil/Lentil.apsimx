@@ -6,7 +6,7 @@
   "Children": [
     {
       "$type": "Models.Playlist, Models",
-      "Text": "*Syrian*",
+      "Text": "*Precoz*",
       "Name": "Playlist",
       "ResourceName": null,
       "Children": [],
@@ -975,11 +975,30 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.VariableReference, Models",
-                              "VariableName": "[Phenology].VernalisationSaturation",
-                              "Name": "RelativeVernalisationSaturation",
+                              "$type": "Models.Functions.SubtractFunction, Models",
+                              "Name": "NonVernalisation",
                               "ResourceName": null,
-                              "Children": [],
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 1.0,
+                                  "Units": null,
+                                  "Name": "Constant",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[Phenology].VernalisationSaturation",
+                                  "Name": "RelativeVernalisationSaturation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             }
@@ -7657,11 +7676,10 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 165",
+                    "[Phenology].JuvenileBase.FixedValue = 400",
                     "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductiveBase.FixedValue = 269",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.31",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 180",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Precoz",
@@ -7673,12 +7691,11 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 487.5",
+                    "[Phenology].JuvenileBase.FixedValue = 539",
                     "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductiveBase.FixedValue = 93",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.534",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 106",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = .22"
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.422",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 130",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = .1"
                   ],
                   "Name": "Laird",
                   "ResourceName": null,
@@ -7689,12 +7706,11 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 410",
-                    "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductiveBase.FixedValue = 0",
-                    "[Phenology].InductivePpSensitivity.FixedValue =1",
+                    "[Phenology].JuvenileBase.FixedValue = 356",
+                    "[Phenology].VernSensitivity.FixedValue = 2",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 1.37",
                     "[Phenology].EarlyReproductiveBase.FixedValue = 100",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 1"
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.72"
                   ],
                   "Name": "Syrian",
                   "ResourceName": null,
@@ -7705,12 +7721,11 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 100 ",
-                    "[Phenology].VernSensitivity.FixedValue = .5",
-                    "[Phenology].InductiveBase.FixedValue = 100",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.5",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
+                    "[Phenology].JuvenileBase.FixedValue = 425",
+                    "[Phenology].VernSensitivity.FixedValue = 0",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 194",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Ethiopian",
                   "ResourceName": null,
