@@ -322,7 +322,7 @@
                 },
                 {
                   "$type": "Models.Functions.Constant, Models",
-                  "FixedValue": 0.5,
+                  "FixedValue": 0.0,
                   "Units": "",
                   "Name": "VernSensitivity",
                   "ResourceName": null,
@@ -342,7 +342,7 @@
                 },
                 {
                   "$type": "Models.Functions.Constant, Models",
-                  "FixedValue": 0.5,
+                  "FixedValue": 0.0,
                   "Units": null,
                   "Name": "InductivePpSensitivity",
                   "ResourceName": null,
@@ -362,7 +362,7 @@
                 },
                 {
                   "$type": "Models.Functions.Constant, Models",
-                  "FixedValue": 0.5,
+                  "FixedValue": 0.0,
                   "Units": null,
                   "Name": "EarlyReproductivePpSensitivity",
                   "ResourceName": null,
@@ -7657,10 +7657,10 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 50",
-                    "[Phenology].VernSensitivity.FixedValue = 0.2",
-                    "[Phenology].InductiveBase.FixedValue = 300",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.2",
+                    "[Phenology].JuvenileBase.FixedValue = 165",
+                    "[Phenology].VernSensitivity.FixedValue = 0",
+                    "[Phenology].InductiveBase.FixedValue = 269",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.31",
                     "[Phenology].EarlyReproductiveBase.FixedValue = 100",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
@@ -7673,12 +7673,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 308.27",
+                    "[Phenology].JuvenileBase.FixedValue = 487.5",
                     "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductiveBase.FixedValue = 464.5",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.1175",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 1.0"
+                    "[Phenology].InductiveBase.FixedValue = 93",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.534",
+                    "[Phenology].EarlyReproductiveBase.FixedValue = 106",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = .22"
                   ],
                   "Name": "Laird",
                   "ResourceName": null,
@@ -7689,12 +7689,12 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 400",
-                    "[Phenology].VernSensitivity.FixedValue = .5",
+                    "[Phenology].JuvenileBase.FixedValue = 410",
+                    "[Phenology].VernSensitivity.FixedValue = 0",
                     "[Phenology].InductiveBase.FixedValue = 0",
-                    "[Phenology].InductivePpSensitivity.FixedValue =1.5",
+                    "[Phenology].InductivePpSensitivity.FixedValue =1",
                     "[Phenology].EarlyReproductiveBase.FixedValue = 100",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.5"
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 1"
                   ],
                   "Name": "Syrian",
                   "ResourceName": null,
@@ -8037,7 +8037,7 @@
               "XAxis": 3,
               "YAxis": 0,
               "ColourArgb": 0,
-              "FactorToVaryColours": "Experiment",
+              "FactorToVaryColours": "Cv",
               "FactorToVaryMarkers": "Experiment",
               "FactorToVaryLines": null,
               "Marker": 0,
