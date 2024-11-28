@@ -31,12 +31,12 @@ import os
 # %matplotlib inline
 
 # +
-Version = str(1)
-Cultivars = ['Precoz']#,'Laird','Syrian','Ethiopian']
+Version = str(2)
+Cultivars = ['Precoz','Laird','Syrian','Ethiopian']
 
 Rounds = 1
-RandomCalls = np.power(2,6)-1
-OptimizerCalls = 30
+RandomCalls = np.power(2,9)-1
+OptimizerCalls = 39
 print(str(RandomCalls) + " Random Calls will be run")
 
 BaseLentilFilePath = r"C:/GitHubRepos/ApsimX/Prototypes/Lentil/Lentil.apsimx"
@@ -448,7 +448,7 @@ for c in Cultivars:
     ParamCombs.loc[:,'InitAgree'] = np.nan
     initRank = ParamCombs.loc[0,'Rank']
     for x in ParamCombs.index[:initRank+1]:
-        ParamCombs.loc[x,'InitAgree'] = MUte.MathUtilities.CalcRegressionStats('AS',ParamCombs.loc[0,:][:endind].values,ParamCombs.loc[x,:][endind].values).NSE
+        ParamCombs.loc[x,'InitAgree'] = MUte.MathUtilities.CalcRegressionStats('AS',ParamCombs.loc[0,:][:endind].values,ParamCombs.loc[x,:][:endind].values).NSE
     adequateFits = min(sum(ParamCombs.NSE.values<-0.5),sum(ParamCombs.NSE.values<ParamCombs.loc[bestFit,'NSE']*.8))
     ParamCombs.loc[:,'CombScore']= -ParamCombs.loc[:,'NSE']*ParamCombs.loc[:adequateFits,'InitAgree']
     ParamCombs.sort_values('CombScore',ascending=False,inplace=True)
@@ -459,7 +459,5 @@ for c in Cultivars:
     bestFitObsPred = IttersObsPred.loc[(c,bestFitItter),:]
     PlotCultivar(bestFitObsPred,c,ret,ParamCombs)
     #ParamCombs.sort_values('CombScore',ascending=False,inplace=True)
-
-ParamCombs
 
 BestSet.transpose()

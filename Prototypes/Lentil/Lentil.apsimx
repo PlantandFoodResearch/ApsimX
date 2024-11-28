@@ -440,9 +440,18 @@
                       "Children": [
                         {
                           "$type": "Models.Functions.MultiplyFunction, Models",
-                          "Name": "MultiplyFunction",
+                          "Name": "DailyTt",
                           "ResourceName": null,
                           "Children": [
+                            {
+                              "$type": "Models.Memo, Models",
+                              "Text": "WangEagleTempScale gives a value from 0 (at min and max temps) to 1 (at optTemp) and a beta function shape response in between.  This is multiplied by the optimum temperature to give thermal time in familuar unitis of oC per day.  This has the benefit of Tt targets being in familuar units, the shape of Tt response following a well justified pattern and three discrete parameters for thermal time that can be used for optimisation (as opposed to a Tt function in a linint function which is a more fiddly to optimise)",
+                              "Name": "Note",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
                             {
                               "$type": "Models.Functions.SubDailyInterpolation, Models",
                               "agregationMethod": 0,
@@ -565,9 +574,8 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 25.0,
-                              "Units": null,
+                              "$type": "Models.Functions.VariableReference, Models",
+                              "VariableName": "[DailyTt].WangEagleTempScale.Response.OptTemp",
                               "Name": "OptTemp",
                               "ResourceName": null,
                               "Children": [],
@@ -7676,9 +7684,9 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 46",
-                    "[Phenology].VernSensitivity.FixedValue = 0.5",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.2",
+                    "[Phenology].JuvenileBase.FixedValue = 100",
+                    "[Phenology].VernSensitivity.FixedValue = 0.44",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.21",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Precoz",
@@ -7690,10 +7698,10 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 216",
-                    "[Phenology].VernSensitivity.FixedValue = 0.52",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.25",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.25"
+                    "[Phenology].JuvenileBase.FixedValue = 310",
+                    "[Phenology].VernSensitivity.FixedValue = 0.45",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.21",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.4"
                   ],
                   "Name": "Laird",
                   "ResourceName": null,
@@ -7704,10 +7712,10 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 356",
-                    "[Phenology].VernSensitivity.FixedValue = 2",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 1.37",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.72"
+                    "[Phenology].JuvenileBase.FixedValue = 85",
+                    "[Phenology].VernSensitivity.FixedValue = .32",
+                    "[Phenology].InductivePpSensitivity.FixedValue = .92",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.8"
                   ],
                   "Name": "Syrian",
                   "ResourceName": null,
@@ -7718,10 +7726,10 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 425",
-                    "[Phenology].VernSensitivity.FixedValue = 0",
+                    "[Phenology].JuvenileBase.FixedValue = 310",
+                    "[Phenology].VernSensitivity.FixedValue = 0.33",
                     "[Phenology].InductivePpSensitivity.FixedValue = 0",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.26"
                   ],
                   "Name": "Ethiopian",
                   "ResourceName": null,
@@ -10797,10 +10805,10 @@
                         {
                           "$type": "Models.Factorial.CompositeFactor, Models",
                           "Specifications": [
-                            "[Experiment].Script.InitTempMax = 35",
+                            "[Experiment].Script.InitTempMax = 32",
                             "[Experiment].Script.InitTempMin = 15",
                             "[Experiment].Script.InitPp = 8.0",
-                            "[Experiment].Script.FinalTempMax = 35",
+                            "[Experiment].Script.FinalTempMax = 32",
                             "[Experiment].Script.FinalTempMin = 15",
                             "[Experiment].Script.FinalPp = 16.0"
                           ],
@@ -10809,16 +10817,16 @@
                           "Name": "8to16h",
                           "ResourceName": null,
                           "Children": [],
-                          "Enabled": false,
+                          "Enabled": true,
                           "ReadOnly": false
                         },
                         {
                           "$type": "Models.Factorial.CompositeFactor, Models",
                           "Specifications": [
-                            "[Experiment].Script.InitTempMax = 35",
+                            "[Experiment].Script.InitTempMax = 32",
                             "[Experiment].Script.InitTempMin = 15",
                             "[Experiment].Script.InitPp = 16.0",
-                            "[Experiment].Script.FinalTempMax = 35",
+                            "[Experiment].Script.FinalTempMax = 32",
                             "[Experiment].Script.FinalTempMin = 15",
                             "[Experiment].Script.FinalPp = 8.0"
                           ],
@@ -10827,7 +10835,16 @@
                           "Name": "16to8h",
                           "ResourceName": null,
                           "Children": [],
-                          "Enabled": false,
+                          "Enabled": true,
+                          "ReadOnly": false
+                        },
+                        {
+                          "$type": "Models.Memo, Models",
+                          "Text": "The 8to16h and 16to8h treatments were part of a seperate experiment where day time temperature was not controlled well and exceeded the target temp of 30oC on may occasions.  The daily temperature data is not given so we have assumed a mean daily value of 32oC for these treatments",
+                          "Name": "Note",
+                          "ResourceName": null,
+                          "Children": [],
+                          "Enabled": true,
                           "ReadOnly": false
                         }
                       ],
