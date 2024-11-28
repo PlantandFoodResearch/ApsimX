@@ -352,7 +352,7 @@
                 },
                 {
                   "$type": "Models.Functions.Constant, Models",
-                  "FixedValue": 0.0,
+                  "FixedValue": 200.0,
                   "Units": null,
                   "Name": "EarlyReproductiveBase",
                   "ResourceName": null,
@@ -7676,10 +7676,9 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 400",
+                    "[Phenology].JuvenileBase.FixedValue = 514",
                     "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 180",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.24",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Precoz",
@@ -7691,11 +7690,10 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 539",
-                    "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.422",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 130",
-                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = .1"
+                    "[Phenology].JuvenileBase.FixedValue = 216",
+                    "[Phenology].VernSensitivity.FixedValue = 0.52",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.25",
+                    "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.25"
                   ],
                   "Name": "Laird",
                   "ResourceName": null,
@@ -7709,7 +7707,6 @@
                     "[Phenology].JuvenileBase.FixedValue = 356",
                     "[Phenology].VernSensitivity.FixedValue = 2",
                     "[Phenology].InductivePpSensitivity.FixedValue = 1.37",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 100",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0.72"
                   ],
                   "Name": "Syrian",
@@ -7724,7 +7721,6 @@
                     "[Phenology].JuvenileBase.FixedValue = 425",
                     "[Phenology].VernSensitivity.FixedValue = 0",
                     "[Phenology].InductivePpSensitivity.FixedValue = 0",
-                    "[Phenology].EarlyReproductiveBase.FixedValue = 194",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Ethiopian",
