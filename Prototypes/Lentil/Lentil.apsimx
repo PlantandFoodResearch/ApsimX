@@ -7676,9 +7676,9 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 514",
-                    "[Phenology].VernSensitivity.FixedValue = 0",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.24",
+                    "[Phenology].JuvenileBase.FixedValue = 46",
+                    "[Phenology].VernSensitivity.FixedValue = 0.5",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.2",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Precoz",
