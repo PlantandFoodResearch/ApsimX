@@ -460,9 +460,9 @@
                               "Children": [
                                 {
                                   "$type": "Models.Functions.WangEngelTempFunction, Models",
-                                  "MinTemp": 2.0,
+                                  "MinTemp": 1.6,
                                   "OptTemp": 25.0,
-                                  "MaxTemp": 35.0,
+                                  "MaxTemp": 36.0,
                                   "RefTemp": 0.0,
                                   "MaximumTemperatureWeighting": 0.5,
                                   "Units": null,
@@ -703,8 +703,8 @@
                         {
                           "$type": "Models.Functions.WangEngelTempFunction, Models",
                           "MinTemp": 0.0,
-                          "OptTemp": 2.0,
-                          "MaxTemp": 13.0,
+                          "OptTemp": 4.7,
+                          "MaxTemp": 14.0,
                           "RefTemp": 0.0,
                           "MaximumTemperatureWeighting": 0.5,
                           "Units": null,
@@ -7684,9 +7684,9 @@
                 {
                   "$type": "Models.PMF.Cultivar, Models",
                   "Command": [
-                    "[Phenology].JuvenileBase.FixedValue = 100",
-                    "[Phenology].VernSensitivity.FixedValue = 0.44",
-                    "[Phenology].InductivePpSensitivity.FixedValue = 0.21",
+                    "[Phenology].JuvenileBase.FixedValue = 67",
+                    "[Phenology].VernSensitivity.FixedValue = 0.5",
+                    "[Phenology].InductivePpSensitivity.FixedValue = 0.25",
                     "[Phenology].EarlyReproductivePpSensitivity.FixedValue = 0"
                   ],
                   "Name": "Precoz",
@@ -18074,7 +18074,7 @@
                       ],
                       "Paths": null,
                       "Values": null,
-                      "Name": "0",
+                      "Name": "Dryland",
                       "ResourceName": null,
                       "Children": [],
                       "Enabled": true,
@@ -18087,7 +18087,7 @@
                       ],
                       "Paths": null,
                       "Values": null,
-                      "Name": "1",
+                      "Name": "Irrigated",
                       "ResourceName": null,
                       "Children": [],
                       "Enabled": true,
@@ -26570,7 +26570,7 @@
     {
       "$type": "Models.Factorial.Experiment, Models",
       "DisabledSimNames": null,
-      "Name": "GattonPhen19",
+      "Name": "Gatton19",
       "ResourceName": null,
       "Children": [
         {
@@ -36736,7 +36736,7 @@
     {
       "$type": "Models.Factorial.Experiment, Models",
       "DisabledSimNames": null,
-      "Name": "Horsham2001",
+      "Name": "Dooen2001",
       "ResourceName": null,
       "Children": [
         {

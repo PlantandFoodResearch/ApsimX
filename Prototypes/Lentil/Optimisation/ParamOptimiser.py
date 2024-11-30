@@ -30,13 +30,15 @@ import time
 import os
 # %matplotlib inline
 
+np.power(2,10)-1
+
 # +
-Version = str(2)
-Cultivars = ['Precoz','Laird','Syrian','Ethiopian']
+Version = str(4)
+Cultivars = ['Precoz']#,'Laird','Syrian','Ethiopian']
 
 Rounds = 1
-RandomCalls = np.power(2,9)-1
-OptimizerCalls = 39
+RandomCalls = np.power(2,10)-1
+OptimizerCalls = 77
 print(str(RandomCalls) + " Random Calls will be run")
 
 BaseLentilFilePath = r"C:/GitHubRepos/ApsimX/Prototypes/Lentil/Lentil.apsimx"
@@ -46,22 +48,24 @@ DBFilePath = r"C:/GitHubRepos/ApsimX/Prototypes/Lentil/LentilOptItter.db"
 paramNames = ['[Phenology].JuvenileBase.FixedValue', 
               '[Phenology].VernSensitivity.FixedValue', 
               '[Phenology].InductivePpSensitivity.FixedValue',
-              #'[Phenology].EarlyReproductiveBase.FixedValue', 
-              '[Phenology].EarlyReproductivePpSensitivity.FixedValue']
-              # '[Phenology].ThermalTime.PostEmergence.MultiplyFunction.WangEagleTempScale.Response.MinTemp',
-              # '[Phenology].ThermalTime.PostEmergence.MultiplyFunction.WangEagleTempScale.Response.OptTemp',
-              # '[Phenology].ThermalTime.PostEmergence.MultiplyFunction.WangEagleTempScale.Response.MaxTemp',
-              # '[Phenology].AccumulatedVernalisation.DailyVernalisation.Response.MinTemp',
-              # '[Phenology].AccumulatedVernalisation.DailyVernalisation.Response.OptTemp',
-              # '[Phenology].AccumulatedVernalisation.DailyVernalisation.Response.MaxTemp']
+              #'[Phenology].EarlyReproductivePpSensitivity.FixedValue',
+              '[Phenology].ThermalTime.PostEmergence.DailyTt.WangEagleTempScale.Response.MinTemp',
+              '[Phenology].ThermalTime.PostEmergence.DailyTt.WangEagleTempScale.Response.OptTemp',
+              '[Phenology].ThermalTime.PostEmergence.DailyTt.WangEagleTempScale.Response.MaxTemp',
+              '[Phenology].AccumulatedVernalisation.DailyVernalisation.Response.OptTemp',
+              '[Phenology].AccumulatedVernalisation.DailyVernalisation.Response.MaxTemp']
 
-x0 = [400.0, 0.5, 0.5, 0.5]
+x0 = [100.0, 0.44, 0.21, 2.0, 25.0, 35.0, 2.0, 13.0,]
 bounds = [(0.0,1000.0),
           (0.0,1.0),
           (0.0,1.0),
-          (0.0,1.0)]               
+          (0.0, 8.0),
+          (20.0, 30.0),
+          (30.0, 40.0), 
+          (0.5, 8.0), 
+          (9.0, 20)]               
 
-ShortParamNames = ['JuvBase','VrnSens','IndPpSens','ERPpSens']
+ShortParamNames = ['JuvBase','VrnSens','IndPpSens','TtMIn','TtOpt','TtMax','VrnOpt','VrnMax']
 
 FittingVariables = ['Lentil.Phenology.StartBuddingDAS','Lentil.Phenology.StartFloweringDAS']
 
@@ -273,15 +277,17 @@ def runDevModelItter(paramValues):
     retVal = runModelItter(paramNames,paramValues,FittingVariables,c,Version)
     return retVal
 
-# +
-# IttersObsPred = pd.DataFrame(columns = ['ScObs','ScPred','Var','Predicted.Simulation.Name','Predicted.Experiment','Predicted.Wheat.SowingDate',
-#                                                        'NSE','nSims']+paramNames,
-#                                                         index=pd.MultiIndex.from_arrays([[],[],[]],names=['Cultivar','itter','indloc']))
-# itter = 1
-# c='Syrian'
-# paramValues = [814.6453225472756, 0.49836726151624733, 0.8059542544259072, 460.5773909993857, 0.23494631128887233]
-# runDevModelItter(paramValues)
+
 # -
+
+IttersObsPred = pd.DataFrame(columns = ['ScObs','ScPred','Var','Predicted.Simulation.Name','Predicted.Experiment','Predicted.Wheat.SowingDate',
+                                                       'NSE','nSims']+paramNames,
+                                                        index=pd.MultiIndex.from_arrays([[],[],[]],names=['Cultivar','itter','indloc']))
+itter = 1
+c='Precoz'
+paramValues = [67.0,0.5,0.25,1.65,25,36,4.7,14]#[67.52841137707456,0.49854975291879566,0.24528442901727854,1.6475736080666978,25.17280749931713,
+       # 35.83307528882182,4.667394739758986,14.303944916904648]
+runDevModelItter(paramValues)
 
 
 FailedCultivars = []
@@ -355,7 +361,7 @@ def PlotObsPre(obsPreSet,c,ax,leg=True):
            
 def PlotCultivar(obsPreSet,c,ret,ParamCombs):
     graph = plt.figure(figsize=(10,20))
-    gs = gridspec.GridSpec(6, 6)
+    gs = gridspec.GridSpec(6, 8)
     ax = graph.add_subplot(gs[0, 0:2])
     PlotObsPre(obsPreSet,c,ax)
 
@@ -377,7 +383,7 @@ def PlotCultivar(obsPreSet,c,ret,ParamCombs):
     try:
         x0 = list(CampInputs.loc[c,paramNames].values)
     except:
-        x0 = [np.nan]*6
+        x0 = [np.nan]*8
     bestFit = ParamCombs.loc[:,'NSE'].idxmin()
     adequateFits = min(sum(ParamCombs.sort_values('NSE').NSE.values<-0.5),sum(ParamCombs.sort_values('NSE').NSE.values<ParamCombs.loc[bestFit,'NSE']*.9))
     if np.isnan(x0[0]):
@@ -460,4 +466,4 @@ for c in Cultivars:
     PlotCultivar(bestFitObsPred,c,ret,ParamCombs)
     #ParamCombs.sort_values('CombScore',ascending=False,inplace=True)
 
-BestSet.transpose()
+BestSet.transpose().values
