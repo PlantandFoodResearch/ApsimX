@@ -233,7 +233,14 @@ info_out_work %>%
   facet_wrap(VarName~., scales="free") +
   ylim(0, NA)
 ```
-
+```{r}
+info_out_work %>% 
+  ggplot(aes(x=AboveGround_kgPerHa, y=ProductFresh_kgPerHa, colour=SoilType)) +
+  geom_point(alpha=0.2, size=1.5)+
+  facet_wrap(Crop~Irrigation)+  # Scatter plot points
+  geom_abline(slope = 0.5, intercept = 0, color = "black", linetype = "dashed") 
+```
+# Check Harvest Index
 
 
 

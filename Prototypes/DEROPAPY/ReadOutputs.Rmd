@@ -16,7 +16,31 @@ thisFile <- "P019_MBIEClimateChangeEconomics_hrlxxy_2024-09-09.db"
 
 # Read pixel per regions metadata
 ```{r}
-regions_csv<-read.csv2("C:/github/ShinyClimateChange/Projects/GlobalParameters/vcsn_nz_region.csv", sep=",")
+
+# Create data frame to add an index to rank latitude 0=Northward and 
+nz_lat_regions <- data.frame(
+  REGC2015_N = c("Northland", "Auckland", "Waikato", "Bay of Plenty", "Gisborne", 
+             "Hawke's Bay", "Taranaki", "Manawatū-Whanganui", "Wellington", 
+             "Tasman", "Nelson", "Marlborough", "West Coast", "Canterbury", 
+             "Otago", "Southland"),
+  Latitude = c(-35.5, -36.8, -38.0, -38.2, -38.7, -39.6, -39.3, -40.0, 
+               -41.3, -41.5, -41.3, -41.7, -42.0, -43.5, -45.0, -46.4)
+)
+
+unique(regions_csv$REGC2015_N)
+
+# Order factor levels by latitude
+nz_lat_regions$REGC2015_N <- factor(nz_regions$Region, levels = nz_lat_regions$REGC2015_N[order(nz_regions$Latitude)])
+
+# Check with ggplot (replace with actual data)
+ggplot(nz_lat_regions, aes(x = REGC2015_N, y = Latitude)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "New Zealand Regions Ordered by Latitude")
+
+
+regions_csv<-read.csv2("C:/github/ShinyClimateChange/Projects/GlobalParameters/vcsn_nz_region.csv", sep=",") %>% 
+  inner_join(nz_lat_regions, by="REGC2015_N")
 ```
 
 # Read ATLAS-Deropapy outputs
@@ -431,7 +455,10 @@ for(i in 1:length(thisCrop)) {
   print(thisCrop[i])
   
 
-p <- diff_abs_plot %>%
+p <- diff_abs_plot %>% 
+  inner_join(nz_lat_regions, by="REGC2015_N") %>%
+  mutate(REGC2015_N = factor(REGC2015_N, 
+                             levels =(unique(REGC2015_N[order(desc(Latitude))]))))%>%
   mutate(Irrifgation = factor(Irrigation, levels=c("Rainfed","Irrigated"))) %>%
     filter(Crop == thisCrop[i]) %>%
   ggplot(aes(x=RCP, y=VarValue, colour=Irrigation)) + 
