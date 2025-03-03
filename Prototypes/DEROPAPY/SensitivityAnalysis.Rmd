@@ -113,6 +113,8 @@ info_out_work <- list_of_dts[[1]] %>%
   
 
 summary(info_out_work)
+
+unique(info_out_work$Location)
 ```
 
 # set crops
@@ -121,6 +123,37 @@ thisCropPerennials <- c("Grapevine","Avocado","Macadamia","Lemon")
 thisCropAnnuals <- c("Maize","Wheat","Hemp","OSR")
 seleted_yield_columns <- c("ProductFresh_kgPerHa")
 ```
+
+
+# Add a latitude column to order locations
+```{r}
+# Sample data frame (replace with your actual data)
+df_lat_reg_raw <- data.frame(Location = c("Canterbury", "CentralOtago", "Gisborne", "Southland", 
+                              "Northland", "Waikato", "HawkesBay", "Marlbrough", 
+                              "KeriKeri", "Wharerangi", "Te Puke", "Auckland"))
+
+# Add average latitude based on location
+df_lat_reg_work <- df_lat_reg_raw %>%
+  mutate(Latitude = case_when(
+    Location == "Canterbury"   ~ -43.5,
+    Location == "CentralOtago" ~ -45.0,
+    Location == "Gisborne"     ~ -38.7,
+    Location == "Southland"    ~ -46.4,
+    Location == "Northland"    ~ -35.5,
+    Location == "Waikato"      ~ -38.0,
+    Location == "HawkesBay"    ~ -39.6,
+    Location == "Marlbrough"   ~ -41.7,
+    Location == "KeriKeri"     ~ -35.2,
+    Location == "Wharerangi"   ~ -39.5,
+    Location == "Te Puke"      ~ -37.8,
+    Location == "Auckland"     ~ -36.8,
+    TRUE ~ NA_real_  # Default if no match
+  ))
+
+
+head(df_lat_reg_work)
+```
+
 
 # Create subset of results
 ```{r, fig.height=14}
@@ -141,11 +174,12 @@ info_out_work_subset <- info_out_work %>%
   dplyr::select(columns_as_factors, seleted_yield_columns, "Year")  %>%
   dplyr::mutate(RCP = "Baseline", RCP=factor(RCP)) %>% # climate files from ERA were used 
   inner_join(met_summary_by_AGNO, by="Location") %>%
+    inner_join(df_lat_reg_work, by="Location") %>%
   mutate(Location=factor(Location),
-         Location2= factor(paste0(Location,"\n (",
-                                  meant,"oC | ",
+         Location2= factor(paste0(Location," (",Latitude,"o)\n", 
+                                  "(", meant,"oC | ",
                                   rain," mm/year | ",
-                                  radn," MJ/m2)")))
+                                  radn," MJ/m2)"))) 
 
 
 summary(info_out_work_subset)
@@ -161,6 +195,9 @@ info_out_work_subset %>%
 ```
 
 
+
+
+
 ```{r, fig.height=6}
 all_crops <- c(thisCropPerennials,thisCropAnnuals)
 
@@ -172,18 +209,22 @@ print(thisCrop)
 
 g <- info_out_work_subset %>%
   filter(Crop == thisCrop) %>%
+  mutate(Location2 = fct_reorder(Location2, Latitude))%>%
   filter(MGMT %in% c("Basic","Irrig")) %>%
   tidyr::gather(VarName, VarValue, seleted_yield_columns) %>%
-  ggplot(aes(x = Location2, y = VarValue, colour = SoilType)) +
-  geom_boxplot(alpha=0.2) +
-  geom_point(position = position_jitterdodge(jitter.width = 0.1, dodge.width = 0.75),
-             size=2, alpha=0.5) +
+  ggplot(aes(x = Location2, y = VarValue,fill = SoilType,colour = SoilType)) +
+  geom_violin(position = position_dodge(0.75), 
+              alpha = 0.2) +  # Violin color & aligned
+  geom_boxplot(position = position_dodge(0.75), outlier.shape = NA, alpha = 0.2) +  
+  geom_point(position = position_jitterdodge(jitter.width = 0.1, dodge.width = 0.75), 
+             size = 2, alpha = 0.5) +
   facet_grid(Crop ~ Irrigation, scales = "free") +
   scale_y_continuous(limits = c(0, NA)) +
   coord_flip()+
   ylab("Productivity (kg/ha)") +
   xlab("Location") +
   theme(text = element_text(size = 14))
+
 
 print(g)
 
@@ -235,14 +276,26 @@ info_out_work %>%
 ```
 ```{r}
 info_out_work %>% 
-  ggplot(aes(x=AboveGround_kgPerHa, y=ProductFresh_kgPerHa, colour=SoilType)) +
+  #filter(Crop == "Hemp") %>%
+  ggplot(aes(x=AboveGround_kgPerHa/1000, y=ProductFresh_kgPerHa/1000, colour=SoilType)) +
   geom_point(alpha=0.2, size=1.5)+
   facet_wrap(Crop~Irrigation)+  # Scatter plot points
   geom_abline(slope = 0.5, intercept = 0, color = "black", linetype = "dashed") 
 ```
-# Check Harvest Index
+# Check Harvest Index variability
 
-
+```{r, fig.height=14}
+info_out_work %>% 
+ # filter(Crop=="Wheat") %>%
+  tidyr::gather(VarName,VarValue,AboveGround_kgPerHa,ProductFresh_kgPerHa)%>%
+  ggplot(aes(x=Irrigation,y=VarValue/1000)) +
+  geom_boxplot(alpha=0.2) +
+  geom_violin(alpha=0.2) +
+  geom_jitter(alpha =0.2, width=0.1) +
+  facet_wrap(Crop~VarName, ncol=4, scales='free')  +
+  coord_flip() +
+  theme(text = element_text(size = 14)) 
+```
 
 
 

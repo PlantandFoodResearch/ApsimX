@@ -3,46 +3,6 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-# Find ATLAS results
-```{r}
-# thisPath <- "C:/github/ApsimX/Prototypes/DEROPAPY"
-# 
-# thisFile <- "P019_MBIEClimateChangeEconomics_hrajab_2024-03-27.db"
-
-thisPath <- "C:/github/ApsimX/Prototypes/DEROPAPY/outputs"
-
-thisFile <- "P019_MBIEClimateChangeEconomics_hrlxxy_2024-09-09.db"
-```
-
-# Read pixel per regions metadata
-```{r}
-
-# Create data frame to add an index to rank latitude 0=Northward and 
-nz_lat_regions <- data.frame(
-  REGC2015_N = c("Northland", "Auckland", "Waikato", "Bay of Plenty", "Gisborne", 
-             "Hawke's Bay", "Taranaki", "Manawatū-Whanganui", "Wellington", 
-             "Tasman", "Nelson", "Marlborough", "West Coast", "Canterbury", 
-             "Otago", "Southland"),
-  Latitude = c(-35.5, -36.8, -38.0, -38.2, -38.7, -39.6, -39.3, -40.0, 
-               -41.3, -41.5, -41.3, -41.7, -42.0, -43.5, -45.0, -46.4)
-)
-
-unique(regions_csv$REGC2015_N)
-
-# Order factor levels by latitude
-nz_lat_regions$REGC2015_N <- factor(nz_regions$Region, levels = nz_lat_regions$REGC2015_N[order(nz_regions$Latitude)])
-
-# Check with ggplot (replace with actual data)
-ggplot(nz_lat_regions, aes(x = REGC2015_N, y = Latitude)) +
-  geom_col() +
-  coord_flip() +
-  labs(title = "New Zealand Regions Ordered by Latitude")
-
-
-regions_csv<-read.csv2("C:/github/ShinyClimateChange/Projects/GlobalParameters/vcsn_nz_region.csv", sep=",") %>% 
-  inner_join(nz_lat_regions, by="REGC2015_N")
-```
-
 # Read ATLAS-Deropapy outputs
 ```{r}
 # Install necessary packages if not already installed
@@ -65,6 +25,51 @@ library(explore)
 # No sci notation
 options(scipen=999)
 ```
+
+
+# Find ATLAS results
+```{r}
+# thisPath <- "C:/github/ApsimX/Prototypes/DEROPAPY"
+# 
+# thisFile <- "P019_MBIEClimateChangeEconomics_hrajab_2024-03-27.db"
+
+thisPath <- "C:/github/ApsimX/Prototypes/DEROPAPY/outputs"
+
+thisFile <- "P019_MBIEClimateChangeEconomics_hrlxxy_2024-09-09.db"
+```
+
+# Read pixel per regions metadata
+```{r}
+
+
+
+
+# Create data frame to add an index to rank latitude 0=Northward and 
+nz_lat_regions <- data.frame(
+  REGC2015_N = c("Northland", "Auckland", "Waikato", "Bay of Plenty", "Gisborne", 
+             "Hawke's Bay", "Taranaki", "Manawatū-Whanganui", "Wellington", 
+             "Tasman", "Nelson", "Marlborough", "West Coast", "Canterbury", 
+             "Otago", "Southland"),
+  Latitude = c(-35.5, -36.8, -38.0, -38.2, -38.7, -39.6, -39.3, -40.0, 
+               -41.3, -41.5, -41.3, -41.7, -42.0, -43.5, -45.0, -46.4)
+)
+
+# unique(regions_csv$REGC2015_N)
+
+# Order factor levels by latitude
+nz_lat_regions$REGC2015_N <- factor(nz_lat_regions$REGC2015_N, levels = nz_lat_regions$REGC2015_N[order(nz_lat_regions$Latitude)])
+
+# Check with ggplot (replace with actual data)
+ggplot(nz_lat_regions, aes(x = REGC2015_N, y = Latitude)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "New Zealand Regions Ordered by Latitude")
+
+regions_csv<-read.csv2("C:/github/ShinyClimateChange/Projects/GlobalParameters/vcsn_nz_region.csv", sep=",") %>% 
+  inner_join(nz_lat_regions, by="REGC2015_N")
+
+```
+
 
 # Connect to the database
 ```{r}
@@ -459,20 +464,21 @@ p <- diff_abs_plot %>%
   inner_join(nz_lat_regions, by="REGC2015_N") %>%
   mutate(REGC2015_N = factor(REGC2015_N, 
                              levels =(unique(REGC2015_N[order(desc(Latitude))]))))%>%
-  mutate(Irrifgation = factor(Irrigation, levels=c("Rainfed","Irrigated"))) %>%
+  mutate(Irrigation = factor(Irrigation, levels=c("Rainfed","Irrigated"))) %>%
     filter(Crop == thisCrop[i]) %>%
+    mutate(RegionLat= paste0(REGC2015_N," (",Latitude,"o)")) %>%
   ggplot(aes(x=RCP, y=VarValue, colour=Irrigation)) + 
-  
   geom_jitter(alpha=0.5,
               position = position_jitterdodge(jitter.width = 0.3, 
                                               dodge.width = 0.8))+
   geom_boxplot(alpha=0.5) +
+  geom_violin(position = position_dodge(0.75), alpha = 0.2) +
   scale_fill_brewer (palette = 5, direction =-1) +
  # facet_wrap(REGC2015_N~VarName, scales = "free") +
-  facet_wrap(REGC2015_N~VarName) +
+  facet_wrap(RegionLat~VarName) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "darkgrey", size = 1) +
   theme(text = element_text(size = fontSize2),
-          axis.text.x = element_text(angle = 45, hjust = 1) )+
+          axis.text.x = element_text(angle = 45, hjust = 1) ) +
   ylab("Absolute change in yield from baseline (kg/ha)")+
   guides(color = guide_legend(title = NULL)) +
   labs(title = paste0(thisCrop[i], " - Yield changes across regions\n"))
@@ -678,8 +684,6 @@ if (!dir.exists(thisOutFolder)) {
 dir.create(thisOutFolder, recursive = TRUE)
 }
 
-
-
 # Function to add a black border around a plot
 add_black_border <- function(plot) {
   grob <- ggplotGrob(plot)  # Convert ggplot to grob
@@ -727,7 +731,7 @@ for (i in 1:length(thisCrop)) {
     size = 0.5,
     alpha = 0.5
   ) +
-  facet_wrap(Irrigation~., ncol=1) + # Facet by RCP and Rainfed/Irrigated
+  facet_wrap(Irrigation~., ncol=2) + # Facet by RCP and Rainfed/Irrigated
   scale_color_manual(
     name = "Yield category",
     values = c("Very Low" = "red", 
@@ -741,7 +745,7 @@ for (i in 1:length(thisCrop)) {
     title = paste0(thisCrop[i],"\n\n",
                    l1," | ",l2,"\n",
                    l3," | ",l4,
-                   "\n\n -----BASELINE YIELD -----") ,
+                   "\n\nBASELINE YIELD") ,
     x = "Longitude",
     y = "Latitude"
   ) +
@@ -752,9 +756,10 @@ for (i in 1:length(thisCrop)) {
   theme(legend.position = "left") +
   theme(
     plot.title = element_text(hjust = 0.5) # Center the title
-  ) 
+  ) +
+    theme(legend.position = "bottom")
   
-   p1_border <- add_black_border(p1)
+   #p1_border <- add_black_border(p1)
   
   
   # --------------Graph Categorical yield changes ------------
@@ -809,20 +814,21 @@ for (i in 1:length(thisCrop)) {
   )+
   theme_minimal() +
   labs(x = "Longitude",y = "Latitude", 
-       title = "\n\n\n ---YIELD CHANGE IN THE FUTURE (% BASELINE) ---")+
+       title = "\n\n\nYIELD CHANGE \nIN THE FUTURE (% BASELINE)")+
   coord_sf(xlim = c(nz_bbox["xmin"], nz_bbox["xmax"]), 
            ylim = c(nz_bbox["ymin"], nz_bbox["ymax"])) +
     theme(text = element_text(size = fontSize3),
           axis.text.x = element_text(angle = 45, hjust = 1) ) +
   theme(
     plot.title = element_text(hjust = 0.5) # Center the title
-  ) 
+  )  +
+    theme(legend.position = "bottom")
 
   
-  p2_border <- add_black_border(p2)
+ # p2_border <- add_black_border(p2)
   
   # combine plots
-  combined_plot <- p1 | p2
+  combined_plot <- p1 | p2  
   
   print(combined_plot)
   
