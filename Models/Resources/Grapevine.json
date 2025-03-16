@@ -1,7 +1,7 @@
 {
   "$type": "Models.Core.Simulations, Models",
   "ExplorerWidth": 0,
-  "Version": 190,
+  "Version": 189,
   "Name": "Simulations",
   "Children": [
     {
@@ -122,7 +122,14 @@
                 "[Phenology].ThermalTime.Response.OptTemp = 22.245",
                 "[Phenology].ThermalTime.Response.MaxTemp = 40.316",
                 "[Phenology].Flowering.Target.FixedValue = 42.007",
-                "[Phenology].BerryDevelopment.Target.FixedValue = 50.84"
+                "[Phenology].BerryDevelopment.Target.FixedValue = 40.84",
+                "[Leaf].CohortParameters.LagDuration.FixedValue = 1000",
+                "[Leaf].CohortParameters.SenescenceDuration.FixedValue = 100",
+                "[Leaf].CohortParameters.LagAcceleration.PhotoPeriodEffect.XYPairs.Y[1] = 1",
+                "[Leaf].CohortParameters.LagAcceleration.PhotoPeriodEffect.XYPairs.Y[2] = 1",
+                "[Leaf].CohortParameters.SenescenceAcceleration.PhotoPeriodEffect.XYPairs.Y[1] = 1",
+                "[Leaf].CohortParameters.SenescenceAcceleration.PhotoPeriodEffect.XYPairs.Y[2] = 1",
+                "[Root].SenescenceRate.SenescenceRate.DivideFunction.Ref.FixedValue = 300"
               ],
               "Name": "Syrah",
               "ResourceName": null,
