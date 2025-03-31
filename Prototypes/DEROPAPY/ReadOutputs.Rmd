@@ -627,27 +627,56 @@ for (i in 1:length(thisCrop)) {
   ungroup() # Remove grouping if not needed further
   
   # create plot
+  # p <- ggplot() +
+  # # Add New Zealand map contours
+  # geom_sf(data=nz_map, fill = NA, color = "black", inherit.aes = FALSE) +
+  # # Add the median product data
+  # geom_point(
+  #   data = df_crop,
+  #   aes(x = Lon, y = Lat, color = VarValue),
+  #   shape=15, 
+  #   size = 0.5
+  # ) +
+  # facet_grid(Irrigation ~ RCP + VarName) + # Facet by RCP and Rainfed/Irrigated
+  # scale_color_viridis_c(name = "% of \n baseline") +
+  # theme_minimal() +
+  # labs(
+  #   title = paste0(thisCrop[i], " - Median yield across New Zealand") ,
+  #   x = "Longitude",
+  #   y = "Latitude"
+  # )+
+  # coord_sf(xlim = c(nz_bbox["xmin"], nz_bbox["xmax"]), ylim = c(nz_bbox["ymin"], nz_bbox["ymax"])) +
+  #   theme(text = element_text(size = 7),
+  #         axis.text.x = element_text(angle = 45, hjust = 1) )
+  
+#--------
+  
   p <- ggplot() +
   # Add New Zealand map contours
-  geom_sf(data=nz_map, fill = NA, color = "black", inherit.aes = FALSE) +
-  # Add the median product data
-  geom_point(
+  geom_sf(data = nz_map, fill = NA, color = "black", inherit.aes = FALSE) +
+  # Add the median product data as a raster
+  geom_raster(
     data = df_crop,
-    aes(x = Lon, y = Lat, color = VarValue),
-    shape=15, 
-    size = 0.5
+    aes(x = Lon, y = Lat, fill = VarValue) # Use fill instead of color
   ) +
-  facet_grid(Irrigation ~ RCP + VarName) + # Facet by RCP and Rainfed/Irrigated
-  scale_color_viridis_c(name = "% of \n baseline") +
+  facet_grid(Irrigation ~ RCP + VarName) +  # Facet by RCP and Rainfed/Irrigated
+  scale_fill_viridis_c(name = "% of \n baseline") +  # Color scale
   theme_minimal() +
   labs(
-    title = paste0(thisCrop[i], " - Median yield across New Zealand") ,
+    title = paste0(thisCrop[i], " - Median yield across New Zealand"),
     x = "Longitude",
     y = "Latitude"
-  )+
+  ) +
   coord_sf(xlim = c(nz_bbox["xmin"], nz_bbox["xmax"]), ylim = c(nz_bbox["ymin"], nz_bbox["ymax"])) +
-    theme(text = element_text(size = 7),
-          axis.text.x = element_text(angle = 45, hjust = 1) )
+  theme(
+    text = element_text(size = 7),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+  
+  
+#---- 
+  
+  
   
   print(p)
   
@@ -725,13 +754,18 @@ for (i in 1:length(thisCrop)) {
   # Add New Zealand map contours
   geom_sf(data=nz_map, fill = NA, color = "black", inherit.aes = FALSE) +
   # Add the median product data
-  geom_point(
+  # geom_point(
+  #   data = df_crop,
+  #   aes(x = Lon, y = Lat, color = YieldCategoryByBase),
+  #   shape=15, 
+  #   size = 0.5,
+  #   alpha = 0.5
+  # ) +
+    geom_raster(
     data = df_crop,
-    aes(x = Lon, y = Lat, color = YieldCategoryByBase),
-    shape=15, 
-    size = 0.5,
-    alpha = 0.5
-  ) +
+    aes(x = Lon, y = Lat, fill = YieldCategoryByBase), # Use fill instead of color
+    alpha = 0.5  # Adjust transparency if needed
+) +
   facet_wrap(Irrigation~., ncol=2) + # Facet by RCP and Rainfed/Irrigated
   scale_color_manual(
     name = "Yield category",
@@ -740,7 +774,7 @@ for (i in 1:length(thisCrop)) {
                "High" = "yellow", 
                "Very High" = "green"),
     guide = guide_legend(override.aes = list(size = 5)) # Make legend boxes larger
-  )+
+  ) +
   theme_minimal() +
   labs(
     title = paste0(thisCrop[i],"\n\n",
@@ -786,33 +820,32 @@ for (i in 1:length(thisCrop)) {
   # Add New Zealand map contours
   geom_sf(data=nz_map, fill = NA, color = "black", inherit.aes = FALSE) +
   # Add the median product data
-  geom_point(
+  # geom_point(
+  #   data = df_crop,
+  #   aes(x = Lon, y = Lat, color = YieldChangeCategory),
+  #   shape=15,
+  #   size = 0.5,
+  #   alpha = 0.5
+  # ) +
+  # code commented out below causes "-5 to 5% change" category to come as NA (?)  
+    geom_raster(
     data = df_crop,
-    aes(x = Lon, y = Lat, color = YieldChangeCategory),
-    shape=15, 
-    size = 0.5,
-    alpha = 0.5
-  ) +
+    aes(x = Lon, y = Lat, fill = YieldChangeCategory), # Use fill instead of color
+    alpha = 0.5  # Adjust transparency if needed
+) +
   facet_grid(Irrigation ~ RCP + VarName) + # Facet by RCP and Rainfed/Irrigated
-  scale_color_manual(
-    name = "Yield change (%)",
-    # values = c("> 50% decline" = "darkred", 
-    #            "25 to 50% decline" = "red",
-    #            "5 to 25% decline" = "orange",
-    #            "-5 to 5% change" = 'grey',
-    #            "5 to 50% increase" = "yellow",
-    #            "50 to 100% increase" = "green",
-    #            "> 100% increase" = "darkgreen"),
-    values = c("> 50% decline" = "#7E1E9C",    # Dark Purple (Strong Decline)
-           "25 to 50% decline" = "#D35F5F",    # Reddish-Pink (Moderate Decline)
-           "5 to 25% decline" = "#E69F00",     # Orange (Slight Decline)
-           "-5 to 5% change" = "#999999",      # Grey (Stable)
-           "5 to 50% increase" = "#56B4E9",    # Sky Blue (Moderate Increase)
-           "50 to 100% increase" = "#009E73", # Teal Green (Strong Increase)
-           "> 100% increase" = "#00441B"), 
-     drop = FALSE,
-    guide = guide_legend(override.aes = list(size = 5)) # Make legend boxes larger
-  )+
+  # scale_color_manual(
+  #   name = "Yield change (%)",
+  #   values = c("> 50% decline" = "#7E1E9C",    # Dark Purple (Strong Decline)
+  #          "25 to 50% decline" = "#D35F5F",    # Reddish-Pink (Moderate Decline)
+  #          "5 to 25% decline" = "#E69F00",     # Orange (Slight Decline)
+  #          "-5 to 5% change" = "#999999",      # Grey (Stable)
+  #          "5 to 50% increase" = "#56B4E9",    # Sky Blue (Moderate Increase)
+  #          "50 to 100% increase" = "#009E73", # Teal Green (Strong Increase)
+  #          "> 100% increase" = "#00441B"), 
+  #    drop = FALSE,
+  #   guide = guide_legend(override.aes = list(size = 5)) # Make legend boxes larger
+  # )+
   theme_minimal() +
   labs(x = "Longitude",y = "Latitude", 
        title = "\n\n\nYIELD CHANGE \nIN THE FUTURE (% BASELINE)")+
@@ -823,7 +856,18 @@ for (i in 1:length(thisCrop)) {
   theme(
     plot.title = element_text(hjust = 0.5) # Center the title
   )  +
-    theme(legend.position = "bottom")
+    theme(legend.position = "bottom") +
+  scale_fill_manual(
+    name = "Yield change (%)",
+    values = c("> 50% decline" = "#7E1E9C",
+               "25 to 50% decline" = "#D35F5F",
+               "5 to 25% decline" = "#E69F00",
+               "-5 to 5% change" = "#999999",
+               "5 to 50% increase" = "#56B4E9",
+               "50 to 100% increase" = "#009E73",
+               "> 100% increase" = "#00441B"),
+    drop = FALSE
+  ) 
 
   
  # p2_border <- add_black_border(p2)
