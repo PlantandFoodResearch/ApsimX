@@ -467,6 +467,7 @@ p <- diff_abs_plot %>%
   mutate(Irrigation = factor(Irrigation, levels=c("Rainfed","Irrigated"))) %>%
     filter(Crop == thisCrop[i]) %>%
     mutate(RegionLat= paste0(REGC2015_N," (",Latitude,"o)")) %>%
+  mutate(RegionLat = factor(RegionLat, levels = unique(RegionLat[order(desc(Latitude))]))) %>%  # Explicit ordering
   ggplot(aes(x=RCP, y=VarValue, colour=Irrigation)) + 
   geom_jitter(alpha=0.5,
               position = position_jitterdodge(jitter.width = 0.3, 
