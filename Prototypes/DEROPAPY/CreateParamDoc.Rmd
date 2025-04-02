@@ -240,6 +240,7 @@ for(i in 1:length(cats)) {
       
 p <- df6 %>%
 filter(!str_detect(ParamNameFull, c("TT|Dorm"))) %>%
+filter(str_detect(CropName, c("Grape|Wheat|OSR")))  %>%
 mutate(Category = if_else(Category == "CarbonSupply", "Stress", Category)) %>%
 filter(Category== cats[i]) %>%
 ggplot(aes(x = `Axis_X`, y = `Axis_Y`)) +
@@ -260,7 +261,7 @@ ggplot(aes(x = `Axis_X`, y = `Axis_Y`)) +
     
   print(p)
   
-  ggsave(filename = file.path(save_path,paste0(paste0("Array_",cats[i]),".jpg")), dpi=100 )
+  ggsave(filename = file.path(save_path,paste0(paste0("Chill_",cats[i]),".jpg")), dpi=100 )
 
 }
 ```
