@@ -280,11 +280,16 @@ for (i in 1:length(thisCrop)) {
   # Add New Zealand map contours
   geom_sf(data=nz_map, fill = NA, color = "black", inherit.aes = FALSE) +
   # Add the median product data
-  geom_point(
+  # geom_point(
+  #   data = df_crop,
+  #   aes(x = Lon, y = Lat, color = Yield),
+  #   shape=15, 
+  #   size = 0.5
+  # ) +
+    geom_raster(
     data = df_crop,
-    aes(x = Lon, y = Lat, color = Yield),
-    shape=15, 
-    size = 0.5
+    aes(x = Lon, y = Lat, fill = Yield), # Use fill instead of color
+    alpha = 0.5
   ) +
   facet_grid(Irrigation ~ RCP + TimeSlice) + # Facet by RCP and Rainfed/Irrigated
   scale_color_gradientn(
@@ -349,13 +354,18 @@ for (i in 1:length(thisCrop)) {
   # Add New Zealand map contours
   geom_sf(data=nz_map, fill = NA, color = "black", inherit.aes = FALSE) +
   # Add the median product data
-  geom_point(
+  # geom_point(
+  #   data = df_crop,
+  #   aes(x = Lon, y = Lat, color = YieldCategoryByBase),
+  #   shape=15, 
+  #   size = 0.5,
+  #   alpha = 0.5
+  # ) +
+  geom_raster(
     data = df_crop,
-    aes(x = Lon, y = Lat, color = YieldCategoryByBase),
-    shape=15, 
-    size = 0.5,
+    aes(x = Lon, y = Lat, fill = YieldCategoryByBase), # Use fill instead of color
     alpha = 0.5
-  ) +
+  ) +  
   facet_grid(Irrigation ~ RCP + TimeSlice) + # Facet by RCP and Rainfed/Irrigated
   theme_minimal()+
   class_colour +
@@ -570,15 +580,20 @@ for (i in 1:length(thisCrop)) {
   # Add New Zealand map contours
   geom_sf(data=nz_map, fill = NA, color = "black", inherit.aes = FALSE) +
   # Add the median product data
-  geom_point(
+  # geom_point(
+  #   data = df_crop,
+  #   aes(x = Lon, y = Lat, color = YieldChangeCategory),
+  #   shape=15, 
+  #   size = 0.5,
+  #   alpha = 0.5
+  # ) +
+  geom_raster(
     data = df_crop,
-    aes(x = Lon, y = Lat, color = YieldChangeCategory),
-    shape=15, 
-    size = 0.5,
+    aes(x = Lon, y = Lat, fill = YieldChangeCategory), # Use fill instead of color
     alpha = 0.5
-  ) +
+  ) +  
   facet_grid(Irrigation ~ RCP + VarName) + # Facet by RCP and Rainfed/Irrigated
-  scale_color_manual(
+  scale_fill_manual(
     values = c("> 50% decline" = "darkred", 
                "25 to 50% decline" = "red",
                "5 to 50% decline" = "orange",
@@ -767,7 +782,7 @@ for (i in 1:length(thisCrop)) {
     alpha = 0.5  # Adjust transparency if needed
 ) +
   facet_wrap(Irrigation~., ncol=2) + # Facet by RCP and Rainfed/Irrigated
-  scale_color_manual(
+  scale_fill_manual(
     name = "Yield category",
     values = c("Very Low" = "red", 
                "Low" = "orange", 
