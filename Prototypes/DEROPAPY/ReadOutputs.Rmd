@@ -903,6 +903,137 @@ ggsave(filename =
 
 ```
 
+```{r, warning=FALSE}
+# Create a common baseline for each pixel (median 30-year)
+yield_base <- NULL
+yield_base <- data_work %>%
+  filter(RCP =="RCPpast") %>%
+  group_by(Crop, REGC2015_N, AGENT_NO) %>%
+  summarise(ProductFresh_kgPerHa = median(ProductFresh_kgPerHa)) %>%
+  ungroup() %>%
+  #tidyr::crossing(RCP = c("RCP4.5", "RCP6.0", "RCP8.5")) %>%
+  # mutate(RCP = "RCPpast", RCP=factor(RCP)) %>%
+  #mutate(TimeSlice = "Baseline") %>%
+  as.data.frame()
+
+str(yield_base)
+str(yield_norm)
+unique(yield_norm$RCP)
+
+#unique(data_work$RCP)
+yield_norm <- NULL
+yield_norm <- data_work %>%
+  filter(RCP != "RCPpast") %>%
+  group_by(Crop, REGC2015_N, AGENT_NO, RCP, TimeSlice) %>%
+  # median of 30-year per pixel
+  summarise(ProductFresh_kgPerHa = median(ProductFresh_kgPerHa)) %>%
+  # append a baseline for each RCP
+  rbind(
+  cbind(yield_base, RCP = "RCP4.5", TimeSlice="Baseline"),
+  cbind(yield_base, RCP = "RCP6.0", TimeSlice="Baseline"),
+  cbind(yield_base, RCP = "RCP8.5", TimeSlice="Baseline")) %>%
+  as.data.frame() %>%
+  # Add a common Baseline yield column for each pixel
+  inner_join(yield_base %>% dplyr::rename(BaseFreshYield=ProductFresh_kgPerHa)
+             , by= c("Crop","REGC2015_N", "AGENT_NO")) %>%
+  ungroup() %>%
+  mutate(YieldNorm = round((ProductFresh_kgPerHa/BaseFreshYield)*100,0)-100) 
+
+  head(yield_norm)
+  
+  yield_norm_summary <- yield_norm %>%
+    group_by(Crop, RCP, TimeSlice, REGC2015_N)%>%
+    summarise(
+      Median = median(YieldNorm),
+      SD = sd(YieldNorm)) %>%
+      mutate(TimeSliceYear = case_when(
+      TimeSlice == "Baseline" ~ 1990,
+      TimeSlice == "Midcentury" ~ 2050,
+      TimeSlice == "Endcentury" ~ 2080,
+    TRUE ~ NA_real_  # Assign NA for any unexpected values
+  )) %>%
+  mutate(TimeSliceYear=as.numeric(TimeSliceYear)) 
+  
+  
+  
+```
+
+```{r, fig.height=20, warning=FALSE}
+unique(yield_norm_summary$REGC2015_N)
+
+df_simple_regions <- yield_norm_summary %>%
+  filter(REGC2015_N %in% c("Northland","Hawke's Bay","Waikato","Canterbury" ,"Southland")) %>%
+ # filter(REGC2015_N %in% c("Northland" ,"Southland")) %>%
+  mutate(REGC2015_N=factor(REGC2015_N, 
+                           levels=c("Northland","Hawke's Bay","Waikato","Canterbury" ,"Southland")))
+```
+
+
+```{r}
+df_simple_regions %>%
+    ggplot(aes(x=TimeSliceYear, y=Median, colour=RCP)) +
+    geom_point(position = position_jitter(width = 0.2), size = 5)+
+   #geom_line() +  # Add lines connecting points of the same color
+  #  geom_smooth() +  # Keep smoothed trend line if desired
+  geom_line() +
+    facet_wrap(REGC2015_N~Crop, scales = 'free', ncol=8) +
+  geom_hline(yintercept = 0, linetype = 2, color = "darkgrey", size = 2)+
+    ylab("Yield change from baseline (%)") +
+    # geom_errorbar(aes(ymin = Median - SD/2, ymax = Median + SD/2, colour=RCP), 
+    #               width = 1) +
+  theme(text = element_text(size = 30)) +
+  scale_x_continuous(
+    breaks = c(1990, 2050, 2080),  # Only show ticks at these values
+    labels = c("1995", "2050", "2085")  # Optional: customize labels
+  )+
+  xlab("Time period 30-year mid-point")
+```
+
+
+
+```{r}
+df_simple_regions
+
+# Step 1: Summarise to min–max range per time
+df_summary <- df_simple_regions %>%
+  mutate(Crop = factor(Crop)) %>%
+  group_by(REGC2015_N, Crop, TimeSliceYear) %>%
+  summarise(
+    ymin = min(Median),
+    ymax = max(Median),
+    ymean = mean(Median)
+  ) %>% ungroup()
+
+
+# Step 2: Plot with ribbon (envelope)
+df_summary %>%
+  mutate(Crop = factor(Crop, 
+                        levels=c("Maize", "Wheat", "Hemp","OSR",
+                              "Avocado", "GrapeVine","Macadamia","Lemon"))) %>%
+ggplot(aes(x = TimeSliceYear)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax, 
+                  fill = REGC2015_N), alpha = 0.3) +  # the envelope
+  geom_line(aes(y = ymean, color = REGC2015_N), size = 0.5, linetype=3) +  # optional: mean line
+ facet_wrap(~Crop, scales = 'free', ncol=4) +
+  geom_hline(yintercept = 0, linetype = 2, color = "black", size = 0.5) +
+  scale_x_continuous(
+    breaks = c(1990, 2050, 2080),  # Only show ticks at these values
+    labels = c("1995", "2050", "2085")  # Optional: customize labels
+  )+
+  xlab("Time period (30-year mid-point)") +
+   ylab("Range of median yield change \n across three RCPs (% baseline value)") +
+   labs(color = NULL, fill=NULL) +
+  labs(
+    caption = "Fig. 1: Range of median yield changes estimated along three selected Representative Concentration\n Pathways (RCP4.5, RCP6.0 and RCP8.5) pooled within New Zealand regions across ~5km grid-cells \nwith three most prevalent soils, two water regimes (irrigated and rainfed) and\n considering five General Circulation Models (GCMs)"
+    
+  ) + theme(
+    plot.caption = element_text(hjust = 0.5, size = 10)
+  )
+  
+
+```
+
+
 ```{r}
 # Run a custom SQL query (optional)
 # query <- "SELECT * FROM your_table_name LIMIT 10"
