@@ -461,7 +461,7 @@ head(diff_abs_plot)
 # Plot absolute diferences as GRAPHS
 ```{r, fig.height=15}
 
-fontSize2 <- 18
+fontSize2 <- 30
 
 thisGraphFolder <- file.path(thisPath, "Graphs")
 
@@ -1051,6 +1051,7 @@ df_summary <- yield_norm_summary %>%
 library("scales")
 # Step 2: Plot with ribbon (envelope)
 df_summary %>%
+  #filter(REGC2015_N=="Southland") %>%
   filter(REGC2015_N %in% 
   c("Northland","Hawke's Bay","Waikato","Canterbury" ,"Southland")) %>%
  # c("Canterbury")) %>%
@@ -1071,7 +1072,7 @@ ggplot(aes(x = TimeSliceYear)) +
    ylab("Range of median yield change from baseline\n across three RCPs (kg/ha)") +
    labs(color = NULL, fill=NULL) +
   labs(
-    caption = "Fig.1S: Range of median yield changes estimated along three selected Representative Concentration\n Pathways (RCP4.5, RCP6.0 and RCP8.5) pooled within New Zealand regions across ~5km grid-cells \nwith three most prevalent soils, two water regimes (irrigated and rainfed) and\n considering five General Circulation Models (GCMs)"
+    caption = "Fig.1S: Range of median yield changes estimated along three climate change scanarios - Representative Concentration\n Pathways (RCP4.5, RCP6.0 and RCP8.5). Values are pooled  across ~5 km grid-cells within New Zealand\n regions considering three most prevalent soils per grid, two water regimes (irrigated and rainfed) and\n  climate from five General Circulation Models (GCMs). OSR is oilseed rape crop."
     
   ) + theme(
     plot.caption = element_text(hjust = 0.5, size = 10)
