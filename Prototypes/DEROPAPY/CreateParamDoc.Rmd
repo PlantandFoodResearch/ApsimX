@@ -63,7 +63,7 @@ summary(work_data)
 #head(work_data)
 ```
 # create graphs with static parameters values
-```{r, fig.height= 30}
+```{r, fig.height= 15}
 
 save_path <- "C:\\github\\ApsimX\\Prototypes\\DEROPAPY\\outputs\\ParamGraphs"
 
@@ -97,16 +97,17 @@ for(i in 1:length(cats)) {
   mutate(CropName=factor(CropName, levels=crop_select)) %>%
   ggplot() +
   geom_bar(stat="identity", aes(x=CropName,y=ParamValue, fill = CropType)) +
-  facet_wrap(.~ParamNameFull, scales="free", ncol=2) +
+  facet_wrap(.~ParamNameFull, scales="free", ncol=3) +
   coord_flip() +
   ylab("Parameter value")+
   xlab("Crop name")+
   labs(title = cats[i] ) +
-    theme(text=element_text(size=38))
+  theme(text=element_text(size=33))+
+  theme(legend.title = element_blank())
   
   print(p)
   
-  ggsave(filename = file.path(save_path,paste0(cats[i],".jpg")), dpi=100 )
+  ggsave(filename = file.path(save_path,paste0(cats[i],".jpg")), dpi=300 )
 
     
   }
@@ -194,8 +195,46 @@ df6 <- df5 %>%
 head(df6)
 
 ```
+# Thermal time graph
+
+```{r, fig.height=8}
+
+cats <- unique(df6$Category) 
+
+cats <- c("Phenology")
+
+for(i in 1:length(cats)) {
+      
+p <- df6 %>%
+filter(str_detect(ParamNameFull, c("TT"))) %>%
+mutate(Category = if_else(Category == "CarbonSupply", "Stress", Category)) %>%
+filter(Category== cats[i]) %>%
+ggplot(aes(x = `Axis_X`, y = `Axis_Y`)) +
+  geom_point(aes(colour = CropName), shape=21, size=5,
+             position=position_jitter(w=0.1, h=0)
+             ) +
+  geom_line(aes(colour=CropName, linetype= CropType ), 
+            position=position_jitter(w=0.1, h=0), size=2) +
+  facet_wrap(~ ParamNameFull, scales = "free", ncol=2) +
+  labs(title = "Parameters for different crops",
+       x = "X-axes",
+       y = "Y-axes") +
+  theme_minimal() +
+  theme(text=element_text(size=20)) +
+  ylab("Thermal-time accumulation (oCd)") +
+  xlab("Average air temperature (oC)")+
+  theme(legend.title = element_blank())
+
+    
+  print(p)
+  
+  ggsave(filename = file.path(save_path,paste0(paste0("TT_",cats[i]),".jpg")), dpi=300 )
+
+}
+```
 
 
+# Other pheno stress graphs
 ```{r, fig.height=20}
 
 cats <- unique(df6$Category) 
@@ -214,19 +253,19 @@ ggplot(aes(x = `Axis_X`, y = `Axis_Y`)) +
              ) +
   geom_line(aes(colour=CropName, linetype= CropType ), 
             position=position_jitter(w=0.1, h=0), size=2) +
-  facet_wrap(Category ~ ParamNameFull, scales = "free", ncol=2) +
+  facet_wrap( ~ ParamNameFull, scales = "free", ncol=2) +
   labs(title = "Parameters for different crops",
        x = "X-axes",
        y = "Y-axes") +
-  theme_minimal() +
-  theme(text=element_text(size=38)) +
+  theme(text=element_text(size=52)) +
   ylab("Multiplier of potential rates") +
-  xlab("Driving variable unit see panel title")
+  xlab("Driving variable unit see panel title")+
+  theme(legend.title = element_blank())
 
     
   print(p)
   
-  ggsave(filename = file.path(save_path,paste0(paste0("Array_",cats[i]),".jpg")), dpi=100 )
+  ggsave(filename = file.path(save_path,paste0(paste0("Array_",cats[i]),".jpg")), dpi=300 )
 
 }
 ```
@@ -256,7 +295,8 @@ ggplot(aes(x = `Axis_X`, y = `Axis_Y`)) +
   theme_minimal() +
   theme(text=element_text(size=30)) +
   ylab("Accumulation of chilling (fractional)") +
-  xlab("Average temperature (oC)")
+  xlab("Average temperature (oC)") +
+  theme(legend.title = element_blank())
 
     
   print(p)
