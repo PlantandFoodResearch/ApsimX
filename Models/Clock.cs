@@ -1,18 +1,13 @@
 using System;
-using System.Collections.Generic;
 using Models.Core;
 using Models.Core.Run;
 using Models.Interfaces;
 using Newtonsoft.Json;
-using APSIM.Shared.Documentation;
-using System.Linq;
-using Models.PMF;
-using System.Data;
 
 namespace Models
 {
     /// <summary>
-    /// The clock model is resonsible for controlling the daily timestep in APSIM. It
+    /// The clock model is responsible for controlling the daily timestep in APSIM. It
     /// keeps track of the simulation date and loops from the start date to the end
     /// date, publishing events that other models can subscribe to.
     /// </summary>
@@ -102,6 +97,8 @@ namespace Models
         // Public events that we're going to publish.
         /// <summary>Occurs once at the start of the simulation.</summary>
         public event EventHandler StartOfSimulation;
+        /// <summary>Occurs once at the start of the first day of the simulation.</summary>
+        public event EventHandler StartOfFirstDay;
         /// <summary>Occurs at start of each day.</summary>
         public event EventHandler StartOfDay;
         /// <summary>Occurs at start of each month.</summary>
@@ -133,6 +130,8 @@ namespace Models
         public event EventHandler DoInitialSummary;
         /// <summary>Occurs each day to do management actions and changes</summary>
         public event EventHandler DoManagement;
+        /// <summary>Invoked to perform all fertiliser applications.</summary>
+        public event EventHandler DoFertiliserApplications;
         /// <summary>Occurs to do Pest/Disease actions</summary>
         public event EventHandler DoPestDiseaseDamage;
         /// <summary>Occurs when the canopy energy balance needs to be calculated with MicroCLimate</summary>
@@ -327,9 +326,11 @@ namespace Models
             if (FinalInitialise != null)
                 FinalInitialise.Invoke(this, args);
 
+            if (StartOfFirstDay != null)
+                StartOfFirstDay.Invoke(this, args);
+
             while (Today <= EndDate && (e.CancelToken == null || !e.CancelToken.IsCancellationRequested))
             {
-
                 if (DoCatchYesterday != null)
                     DoCatchYesterday.Invoke(this, args);
 
@@ -353,6 +354,8 @@ namespace Models
 
                 if (DoManagement != null)
                     DoManagement.Invoke(this, args);
+
+                DoFertiliserApplications?.Invoke(this, args);
 
                 if (DoPestDiseaseDamage != null)
                     DoPestDiseaseDamage.Invoke(this, args);
@@ -383,6 +386,8 @@ namespace Models
                 if (DoUpdateWaterDemand != null)
                     DoUpdateWaterDemand.Invoke(this, args);
 
+                DoDCAPST?.Invoke(this, args);
+
                 if (DoWaterArbitration != null)
                     DoWaterArbitration.Invoke(this, args);
 
@@ -394,8 +399,6 @@ namespace Models
 
                 if (DoPotentialPlantGrowth != null)
                     DoPotentialPlantGrowth.Invoke(this, args);
-
-                DoDCAPST?.Invoke(this, args);
 
                 if (DoPotentialPlantPartioning != null)
                     DoPotentialPlantPartioning.Invoke(this, args);
@@ -509,15 +512,6 @@ namespace Models
                 EndOfSimulation.Invoke(this, args);
 
             Summary?.WriteMessage(this, "Simulation terminated normally", MessageType.Information);
-        }
-
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
-        {
-            yield return new Section(Name, GetModelDescription());
-            yield return new Section(Name, GetModelEventsInvoked(typeof(Clock), "OnDoCommence(object _, CommenceArgs e)", "CLEM", true));
         }
     }
 }

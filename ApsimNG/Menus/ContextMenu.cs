@@ -3,28 +3,29 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
-using UserInterface.Commands;
-using Models;
-using Models.Core;
-using Models.Factorial;
-using Models.Soils;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using APSIM.Documentation;
+using APSIM.Server.Sensibility;
 using APSIM.Shared.Utilities;
-using Models.Storage;
-using Utility;
+using Gtk;
+using Models;
+using Models.AgPasture;
+using Models.Climate;
+using Models.Core;
 using Models.Core.ApsimFile;
 using Models.Core.Run;
-using System.Reflection;
-using System.Linq;
-using System.Text;
+using Models.Factorial;
 using Models.Functions;
-using Models.Climate;
-using APSIM.Interop.Documentation;
-using System.Threading.Tasks;
-using System.Threading;
-using APSIM.Server.Sensibility;
-using ApsimNG.Properties;
-using Gtk;
-using Models.CLEM.Interfaces;
+using Models.GrazPlan;
+using Models.Soils;
+using Models.Soils.NutrientPatching;
+using Models.Storage;
+using UserInterface.Commands;
+using Utility;
 
 namespace UserInterface.Presenters
 {
@@ -189,7 +190,7 @@ namespace UserInterface.Presenters
 
         /// <summary>
         /// Event handler for the run on cloud action
-        /// </summary>        
+        /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
         [ContextMenu(MenuName = "Run on cloud",
@@ -269,7 +270,7 @@ namespace UserInterface.Presenters
         {
             try
             {
-                Model model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath)?.Value as Model;
+                Model model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as Model;
                 if (model != null)
                 {
                     // Set the clipboard text.
@@ -316,6 +317,55 @@ namespace UserInterface.Presenters
         }
 
         /// <summary>
+        /// User has clicked Duplicate
+        /// </summary>
+        /// <param name="sender">Sender of the event</param>
+        /// <param name="e">Event arguments</param>
+        [ContextMenu(MenuName = "Duplicate", ShortcutKey = "Ctrl+d")]
+        public void OnDuplicateClick(object sender, EventArgs e)
+        {
+            try
+            {
+                Model model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as Model;
+                if (model != null)
+                {
+                    // Set the clipboard text.
+                    string st = FileFormat.WriteToString(model);
+                    this.explorerPresenter.SetClipboardText(st, "_APSIM_MODEL");
+                    //this.explorerPresenter.SetClipboardText(st, "CLIPBOARD");
+                }
+
+                string internalCBText = this.explorerPresenter.GetClipboardText("_APSIM_MODEL");
+                //string externalCBText = this.explorerPresenter.GetClipboardText("CLIPBOARD");
+
+                //string text = string.IsNullOrEmpty(externalCBText) ? internalCBText : externalCBText;
+                string text = internalCBText;
+
+
+
+                if (!string.IsNullOrEmpty(text))
+                {
+
+                    IModel currentNode = explorerPresenter.CurrentNode as IModel;
+                    IModel parentNode = explorerPresenter.CurrentNode.Parent as IModel;
+                    if (parentNode != null)
+                    {
+                        ICommand command = new AddModelCommand(parentNode, text, explorerPresenter.GetNodeDescription);
+                        explorerPresenter.CommandHistory.Add(command, true);
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                explorerPresenter.MainPresenter.ShowError(err);
+            }
+            finally
+            {
+                this.explorerPresenter.SetClipboardText("", "_APSIM_MODEL");
+            }
+        }
+
+        /// <summary>
         /// User has clicked Delete
         /// </summary>
         /// <param name="sender">Sender of the event</param>
@@ -325,7 +375,7 @@ namespace UserInterface.Presenters
         {
             try
             {
-                IModel model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath)?.Value as IModel;
+                IModel model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as IModel;
                 if (model != null && model.GetType().Name != "Simulations")
                     this.explorerPresenter.Delete(model);
             }
@@ -345,7 +395,7 @@ namespace UserInterface.Presenters
         {
             try
             {
-                IModel model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath)?.Value as IModel;
+                IModel model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as IModel;
                 if (model != null && model.GetType().Name != "Simulations")
                     this.explorerPresenter.MoveUp(model);
             }
@@ -494,7 +544,7 @@ namespace UserInterface.Presenters
         {
             try
             {
-                Soil currentSoil = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath)?.Value as Soil;
+                Soil currentSoil = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as Soil;
                 if (currentSoil != null)
                 {
                     ISummary summary = currentSoil.FindInScope<ISummary>(this.explorerPresenter.CurrentNodePath);
@@ -531,6 +581,82 @@ namespace UserInterface.Presenters
         }
 
         /// <summary>
+        /// Event handler for a User interface "Reconfigure soil for urine patches" action
+        /// </summary>
+        /// <param name="sender">Sender of the event</param>
+        /// <param name="e">Event arguments</param>
+        [ContextMenu(MenuName = "Reconfigure soil for urine patches", AppliesTo = new Type[] { typeof(Soil) })]
+        public void SetupSoilForPatching(object sender, EventArgs e)
+        {
+            try
+            {
+                Soil currentSoil = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as Soil;
+                if (currentSoil != null)
+                {
+                    Simulation simulation = currentSoil.FindAncestor<Simulation>();
+                    if (simulation != null)
+                    {
+                        // Remove nutrient
+                        // Replace solutes with patching solutes
+                        // Add NutrientPatchManager
+
+                        var nutrient = currentSoil.FindChild<Models.Soils.Nutrients.Nutrient>();
+
+                        List<ICommand> commands = new();
+
+                        commands.Add(new DeleteModelCommand(nutrient, explorerPresenter.GetNodeDescription(nutrient)));
+
+                        foreach (var solute in currentSoil.FindAllChildren<Solute>())
+                        {
+                            var newSolute = new SolutePatch()
+                            {
+                                Name = solute.Name,
+                                Thickness = solute.Thickness,
+                                InitialValues = solute.InitialValues,
+                                InitialValuesUnits = solute.InitialValuesUnits,
+                                WaterTableConcentration = solute.WaterTableConcentration,
+                                D0 = solute.D0,
+                                Exco = solute.Exco,
+                                FIP = solute.FIP
+                            };
+                            commands.Add(new ReplaceModelCommand(solute, newSolute, explorerPresenter.GetNodeDescription));
+                        }
+
+                        commands.Add(new AddModelCommand(currentSoil, new NutrientPatchManager(), explorerPresenter.GetNodeDescription));
+
+                        foreach (var command in commands)
+                            explorerPresenter.CommandHistory.Add(command);
+
+                        explorerPresenter.MainPresenter.ShowMessage("Soil has been reconfigured for urine patches.", Simulation.MessageType.Information);
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                explorerPresenter.MainPresenter.ShowError(err);
+            }
+        }
+
+        /// <summary>
+        /// Returns true if 'setup soil for patching' is enabled.
+        /// </summary>
+        public bool SetupSoilForPatchingEnabled()
+        {
+            Soil currentSoil = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as Soil;
+            if (currentSoil != null)
+            {
+                Simulation simulation = currentSoil.FindAncestor<Simulation>();
+                if (simulation != null)
+                {
+                    var nutrient = currentSoil.FindChild<Models.Soils.Nutrients.Nutrient>();
+                    var nutrientPatchManager = currentSoil.FindChild<NutrientPatchManager>();
+                    return nutrient != null && nutrientPatchManager == null;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Event handler for a User interface "Download Weather" action
         /// </summary>
         /// <param name="sender">Sender of the event</param>
@@ -549,7 +675,7 @@ namespace UserInterface.Presenters
         }
 
         /// <summary>
-        /// Accept the current test output as the official baseline for future comparison. 
+        /// Accept the current test output as the official baseline for future comparison.
         /// </summary>
         /// <param name="sender">Sender of the event</param>
         /// <param name="e">Event arguments</param>
@@ -564,7 +690,7 @@ namespace UserInterface.Presenters
                     return;
                 }
 
-                Tests test = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath)?.Value as Tests;
+                Tests test = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as Tests;
                 try
                 {
                     test.Test(true);
@@ -825,13 +951,22 @@ namespace UserInterface.Presenters
                                 c.ReadOnly = !hidden;
                         }
 
-                        // Delete hidden models from tree control and refresh tree control.
-                        foreach (IModel child in model.Children)
-                            if (child.IsHidden)
-                                explorerPresenter.Tree.Delete(child.FullPath);
-                        explorerPresenter.PopulateContextMenu(model.FullPath);
-                        explorerPresenter.RefreshNode(model);
                     }
+                    else
+                    {
+                        foreach (IModel child in model.Children)
+                        {
+                            child.IsHidden = !child.IsHidden;
+                        }
+                    }
+
+                    // Delete hidden models from tree control and refresh tree control.
+                    foreach (IModel child in model.Children)
+                        if (child.IsHidden)
+                            explorerPresenter.Tree.Delete(child.FullPath);
+
+                    explorerPresenter.PopulateContextMenu(model.FullPath);
+                    explorerPresenter.RefreshNode(model);
                 }
             }
             catch (Exception err)
@@ -843,7 +978,9 @@ namespace UserInterface.Presenters
         public bool ShowModelStructureChecked()
         {
             IModel model = explorerPresenter.CurrentNode as IModel;
-            if (model != null && model.Children.Count < 1)
+            if (model == null)
+                return false;
+            if (model.Children.Count < 1)
                 return true;
             return !model.Children[0].IsHidden;
         }
@@ -934,43 +1071,39 @@ namespace UserInterface.Presenters
                 explorerPresenter.MainPresenter.ShowWaitCursor(true);
 
                 IModel currentN = explorerPresenter.CurrentNode;
-                IModel modelToDocument;
+                IModel modelToDocument = currentN;
+                explorerPresenter.ApsimXFile.Links.Resolve(modelToDocument, true, true, false);
 
-                if (currentN is Models.Graph || currentN is Simulation)
-                    modelToDocument = currentN;
-                else
+                string modelTypeName = String.Empty;
+                if (modelToDocument is Models.PMF.Plant)
+                    modelTypeName = modelToDocument.Name;
+                else if (modelToDocument is Simulations)
                 {
-                    modelToDocument = currentN.Clone();
-                    explorerPresenter.ApsimXFile.Links.Resolve(modelToDocument, true, true, false);
-                }               
-
-                PdfWriter pdf = new PdfWriter();
-                string fileNameWritten = Path.ChangeExtension(explorerPresenter.ApsimXFile.FileName, ".pdf");
-
-                //if filename is null, prompt user to save the file
-                if (fileNameWritten == null)
-                {
-                    explorerPresenter.Save();
-                    fileNameWritten = Path.ChangeExtension(explorerPresenter.ApsimXFile.FileName, ".pdf");
+                    var simpleFileName = Path.GetFileNameWithoutExtension((modelToDocument as Simulations).FileName);
+                    modelTypeName = simpleFileName;
                 }
-                //check if filename is still null (user didn't save) and throw a useful exception
-                if (fileNameWritten == null)
-                {
-                    throw new Exception("You must save this file before documentation can be created");
-                }
+                else modelTypeName = modelToDocument.GetType().Name;
 
-                pdf.Write(fileNameWritten, modelToDocument.Document());
+                string fullDocFileName = Directory.GetParent(explorerPresenter.ApsimXFile.FileName).ToString()
+                    + $"{Path.DirectorySeparatorChar}{modelTypeName}.html";
 
-                explorerPresenter.MainPresenter.ShowMessage($"Written {fileNameWritten}", Simulation.MessageType.Information);
+                bool graphSetting = DocumentationSettings.GenerateGraphs;
+                DocumentationSettings.GenerateGraphs = true;
+                string html = WebDocs.Generate(modelToDocument);
+                DocumentationSettings.GenerateGraphs = graphSetting;
+
+                File.WriteAllText(fullDocFileName, html);
+
+                explorerPresenter.MainPresenter.ShowMessage($"Written {fullDocFileName}", Simulation.MessageType.Information);
 
                 // Open the document.
-                ProcessUtilities.ProcessStart(fileNameWritten);
+                ProcessUtilities.ProcessStart(fullDocFileName);
             }
             catch (Exception err)
             {
                 explorerPresenter.MainPresenter.ShowError(err);
             }
-            finally 
+            finally
             {
                 explorerPresenter.MainPresenter.ShowWaitCursor(false);
             }
@@ -1005,7 +1138,7 @@ namespace UserInterface.Presenters
         {
             try
             {
-                IModel model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath)?.Value as IModel;
+                IModel model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as IModel;
                 if (model != null)
                 {
                     string modelPath = model.FullPath;
@@ -1041,14 +1174,14 @@ namespace UserInterface.Presenters
         }
 
         [ContextMenu(MenuName = "Compile Script",
-                     ShortcutKey = "",
+                     ShortcutKey = "Ctrl+T",
                      FollowsSeparator = true,
                      AppliesTo = new[] { typeof(Manager) })]
         public void OnCompileScript(object sender, EventArgs e)
         {
             try
             {
-                Manager model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath)?.Value as Manager;
+                Manager model = this.explorerPresenter.ApsimXFile.FindByPath(this.explorerPresenter.CurrentNodePath, LocatorFlags.ModelsOnly)?.Value as Manager;
                 if (model != null)
                 {
                     model.RebuildScriptModel();
@@ -1061,7 +1194,7 @@ namespace UserInterface.Presenters
             }
         }
 
-        //This menu item is dynamically added by ExplorerPresented based on how many 
+        //This menu item is dynamically added by ExplorerPresented based on how many
         //Playlists exist within the file.
         [ContextMenu(MenuName = "Playlist",
                      ShortcutKey = "",
@@ -1093,7 +1226,7 @@ namespace UserInterface.Presenters
             //This digs through the menu item that sends the event to see what the text was on the button
             //This is not good code and will break if the GUI changes
             MenuItem menuItem = sender as MenuItem;
-            HBox hBox = menuItem.Children[0] as HBox;
+            Box hBox = menuItem.Children[0] as Box;
             Label label = hBox.Children[1] as Label;
             string itemText = label.Text;
             string playlistName = itemText.Replace("Add to", "").Trim();
@@ -1110,6 +1243,32 @@ namespace UserInterface.Presenters
                     outputNames += simName + ", ";
                 explorerPresenter.MainPresenter.ShowMessage($"Could not add {outputNames} to Playlist called '{playlistName}'", Simulation.MessageType.Warning);
             }
+        }
+
+        /// <summary>
+        /// Reset axes of a graph.
+        /// </summary>
+        /// <param name="sender">Sender of the event</param>
+        /// <param name="e">Event arguments</param>
+        [ContextMenu(MenuName = "Reset Graph Axes",
+                     AppliesTo = new Type[] { typeof(Models.Graph) })]
+        public void ResetGraphAxes(object sender, EventArgs e)
+        {
+            Models.Graph selectedGraph = this.explorerPresenter.CurrentNode as Models.Graph;
+            if (selectedGraph.Axis.Count() > 0)
+            {
+                foreach (var axis in selectedGraph.Axis)
+                {
+                    axis.Maximum = null;
+                    axis.Minimum = null;
+                }
+                // Refreshes the view with new resets.
+                this.explorerPresenter.HideRightHandPanel();
+                this.explorerPresenter.ShowRightHandPanel();
+                this.explorerPresenter.MainPresenter.ShowMessage($"{selectedGraph.Name}: axis minimum and maximum reset.", Simulation.MessageType.Information);
+            }
+
+
         }
 
     }

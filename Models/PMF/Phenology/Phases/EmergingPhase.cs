@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using APSIM.Shared.Documentation;
 using APSIM.Shared.Utilities;
 using Models.Core;
 using Models.Functions;
@@ -47,7 +45,7 @@ namespace Models.PMF.Phen
 
         /// <summary>Is the phase emerged from the ground?</summary>
         [Description("Is the phase emerged?")]
-        public bool IsEmerged { get; set; } = true;
+        public bool IsEmerged { get; set; } = false;
 
         /// <summary>Fraction of phase that is complete (0-1).</summary>
         [JsonIgnore]
@@ -142,24 +140,5 @@ namespace Models.PMF.Phen
             Target = target.Value();
         }
 
-        /// <summary>Document the model.</summary>
-        public override IEnumerable<ITag> Document()
-        {
-            // Write description of this class.
-            yield return new Paragraph($"This phase goes from {Start.ToLower()} to {End.ToLower()} and simulates time to {End.ToLower()} as a function of sowing depth. The *ThermalTime Target* for ending this phase is given by:");
-            yield return new Paragraph($"*Target* = *SowingDepth* x *ShootRate* + *ShootLag*");
-            yield return new Paragraph($"Where:");
-            yield return new Paragraph($"*SowingDepth* (mm) is sent from the manager with the sowing event.");
-
-            // Write memos.
-            foreach (var tag in DocumentChildren<Memo>())
-                yield return tag;
-
-            IFunction thermalTime = FindChild<IFunction>("ThermalTime");
-            yield return new Paragraph($"Progress toward emergence is driven by thermal time accumulation{(thermalTime == null ? "" : ", where thermal time is calculated as:")}");
-            if (thermalTime != null)
-                foreach (var tag in thermalTime.Document())
-                    yield return tag;
-        }
     }
 }

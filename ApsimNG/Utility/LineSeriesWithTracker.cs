@@ -1,16 +1,24 @@
-﻿namespace Utility
-{
-    using System;
-    using APSIM.Shared.Utilities;
-    using OxyPlot;
-    using OxyPlot.Series;
-    using UserInterface.EventArguments;
+﻿using System;
+using System.Collections;
+using APSIM.Shared.Graphing;
+using APSIM.Shared.Utilities;
+using OxyPlot;
+using System.Linq;
+using System.Collections.Generic;
 
+
+namespace Utility
+{
     /// <summary>
     /// A line series with a better tracker.
     /// </summary>
-    public class LineSeriesWithTracker : LineSeries
+    public class LineSeriesWithTracker : OxyPlot.Series.LineSeries, INameableSeries
     {
+        /// <summary>
+        /// Name of series.
+        /// </summary>
+        public string Name { get; set; }
+
         /// <summary>
         /// Name of the tooltip
         /// </summary>
@@ -37,6 +45,21 @@
         public Type YType { get; set; }
 
         /// <summary>
+        /// Caption for each data point
+        /// </summary>
+        public IEnumerable Caption { get; set; }
+
+
+        public LineSeriesWithTracker() { }
+
+        public LineSeriesWithTracker(string name/*, string seriesViewName*/)
+        {
+            this.Name = name;
+            //this.SeriesViewName = seriesViewName;
+        }
+
+
+        /// <summary>
         /// Tracker is calling to determine the nearest point.
         /// </summary>
         /// <param name="point">The point clicked</param>
@@ -55,11 +78,14 @@
                     xInput = MathUtilities.RoundSignificant(hitResult.DataPoint.X, 2).ToString();
                 else if (XType == typeof(DateTime))
                 {
-                    DateTime d = DateTime.FromOADate(hitResult.DataPoint.X);
-                    if (d.Hour == 0 && d.Minute == 0 && d.Second == 0)
-                        xInput = d.ToString("dd/MM/yyyy");
-                    else
-                        xInput = d.ToString();
+                    if (hitResult.DataPoint.X > 0)
+                    {
+                        DateTime d = DateTime.FromOADate(hitResult.DataPoint.X);
+                        if (d.Hour == 0 && d.Minute == 0 && d.Second == 0)
+                            xInput = d.ToString("dd/MM/yyyy");
+                        else
+                            xInput = d.ToString();
+                    }
                 }
 
                 if (YType == typeof(double))
@@ -73,7 +99,14 @@
                         yInput = d.ToString();
                 }
 
-                hitResult.Series.TrackerFormatString = TooltipTitle + "\n" + XFieldName + ": " + xInput + "\n" + YFieldName + ": " + yInput;
+                string caption = "";
+                if (Caption != null)
+                {
+                    List<string> captions = Caption.Cast<string>().ToList();
+                    caption = captions.ToArray<string>()[(int)hitResult.Index];
+                }
+
+                hitResult.Series.TrackerFormatString = caption + "\n" + XFieldName + ": " + xInput + "\n" + YFieldName + ": " + yInput;
             }
 
             return hitResult;

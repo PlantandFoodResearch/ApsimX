@@ -1,7 +1,7 @@
 {
   "$type": "Models.Core.Simulations, Models",
   "ExplorerWidth": 0,
-  "Version": 170,
+  "Version": 192,
   "Name": "Simulations",
   "Children": [
     {
@@ -40,6 +40,7 @@
               "Start": "Initialisation",
               "End": "Sowing",
               "Name": "Initial",
+              "IsEmerged": false,
               "Children": [
                 {
                   "$type": "Models.Functions.VariableReference, Models",
@@ -846,7 +847,9 @@
           ],
           "IncludeInDocumentation": true,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null
         },
         {
           "$type": "Models.PMF.Organs.SimpleLeaf, Models",
@@ -1388,7 +1391,10 @@
           ],
           "IncludeInDocumentation": true,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.Cultivar, Models",

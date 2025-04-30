@@ -31,6 +31,9 @@ namespace Models
         [Link]
         private ISoilWater soilWater = null;
 
+        [Link]
+        private ICalculateEo eoCalculator = null;
+
         /// <summary>The sun set angle (degrees)</summary>
         private const double sunSetAngle = 0.0;
 
@@ -83,16 +86,13 @@ namespace Models
 
         /// <summary>Height of the tallest canopy.</summary>
         [Units("mm")]
-        public double CanopyHeight
-        {
-            get
-            {
-                if (microClimatesZones.Sum(n => n.Canopies.Count) == 0)
-                    return 0;
-                else
-                    return microClimatesZones.Max(m => m.Canopies.Max(c => c.Canopy.Height));
-            }
-        }
+        public double CanopyHeight => microClimatesZones.Max(m => 
+                                      {
+                                          if (m.Canopies.Count == 0 )
+                                              return 0;
+                                          else
+                                              return m.Canopies.Max(c => c.Canopy.Height);
+                                      });
 
         /// <summary>The fraction of intercepted rainfall that evaporates at night</summary>
         [Description("The fraction of intercepted rainfall that evaporates at night")]
@@ -225,9 +225,6 @@ namespace Models
             get { return microClimatesZones[0].DeltaZ.Length; }
         }
 
-        /// <summary>the widith across two zones</summary>
-        private double AreaWidth { get; set; }
-
         /// <summary>Called when simulation starts.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event data.</param>
@@ -270,18 +267,18 @@ namespace Models
                 }
 
             // Light distribution is now complete so calculate remaining micromet equations
-            foreach (var ZoneMC in microClimatesZones)
+            foreach (var zoneMC in microClimatesZones)
             {
-                ZoneMC.CalculateEnergyTerms(soilWater.Salb);
-                ZoneMC.CalculateLongWaveRadiation(dayLengthLight, dayLengthEvap);
-                ZoneMC.CalculateSoilHeatRadiation(SoilHeatFluxFraction);
-                ZoneMC.CalculateGc(dayLengthEvap);
-                ZoneMC.CalculateGa(ReferenceHeight);
-                ZoneMC.CalculateInterception(a_interception, b_interception, c_interception, d_interception);
-                ZoneMC.CalculatePM(dayLengthEvap, NightInterceptionFraction);
-                ZoneMC.CalculateOmega();
-                ZoneMC.SetCanopyEnergyTerms(weather.Radn, AreaWidth);
-                ZoneMC.CalculateEo();
+                zoneMC.CalculateEnergyTerms(soilWater.Salb);
+                zoneMC.CalculateLongWaveRadiation(dayLengthLight, dayLengthEvap);
+                zoneMC.CalculateSoilHeatRadiation(SoilHeatFluxFraction);
+                zoneMC.CalculateGc(dayLengthEvap);
+                zoneMC.CalculateGa(ReferenceHeight);
+                zoneMC.CalculateInterception(a_interception, b_interception, c_interception, d_interception);
+                zoneMC.CalculatePM(dayLengthEvap, NightInterceptionFraction);
+                zoneMC.CalculateOmega();
+                zoneMC.SetCanopyEnergyTerms();
+                zoneMC.SoilWater.Eo = eoCalculator.Calculate(zoneMC);
             }
         }
 
@@ -334,7 +331,6 @@ namespace Models
                 double Ht = treeZone.DeltaZ.Sum();                                 // Height of tree canopy
                 double Wt = (treeZone.Zone as Zones.RectangularZone).Width;    // Width of tree zone
                 double Wa = (alleyZone.Zone as Zones.RectangularZone).Width;   // Width of alley zone
-                AreaWidth = Wt + Wa;
                 double CDt = 0;//tree.Canopies[0].Canopy.Depth / 1000;         // Depth of tree canopy
                 double CWt = 0;//Math.Min(tree.Canopies[0].Canopy.Width / 1000, (Wt + Wa));// Width of the tree canopy
                 foreach (MicroClimateCanopy c in treeZone.Canopies)
