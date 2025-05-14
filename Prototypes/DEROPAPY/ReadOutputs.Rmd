@@ -462,6 +462,7 @@ head(diff_abs_plot)
 ```{r, fig.height=15}
 
 fontSize2 <- 30
+fontSize2 <- 20
 
 thisGraphFolder <- file.path(thisPath, "Graphs")
 
@@ -480,19 +481,25 @@ p <- diff_abs_plot %>%
   mutate(RegionLat = factor(RegionLat, levels = unique(RegionLat[order(desc(Latitude))]))) %>%  # Explicit ordering
   ggplot(aes(x=RCP, y=VarValue, colour=Irrigation)) + 
   geom_jitter(alpha=0.5,
+              size=2,
               position = position_jitterdodge(jitter.width = 0.3, 
                                               dodge.width = 0.8))+
   geom_boxplot(alpha=0.5) +
   geom_violin(position = position_dodge(0.75), alpha = 0.2) +
   scale_fill_brewer (palette = 5, direction =-1) +
  # facet_wrap(REGC2015_N~VarName, scales = "free") +
-  facet_wrap(RegionLat~VarName) +
+  facet_wrap(RegionLat~VarName) + # , scales="free"
   geom_hline(yintercept = 0, linetype = "dashed", color = "darkgrey", size = 1) +
   theme(text = element_text(size = fontSize2),
-          axis.text.x = element_text(angle = 45, hjust = 1) ) +
-  ylab("Absolute change in yield from baseline (kg/ha)")+
+        legend.position = "top",
+        strip.text = element_text(size = fontSize2*0.9),
+        legend.background = element_blank())+ #,
+        #  axis.text.x = element_text(angle = 45, hjust = 1) ) +
+  #ylab("Absolute change in yield from baseline (kg/ha)")+
+  ylab(paste0("Absolute change in yield from baseline (kg/ha) | ",thisCrop[i]))+
   guides(color = guide_legend(title = NULL)) +
-  labs(title = paste0(thisCrop[i], " - Yield changes across regions\n"))
+  #labs(title = paste0(thisCrop[i], " - Yield changes across regions\n")) +
+  labs(x = NULL)  
 
 print(p)
 
@@ -730,9 +737,10 @@ ggsave(filename = file.path(thisOutFolder,paste0("DiffContMap_",thisCrop[i],".jp
 ```
 
 # Map "Baseline yield + Yield change" as classes combined 
-```{r, fig.width=12}
+```{r, fig.width=12, warning=FALSE}
 
-fontSize3 <- 12
+fontSize3 <- 15
+#fontSize3 <- 8
 
   thisOutFolder <- file.path(thisPath,"MapResults") 
   
@@ -795,7 +803,7 @@ for (i in 1:length(thisCrop)) {
 ) +
   facet_wrap(Irrigation~., ncol=2) + # Facet by RCP and Rainfed/Irrigated
   scale_fill_manual(
-    name = "Yield category",
+    name = "", # Yield category
     values = c("Very Low" = "red", 
                "Low" = "orange", 
                "High" = "yellow", 
@@ -804,22 +812,24 @@ for (i in 1:length(thisCrop)) {
   ) +
   theme_minimal() +
   labs(
-    title = paste0(thisCrop[i],"\n\n",
-                   l1," | ",l2,"\n",
-                   l3," | ",l4,
-                   "\n\nBASELINE YIELD") ,
-    x = "Longitude",
-    y = "Latitude"
+    x = "Longitude",y = "Latitude",
+    title = paste0("BASELINE ",thisCrop[i]," yield range (kg/ha)\n\n",
+                   l1," | ",l2,"\n",l3," | ",l4
+                   )
+    
   ) +
   coord_sf(xlim = c(nz_bbox["xmin"], nz_bbox["xmax"]), 
            ylim = c(nz_bbox["ymin"], nz_bbox["ymax"])) +
     theme(text = element_text(size = fontSize3),
+           plot.title = element_text(size = fontSize3*0.8),
           axis.text.x = element_text(angle = 45, hjust = 1) ) +
-  theme(legend.position = "left") +
+ # theme(legend.position = "left") +
   theme(
     plot.title = element_text(hjust = 0.5) # Center the title
   ) +
-    theme(legend.position = "bottom")
+  theme(legend.position = "bottom")+
+  xlab("") +
+  ylab("")
   
    #p1_border <- add_black_border(p1)
   
@@ -874,18 +884,20 @@ for (i in 1:length(thisCrop)) {
   #   guide = guide_legend(override.aes = list(size = 5)) # Make legend boxes larger
   # )+
   theme_minimal() +
-  labs(x = "Longitude",y = "Latitude", 
-       title = "\n\n\nYIELD CHANGE \nIN THE FUTURE (% BASELINE)")+
+  labs(
+    #x = "Longitude",y = "Latitude", 
+       title = "FUTURE CHANGE (% BASELINE)")+
   coord_sf(xlim = c(nz_bbox["xmin"], nz_bbox["xmax"]), 
            ylim = c(nz_bbox["ymin"], nz_bbox["ymax"])) +
     theme(text = element_text(size = fontSize3),
+          plot.title = element_text(size = fontSize3*0.8),
           axis.text.x = element_text(angle = 45, hjust = 1) ) +
   theme(
     plot.title = element_text(hjust = 0.5) # Center the title
   )  +
     theme(legend.position = "bottom") +
   scale_fill_manual(
-    name = "Yield change (%)",
+    name = "", # Yield change (%)
     values = c("> 50% decline" = "#7E1E9C",
                "25 to 50% decline" = "#D35F5F",
                "5 to 25% decline" = "#E69F00",
@@ -894,10 +906,16 @@ for (i in 1:length(thisCrop)) {
                "50 to 100% increase" = "#009E73",
                "> 100% increase" = "#00441B"),
     drop = FALSE
-  ) 
+  ) +
+  xlab("") +
+  ylab("")
 
   
  # p2_border <- add_black_border(p2)
+  
+  #zero margins
+  p1 <- p1 + theme(plot.margin = margin(0, 0, 0, 0))
+  p2 <- p2 + theme(plot.margin = margin(0, 0, 0, 0))
   
   # combine plots
   combined_plot <- p1 | p2  
@@ -929,8 +947,8 @@ yield_base <- data_work %>%
   as.data.frame()
 
 str(yield_base)
-str(yield_norm)
-unique(yield_norm$RCP)
+#str(yield_norm)
+#unique(yield_norm$RCP)
 ```
 ```{r}
 #unique(data_work$RCP)
@@ -1050,7 +1068,7 @@ df_summary <- yield_norm_summary %>%
 
 library("scales")
 # Step 2: Plot with ribbon (envelope)
-df_summary %>%
+p <- df_summary %>%
   #filter(REGC2015_N=="Southland") %>%
   filter(REGC2015_N %in% 
   c("Northland","Hawke's Bay","Waikato","Canterbury" ,"Southland")) %>%
@@ -1072,13 +1090,20 @@ ggplot(aes(x = TimeSliceYear)) +
    ylab("Range of median yield change from baseline\n across three RCPs (kg/ha)") +
    labs(color = NULL, fill=NULL) +
   labs(
-    caption = "Fig.1S: Range of median yield changes estimated along three climate change scanarios - Representative Concentration\n Pathways (RCP4.5, RCP6.0 and RCP8.5). Values are pooled  across ~5 km grid-cells within New Zealand\n regions considering three most prevalent soils per grid, two water regimes (irrigated and rainfed) and\n  climate from five General Circulation Models (GCMs). OSR is oilseed rape crop."
+    caption = "Fig.1S: Range of median yield changes estimated along three Representative Concentration\n Pathways (RCP4.5, RCP6.0 and RCP8.5). Values are pooled  across ~5 km grid-cells within New Zealand\n regions considering three most prevalent soils per grid, two water regimes (irrigated and rainfed) and\n  climate from five General Circulation Models (GCMs). OSR is oilseed rape crop."
     
   ) + theme(
     plot.caption = element_text(hjust = 0.5, size = 10)
   ) +
   scale_y_continuous(labels = label_comma())
   
+print(p)
+
+ggsave(filename = 
+       file.path(thisGraphFolder,paste0("RibbonGraph",".jpg")),
+       plot = p,
+       dpi = 300)
+
 
 ```
 
