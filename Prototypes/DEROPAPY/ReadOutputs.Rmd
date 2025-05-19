@@ -515,6 +515,256 @@ ggsave(filename = file.path(thisGraphFolder,
 }
 ```
 
+
+# Plot absolute diferences as GRAPHS --- 4 SELECTED regions
+```{r, fig.width=15}
+
+fontSize2 <- 15
+
+thisGraphFolder <- file.path(thisPath, "Graphs")
+
+north_island_regions_1 <- c(
+  "Northland",
+  "Auckland",
+  "Waikato",
+  "Bay of Plenty"
+)
+north_island_regions_2 <- c(
+  "Gisborne",
+  "Hawke's Bay",
+  "Taranaki",
+  "Manawatū-Whanganui",
+  "Wellington"
+)
+south_island_regions_1 <- c(
+  "Tasman",
+  "Nelson",
+  "Marlborough",
+  "West Coast"
+)
+south_island_regions_2 <- c(
+  "Canterbury",
+  "Otago",
+  "Southland"
+)
+
+region_groups <- list(
+  north_island_regions_1 = north_island_regions_1,
+  north_island_regions_2 = north_island_regions_2,
+  south_island_regions_1 = south_island_regions_1,
+  south_island_regions_2 = south_island_regions_2
+                   )
+
+figNumber <- 0
+
+for(j in 1:length(region_groups)) {
+
+  for(i in 1:length(thisCrop)) {
+    
+  figNumber <- figNumber + 1
+  
+  figTitle<-paste0("FigureA",figNumber,"_",thisCrop[i],"_",names(region_groups)[j])
+  
+  print(figTitle)
+  
+p <- diff_abs_plot %>% 
+  inner_join(nz_lat_regions, by="REGC2015_N") %>%
+  filter(REGC2015_N %in% region_groups[[j]]) %>%
+  mutate(REGC2015_N = factor(REGC2015_N, 
+                             levels =(unique(REGC2015_N[order(desc(Latitude))]))))%>%
+  mutate(Irrigation = factor(Irrigation, levels=c("Rainfed","Irrigated"))) %>%
+    filter(Crop == thisCrop[i]) %>%
+    mutate(RegionLat= paste0(REGC2015_N," (",Latitude,"o)")) %>%
+  mutate(RegionLat = factor(RegionLat, levels = unique(RegionLat[order(desc(Latitude))]))) %>%  # Explicit ordering
+  ggplot(aes(x=RCP, y=VarValue, colour=Irrigation)) + 
+  geom_jitter(alpha=0.3,
+              size=2,
+              position = position_jitterdodge(jitter.width = 0.3, 
+                                              dodge.width = 0.8))+
+  geom_boxplot(alpha=0.5) +
+  geom_violin(position = position_dodge(0.75), alpha = 0.2) +
+  scale_fill_brewer (palette = 5, direction =-1) +
+ # facet_wrap(REGC2015_N~VarName, scales = "free") +
+  facet_wrap(RegionLat~VarName, scales="free", ncol=4) + # , scales="free"
+  geom_hline(yintercept = 0, linetype = "dashed", color = "darkgrey", size = 1) +
+  theme(text = element_text(size = fontSize2),
+        legend.position = "top",
+        strip.text = element_text(size = fontSize2*0.9),
+        legend.background = element_blank())+ #,
+        #  axis.text.x = element_text(angle = 45, hjust = 1) ) +
+  #ylab("Absolute change in yield from baseline (kg/ha)")+
+  ylab(paste0("Absolute change in yield from baseline (kg/ha) | ",thisCrop[i]))+
+  guides(color = guide_legend(title = NULL)) +
+  #labs(title = paste0(thisCrop[i], " - Yield changes across regions\n")) +
+  labs(x = NULL) +
+  labs(caption = paste0("Figure A",figNumber," Yield differences under climate change Representative Concentration Pathways (RCP) for \n",thisCrop[i]," across New Zealand. \n Selected regions (",paste((region_groups[[j]]),  collapse = ", "),") ordered by latitudinal range.")) +
+  theme(
+    plot.caption = element_text(hjust = 0.5, size = fontSize2*1.2, face = "bold")
+  )
+
+print(p)
+
+# dt <- data.frame(x=c(1,2,3),y=c(1,2,3))
+# p <- dt %>% ggplot(aes(x=x,y=y)) +
+#      geom_line()
+# print(p)
+
+# Save the plot as a JPEG file with 300 DPI
+ggsave(filename = file.path(thisGraphFolder,"SubRegions",paste0(figTitle,".jpg")),
+       plot = p,
+     #  width = 8,    # Width in inches
+     #  height = 4,   # Height in inches
+       dpi = 300)
+
+
+  }
+  
+}
+```
+
+# Plot SELECTED REGIONS panels per crop graph
+```{r, fig.width=15}
+
+fontSize2 <- 15
+
+thisGraphFolder <- file.path(thisPath, "Graphs")
+
+# Annuals
+
+Maize <- c(
+  "Auckland",
+  "Nelson",
+  "Southland",
+  "Canterbury"
+)
+
+Wheat <- c(
+  "Otago",
+  "Canterbury",
+  "Marlborough",
+  "Hawke's Bay"
+)
+
+Hemp <- c(
+  "Southland",
+  "Otago",
+  "Gisborne",
+  "Canterbury"
+)
+
+OSR <- c(
+  "Auckland",
+  "Waikato",
+  "Canterbury",
+  "Otago"
+)
+
+# Perennials
+
+Grapevine <- c(
+  "Southland",
+  "Otago",
+  "Nelson",
+  "Malborough"
+)
+
+Macadamia <- c(
+  "Northland",
+  "Nelson",
+  "Canterbury",
+  "Southland"
+)
+
+Lemon <- c(
+  "Northland",
+  "Auckland",
+  "Otago",
+  "Southland"
+)
+
+OSR <- c(
+  "Auckland",
+  "Waikato",
+  "Canterbury",
+  "Otago"
+)
+
+region_groups <- list(
+  north_island_regions_1 = north_island_regions_1,
+  north_island_regions_2 = north_island_regions_2,
+  south_island_regions_1 = south_island_regions_1,
+  south_island_regions_2 = south_island_regions_2
+                   )
+
+figNumber <- 0
+
+for(j in 1:length(region_groups)) {
+
+  for(i in 1:length(thisCrop)) {
+    
+  figNumber <- figNumber + 1
+  
+  figTitle<-paste0("FigureA",figNumber,"_",thisCrop[i],"_",names(region_groups)[j])
+  
+  print(figTitle)
+  
+p <- diff_abs_plot %>% 
+  inner_join(nz_lat_regions, by="REGC2015_N") %>%
+  filter(REGC2015_N %in% region_groups[[j]]) %>%
+  mutate(REGC2015_N = factor(REGC2015_N, 
+                             levels =(unique(REGC2015_N[order(desc(Latitude))]))))%>%
+  mutate(Irrigation = factor(Irrigation, levels=c("Rainfed","Irrigated"))) %>%
+    filter(Crop == thisCrop[i]) %>%
+    mutate(RegionLat= paste0(REGC2015_N," (",Latitude,"o)")) %>%
+  mutate(RegionLat = factor(RegionLat, levels = unique(RegionLat[order(desc(Latitude))]))) %>%  # Explicit ordering
+  ggplot(aes(x=RCP, y=VarValue, colour=Irrigation)) + 
+  geom_jitter(alpha=0.3,
+              size=2,
+              position = position_jitterdodge(jitter.width = 0.3, 
+                                              dodge.width = 0.8))+
+  geom_boxplot(alpha=0.5) +
+  geom_violin(position = position_dodge(0.75), alpha = 0.2) +
+  scale_fill_brewer (palette = 5, direction =-1) +
+ # facet_wrap(REGC2015_N~VarName, scales = "free") +
+  facet_wrap(RegionLat~VarName, scales="free", ncol=4) + # , scales="free"
+  geom_hline(yintercept = 0, linetype = "dashed", color = "darkgrey", size = 1) +
+  theme(text = element_text(size = fontSize2),
+        legend.position = "top",
+        strip.text = element_text(size = fontSize2*0.9),
+        legend.background = element_blank())+ #,
+        #  axis.text.x = element_text(angle = 45, hjust = 1) ) +
+  #ylab("Absolute change in yield from baseline (kg/ha)")+
+  ylab(paste0("Absolute change in yield from baseline (kg/ha) | ",thisCrop[i]))+
+  guides(color = guide_legend(title = NULL)) +
+  #labs(title = paste0(thisCrop[i], " - Yield changes across regions\n")) +
+  labs(x = NULL) +
+  labs(caption = paste0("Figure A",figNumber," Yield differences under climate change Representative Concentration Pathways (RCP) for \n",thisCrop[i]," across New Zealand. \n Selected regions (",paste((region_groups[[j]]),  collapse = ", "),") ordered by latitudinal range.")) +
+  theme(
+    plot.caption = element_text(hjust = 0.5, size = fontSize2*1.2, face = "bold")
+  )
+
+print(p)
+
+# dt <- data.frame(x=c(1,2,3),y=c(1,2,3))
+# p <- dt %>% ggplot(aes(x=x,y=y)) +
+#      geom_line()
+# print(p)
+
+# Save the plot as a JPEG file with 300 DPI
+ggsave(filename = file.path(thisGraphFolder,"SubRegions",paste0(figTitle,".jpg")),
+       plot = p,
+     #  width = 8,    # Width in inches
+     #  height = 4,   # Height in inches
+       dpi = 300)
+
+
+  }
+  
+}
+
+```
+
+
 # Plot RELATIVE diff category maps
 ```{r}
 diff_rel_plot <- diff_df %>%
