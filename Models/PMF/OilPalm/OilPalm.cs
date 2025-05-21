@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using APSIM.Shared.Documentation;
 using APSIM.Shared.Utilities;
 using Models.Core;
 using Models.Functions;
@@ -108,10 +107,6 @@ namespace Models.PMF.OilPalm
         /// <summary>MicroClimate supplies LightProfile</summary>
         [JsonIgnore]
         public CanopyEnergyBalanceInterceptionlayerType[] LightProfile { get; set; }
-
-        /// <summary>The fraction of total radiatin over all zones intercepted by this canopy</summary>
-        [Units("0-1")]
-        public double fRadnAllZones { get; set; }
 
         #endregion
 
@@ -1256,7 +1251,7 @@ namespace Models.PMF.OilPalm
             }
 
             double TotPotNUptake = MathUtilities.Sum(PotNUptake);
-            double Fr = Math.Min(1.0, Ndemand / TotPotNUptake);
+            double Fr = Math.Min(1.0, MathUtilities.Divide(Ndemand,TotPotNUptake,0.0));
 
             double[] uptake = new double[soilPhysical.LL15mm.Length];
             for (int j = 0; j < soilPhysical.LL15mm.Length; j++)
@@ -1264,7 +1259,7 @@ namespace Models.PMF.OilPalm
             NO3.SetKgHa(SoluteSetterType.Plant, MathUtilities.Subtract(NO3.kgha, uptake));
             NitrogenUptake = uptake;
 
-            Fr = Math.Min(1.0, Math.Max(0, MathUtilities.Sum(NitrogenUptake) / BunchNDemand));
+            Fr = Math.Min(1.0, Math.Max(0, MathUtilities.Divide( MathUtilities.Sum(NitrogenUptake), BunchNDemand,0.0)));
             double DeltaBunchN = BunchNDemand * Fr;
 
             double Tot = 0;
@@ -1276,7 +1271,7 @@ namespace Models.PMF.OilPalm
 
             // Calculate fraction of N demand for Vegetative Parts
             if ((Ndemand - DeltaBunchN) > 0)
-                Fr = Math.Max(0.0, ((MathUtilities.Sum(NitrogenUptake) - DeltaBunchN) / (Ndemand - DeltaBunchN)));
+                Fr = Math.Max(0.0, MathUtilities.Divide(MathUtilities.Sum(NitrogenUptake) - DeltaBunchN, Ndemand - DeltaBunchN, 0.0));
             else
                 Fr = 0.0;
 
@@ -1781,32 +1776,5 @@ namespace Models.PMF.OilPalm
 
         }
 
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
-        {
-            // This should replicate the "old" oilpalm docs, but it
-            // may be better to eventually organise things a bit better
-            // (e.g. grouping certain types of models like cultivars
-            // into their own section.)
-            yield return new Section($"The APSIM Oil Palm Model", GetTags());
-        }
-
-        /// <summary>
-        /// Get tags for child models.
-        /// </summary>
-        private IEnumerable<ITag> GetTags()
-        {
-            foreach (IModel child in Children)
-            {
-                // Don't write memos or constants into their own section.
-                if (child is Memo || child is Constant)
-                    foreach (ITag tag in child.Document())
-                        yield return tag;
-                else
-                    yield return new Section(child.Name, child.Document());
-            }
-        }
     }
 }

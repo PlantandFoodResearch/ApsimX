@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using APSIM.Shared.Documentation;
 using APSIM.Shared.Utilities;
 using Models.Core;
 using Models.Interfaces;
@@ -718,16 +716,27 @@ namespace Models.PMF.Organs
         }
 
         /// <summary>Does the initialisation.</summary>
-        public void DoInitialisation()
+        public void DoInitialisation(LeafCohortParameters CohortParameters)
         {
             IsInitialised = true;
             Age = 0;
+
+            // All this stuff below is here to ensure FN is not < 1 on the day of emergence
+            double functionalNConc = (CohortParameters.CriticalNConc.Value() -
+                                          CohortParameters.MinimumNConc.Value() * CohortParameters.StructuralFraction.Value()) *
+                                         (1 / (1 - CohortParameters.StructuralFraction.Value()));
+            Live.StructuralWt = 0.00001;
+            Live.MetabolicWt = 0.00001;
+            Live.StorageWt = 0.00001;
+            Live.StructuralN = Live.StructuralWt * functionalNConc;
+            Live.MetabolicN = Live.MetabolicWt * functionalNConc;
+            Live.StorageN = Live.StorageWt * functionalNConc;
         }
 
         /// <summary>Does the appearance.</summary>
         /// <param name="cohortParams">The leaf fraction.</param>
         /// <param name="leafCohortParameters">The leaf cohort parameters.</param>
-        public void DoAppearance(ApparingLeafParams cohortParams, Leaf.LeafCohortParameters leafCohortParameters)
+        public void DoAppearance(ApparingLeafParams cohortParams, LeafCohortParameters leafCohortParameters)
         {
             if (Apex != null)
             {
@@ -807,7 +816,7 @@ namespace Models.PMF.Organs
         /// <param name="tt">The tt.</param>
         /// <param name="extinctionCoefficient">The extinctionCoefficient.</param>
         /// <param name="leafCohortParameters">The leaf cohort parameters.</param>
-        public void DoPotentialGrowth(double tt, double extinctionCoefficient, Leaf.LeafCohortParameters leafCohortParameters)
+        public void DoPotentialGrowth(double tt, double extinctionCoefficient, LeafCohortParameters leafCohortParameters)
         {
             //Reduce leaf Population in Cohort due to plant mortality
             double startPopulation = CohortPopulation;
@@ -924,7 +933,7 @@ namespace Models.PMF.Organs
         /// <summary>Does the actual growth.</summary>
         /// <param name="tt">The tt.</param>
         /// <param name="leafCohortParameters">The leaf cohort parameters.</param>
-        public void DoActualGrowth(double tt, Leaf.LeafCohortParameters leafCohortParameters)
+        public void DoActualGrowth(double tt, LeafCohortParameters leafCohortParameters)
         {
             if (!IsAppeared)
                 return;
@@ -1020,7 +1029,15 @@ namespace Models.PMF.Organs
                 Dead.MetabolicN *= 1 - DetachedFrac;
 
                 if (detachedWt > 0)
+                {
                     SurfaceOrganicMatter.Add(detachedWt * 10, detachedN * 10, 0, Plant.PlantType, "Leaf");
+                    Biomass todaysDetached = new()
+                    {
+                        StructuralWt = detachedWt * 10,
+                        StructuralN = detachedN * 10
+                    };
+                    Detached.Add(todaysDetached);
+                }
             }
         }
 
@@ -1105,7 +1122,7 @@ namespace Models.PMF.Organs
         }
 
         /// <summary>Live leaf number</summary>
-        public double LiveStemNumber(Leaf.LeafCohortParameters leafCohortParameters)
+        public double LiveStemNumber(LeafCohortParameters leafCohortParameters)
         {
             if (Age <= 0)
             {
@@ -1151,7 +1168,7 @@ namespace Models.PMF.Organs
         /// <param name="leafCohortParameters">The associated leaf cohort parameters</param>
         /// <returns></returns>
         /// <exception cref="System.Exception">Bad Fraction Senescing</exception>
-        public double FractionSenescing(double tt, double stemMortality, double senessingLeafRelativeSize, Leaf.LeafCohortParameters leafCohortParameters)
+        public double FractionSenescing(double tt, double stemMortality, double senessingLeafRelativeSize, LeafCohortParameters leafCohortParameters)
         {
             //Calculate fraction of leaf area senessing based on age and shading.  This is used to to calculate change in leaf area and Nreallocation supply.
             if (!IsAppeared)
@@ -1261,12 +1278,5 @@ namespace Models.PMF.Organs
 
         #endregion
 
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
-        {
-            yield return new Paragraph($"Area = {Area}");
-        }
     }
 }

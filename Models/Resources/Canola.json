@@ -1,7 +1,7 @@
 {
   "$type": "Models.Core.Simulations, Models",
   "ExplorerWidth": 0,
-  "Version": 170,
+  "Version": 192,
   "Name": "Simulations",
   "Children": [
     {
@@ -363,7 +363,18 @@
               "End": "Germination",
               "Name": "Germinating",
               "ResourceName": null,
-              "Children": [],
+              "Children": [
+                {
+                  "$type": "Models.Functions.Constant, Models",
+                  "FixedValue": 0.0,
+                  "Units": null,
+                  "Name": "MinSoilTemperature",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
               "Enabled": true,
               "ReadOnly": false
             },
@@ -1982,7 +1993,9 @@
             }
           ],
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null
         },
         {
           "$type": "Models.PMF.Organs.SimpleLeaf, Models",
@@ -3441,7 +3454,7 @@
                                       "Y": [
                                         0.03,
                                         0.06,
-                                        0.012,
+                                        0.12,
                                         0.25,
                                         1.0
                                       ],
@@ -4148,7 +4161,10 @@
             }
           ],
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.Organs.ReproductiveOrgan, Models",
@@ -4328,7 +4344,7 @@
             },
             {
               "$type": "Models.Functions.Constant, Models",
-              "FixedValue": 0.05,
+              "FixedValue": 0.02,
               "Units": null,
               "Name": "MinimumNConc",
               "ResourceName": null,
@@ -4625,7 +4641,9 @@
             }
           ],
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null
         },
         {
           "$type": "Models.PMF.Organs.GenericOrgan, Models",
@@ -5542,7 +5560,10 @@
             }
           ],
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.Organs.GenericOrgan, Models",
@@ -6628,7 +6649,10 @@
             }
           ],
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.CompositeBiomass, Models",
@@ -7292,11 +7316,7 @@
                 "[Leaf].Photosynthesis.RUE.TriazineToleranceModifier.FixedValue = 0.78",
                 "[Leaf].Phyllochron.Base.FixedValue = 54",
                 "",
-                "/*",
-                "                ",
-                "                built from Stingray",
-                "            ",
-                "            */"
+                "//built from Stingray"
               ],
               "Name": "Hyola450_TT",
               "ResourceName": null,

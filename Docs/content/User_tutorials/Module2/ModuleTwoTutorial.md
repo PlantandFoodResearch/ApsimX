@@ -2,7 +2,7 @@
 title: "Module 2: Surface Organic Matter Simulation"
 draft: false
 ---
-<p style="font-size: 10px">Created 23/02/2023</p>
+<p style="font-size: 10px">Created 23/02/2023 - Last updated 05/03/2023</p>
 
 <em style="color: red"> IMPORTANT NOTE: It is highly recommended that you upgrade your APSIM Next Gen version to at least version 2023.2.7164.0 or later.</em>
 
@@ -25,7 +25,8 @@ Remember to use `Save As` not `Save` or you will overwrite the old file.
 3. Delete the `Sand Fallow` simulation. We'll use `Clay Fallow` as the starting point. Also delete the graph.
 
 4. Make a copy of `Clay Fallow` by dragging it to the simulations node in the tree and rename this new simulation to `Clay Residue`.
-	- Your node tree should look like this:
+	- Remove the [Weather].Rain Report Variable from the Report node in the 'Clay Residue' simulation.
+ 	- Your node tree should look like this:
 	![Node tree](/images/moduleTwoImages/step1.png)
 
 5. Expand the new simulation then expand the paddock node. Click the SurfaceOrganicMatter module and change the initial surface residue to 3000 kg/ha.
@@ -104,12 +105,13 @@ The APSIM residue model will decompose residues at differing rates according to 
 To demonstrate this we will reproduce the previous simulation but apply legume residues in the place of the wheat residues.
 
 1. Create another copy of the `Clay Residue` simulation. Rename it to `Clay Chickpea Residue`. Remove the graph component.
-2. Change the SurfaceOrganicMatter residue parameters to 3000 kg/ha of chickpea residue. 
+	- Remove the [Weather].Rain Report Variable from the Report node in the 'Clay Chickpea Residue' simulation.
+3. Change the SurfaceOrganicMatter residue parameters to 3000 kg/ha of chickpea residue. 
 	- Also change the initial residue pool to 'chickpea'.
-3. Change the C:N ratio to 25.
+4. Change the C:N ratio to 25.
 ![Surface organic matter chickpea](/images/moduleTwoImages/step7.png)
-4. Run the simulation.
-5. Create a graph with all three residue simulations with residue as a function of time. Call the graph `Cover`.
+5. Run the simulation.
+6. Create a graph with all three residue simulations with residue as a function of time. Call the graph `Cover`.
 	- To do this:
 		- right-click the `simulations` node
 		- click `Add model...`
@@ -118,11 +120,14 @@ To demonstrate this we will reproduce the previous simulation but apply legume r
 		- right-click `Cover` graph
 		- click `Add model...`
 		- double-click `Series`
-6. Change the variables to match the image below:
+7. Change the variables to match the image below:
 ![Series variables for cover graph](/images/moduleTwoImages/step8.png)
-7. If you'd like the lengend to appear on the right of the graph like the image:
+8. If you'd like the lengend to appear on the right of the graph like the image:
 	- Click one of the legend items
 	- a menu will appear at the bottom of the graph and you can change the drop down menu's value to top right or any other position to your liking.
 	![Change legend location](/images/moduleTwoImages/step9.png)
-	*Congratulations on completing module two!*
+
+*Congratulations on completing module two!*
+
+<i><span style="color:red;">Note</span>: If you found any incorrect/outdated information in this tutorial, please let us know on GitHub by <a href="https://www.github.com/APSIMInitiative/Apsimx/issues/new/choose/">submitting an issue.</a></i>
 

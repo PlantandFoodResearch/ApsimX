@@ -115,7 +115,7 @@ namespace Models.Factorial
             // a factor value (e.g. as a model replacement), throw an exception.
             IEnumerable<IModel> extraModels = Children.Except(values.OfType<IModel>());
             foreach (var model in extraModels)
-                if (!(model is Memo))
+                if (model.Enabled && !(model is Memo))
                     throw new InvalidOperationException($"Error in composite factor {Name}: Unused child models found: {string.Join(", ", extraModels.Select(m => m.Name))}");
         }
 
@@ -127,7 +127,7 @@ namespace Models.Factorial
         /// <param name="allValues">The list of values to add to.</param>
         private void ParseSpecification(string specification, List<string> allPaths, List<object> allValues)
         {
-            if (string.IsNullOrEmpty(specification))
+            if (string.IsNullOrEmpty(specification) || specification.StartsWith("//"))
                 return;
 
             string path = specification;

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using APSIM.Shared.Documentation;
 using Models.Core;
 using Models.Management;
 using Newtonsoft.Json;
-using PdfSharpCore.Pdf.Content.Objects;
 
 namespace Models.PMF.Phen
 {
@@ -35,7 +32,7 @@ namespace Models.PMF.Phen
         {
             get
             {
-                return phenology?.FindChild<IPhase>(PhaseNameToGoto)?.Start;
+                return "Rewind phase has no end";
             }
         }
 
@@ -85,12 +82,5 @@ namespace Models.PMF.Phen
         /// <summary>Resets the phase.</summary>
         public virtual void ResetPhase() { }
 
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
-        {
-            yield return new Paragraph($"When the {Start} phase is reached, phenology is rewound to the {PhaseNameToGoto} phase.");
-        }
     }
 }

@@ -1,7 +1,7 @@
 {
   "$type": "Models.Core.Simulations, Models",
   "ExplorerWidth": 0,
-  "Version": 170,
+  "Version": 192,
   "Name": "Simulations",
   "Children": [
     {
@@ -670,7 +670,19 @@
               "Start": "Sowing",
               "End": "Germination",
               "Name": "Germinating",
-              "Children": [],
+              "IsEmerged": false,
+              "Children": [
+                {
+                  "$type": "Models.Functions.Constant, Models",
+                  "FixedValue": 0.0,
+                  "Units": null,
+                  "Name": "MinSoilTemperature",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
               "IncludeInDocumentation": false,
               "Enabled": true,
               "ReadOnly": false
@@ -681,6 +693,7 @@
               "End": "Emergence",
               "TTForTimeStep": 0.0,
               "Name": "Emerging",
+              "IsEmerged": false,
               "Children": [
                 {
                   "$type": "Models.Functions.VariableReference, Models",
@@ -2577,7 +2590,9 @@
           ],
           "IncludeInDocumentation": false,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null
         },
         {
           "$type": "Models.PMF.Organs.Leaf, Models",
@@ -2713,7 +2728,7 @@
               "ReadOnly": false
             },
             {
-              "$type": "Models.PMF.Organs.Leaf+LeafCohortParameters, Models",
+              "$type": "Models.PMF.Organs.LeafCohortParameters, Models",
               "ExpansionStressValue": 0.0,
               "Name": "CohortParameters",
               "Children": [
@@ -4182,7 +4197,8 @@
           ],
           "IncludeInDocumentation": false,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MinNConc": null
         },
         {
           "$type": "Models.PMF.Organs.GenericOrgan, Models",
@@ -4921,7 +4937,10 @@
           ],
           "IncludeInDocumentation": false,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.Organs.Root, Models",
@@ -5655,7 +5674,9 @@
           ],
           "IncludeInDocumentation": false,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null
         },
         {
           "$type": "Models.PMF.Organs.GenericOrgan, Models",
@@ -6349,7 +6370,10 @@
           ],
           "IncludeInDocumentation": false,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.CompositeBiomass, Models",

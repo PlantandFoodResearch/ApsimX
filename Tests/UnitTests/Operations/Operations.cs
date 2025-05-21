@@ -1,7 +1,6 @@
-﻿using APSIM.Shared.Utilities;
+﻿using Models;
 using NUnit.Framework;
-using System;
-using Models;
+using System.Reflection;
 
 namespace UnitTests
 {
@@ -22,7 +21,9 @@ namespace UnitTests
                 " // 2000-01-01 [NodeName].Function(1000) ",
                 "//\t2000-01-01\t[NodeName].Function(1000)",
                 "\t//\t2000-01-01\t[NodeName].Function(1000)\t",
-                "//2000/01/01 [NodeName].Function(1000)"
+                "//2000/01/01 [NodeName].Function(1000)",
+                "",
+                "\n\t\r"
             };
 
             Operation[] expectedOperations =
@@ -36,15 +37,17 @@ namespace UnitTests
                 new Operation(false, null, null, passingStrings[6]),
                 new Operation(false, null, null, passingStrings[7]),
                 new Operation(false, null, null, passingStrings[8]),
-                new Operation(false, null, null, passingStrings[9])
+                new Operation(false, null, null, passingStrings[9]),
+                new Operation(false, null, null, ""),
+                new Operation(false, null, null, "")
             };
 
             for (int i = 0; i < passingStrings.Length; i++)
             {
                 Operation actualOperation = Operation.ParseOperationString(passingStrings[i]);
-                Assert.AreEqual(expectedOperations[i].Enabled, actualOperation.Enabled);
-                Assert.AreEqual(expectedOperations[i].Date, actualOperation.Date);
-                Assert.AreEqual(expectedOperations[i].Action, actualOperation.Action);
+                Assert.That(actualOperation.Enabled, Is.EqualTo(expectedOperations[i].Enabled));
+                Assert.That(actualOperation.Date, Is.EqualTo(expectedOperations[i].Date));
+                Assert.That(actualOperation.Action, Is.EqualTo(expectedOperations[i].Action));
             }
 
             string[] failingStrings =
@@ -54,15 +57,48 @@ namespace UnitTests
                 "[NodeName].Function(1000) 2000-01-01", //wrong order
                 "2000-01-01 ",                          //missing action
                 " [NodeName].Function(1000)",           //missing date
-                "",                                     //empty string
                 null,                                   //null
                 "/2000-01-01 [NodeName].Function(1000)", //not enough comments
             };
 
             for (int i = 0; i < failingStrings.Length; i++)
             {
-                Assert.Null(Operation.ParseOperationString(failingStrings[i]));
+                Assert.That(Operation.ParseOperationString(failingStrings[i]), Is.Null);
             }
+        }
+
+        private void Method1(int a, string b) { }
+
+        /// <summary>Ensure that named arguments work on an operations line.</summary>
+        [Test]
+        public void EnsureNamedArgumentsWork()
+        {
+
+            var method1 = GetType().GetMethod("Method1", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Operations operations = new();
+            var argumentValues = Utilities.CallMethod(operations, "GetArgumentsForMethod", new object[] { new string[] { "b:1", "a:2" }, method1 }) as object[];
+
+            Assert.That(argumentValues[0], Is.EqualTo(2));
+            Assert.That(argumentValues[1], Is.EqualTo("1"));
+        }
+
+        private void Method2(int a, int[] b) { }
+
+        /// <summary>Ensure that an array argument works on an operations line.</summary>
+        [Test]
+        public void EnsureArrayArgumentsWork()
+        {
+            var method2 = GetType().GetMethod("Method2", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Operations operations = new();
+            var arguments = new string[] { "1", "2 3" };
+            var argumentValues = Utilities.CallMethod(operations, 
+                                                      "GetArgumentsForMethod", 
+                                                      new object[] { arguments, method2 }) as object[];
+
+            Assert.That(argumentValues[0], Is.EqualTo(1));
+            Assert.That(argumentValues[1], Is.EqualTo(new int[] { 2, 3 }));
         }
     }
 }

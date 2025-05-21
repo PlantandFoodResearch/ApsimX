@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
@@ -125,13 +126,14 @@ namespace Models.Core.Apsim710File
         /// Processes a file and writes the Simulation(s) to the .apsimx file
         /// </summary>
         /// <param name="filename">The name of the input file</param>
-        public void ProcessFile(string filename)
+        /// <param name="errorHandler">Action to be taken when an error occurs.</param>
+        public void ProcessFile(string filename, Action<Exception> errorHandler)
         {
             if (File.Exists(filename))
             {
                 try
                 {
-                    Simulations sims = this.CreateSimulations(filename);
+                    Simulations sims = this.CreateSimulations(filename, errorHandler);
                     sims.Write(Path.ChangeExtension(filename, ".apsimx"));
                     Console.WriteLine(filename + " --> " + Path.ChangeExtension(filename, ".apsimx"));
                 }
@@ -148,29 +150,16 @@ namespace Models.Core.Apsim710File
         }
 
         /// <summary>
-        /// Iterate through the directory and attempt to convert any .apsim files.
-        /// </summary>
-        /// <param name="dir">The directory to process</param>
-        public void ProcessDir(string dir)
-        {
-            DirectoryInfo dirInfo = new DirectoryInfo(dir);
-
-            foreach (FileInfo file in dirInfo.GetFiles("*.apsim"))
-            {
-                this.ProcessFile(file.FullName);
-            }
-        }
-
-        /// <summary>
         /// Interrogate the .apsim file XML and attempt to construct a
         /// useful APSIMX Simulation object(s). Uses a temporary file
         /// location.
         /// </summary>
         /// <param name="filename">Source file (.apsim)</param>
+        /// <param name="errorHandler">A handler for all exceptions encountered.</param>
         /// <returns>An APSIMX Simulations object</returns>
-        public Simulations CreateSimulations(string filename)
+        public Simulations CreateSimulations(string filename, Action<Exception> errorHandler)
         {
-            return CreateSimulationsFromXml(File.ReadAllText(filename));
+            return CreateSimulationsFromXml(File.ReadAllText(filename), errorHandler);
         }
 
         /// <summary>
@@ -179,8 +168,9 @@ namespace Models.Core.Apsim710File
         /// location.
         /// </summary>
         /// <param name="xml">Source APSIM 7.10 xml</param>
+        /// <param name="errorHandler">A handler for all exceptions encountered.</param>
         /// <returns>An APSIMX Simulations object</returns>
-        public Simulations CreateSimulationsFromXml(string xml)
+        public Simulations CreateSimulationsFromXml(string xml, Action<Exception> errorHandler)
         {
             string xfile = Path.GetTempFileName();
             Simulations newSimulations = null;
@@ -209,7 +199,7 @@ namespace Models.Core.Apsim710File
             xmlWriter.Write(XmlUtilities.FormattedXML(xdoc.OuterXml));
             xmlWriter.Close();
 
-            newSimulations = FileFormat.ReadFromFile<Simulations>(xfile, e => throw e, false).NewModel as Simulations;
+            newSimulations = FileFormat.ReadFromFile<Simulations>(xfile, errorHandler, false).NewModel as Simulations;
             File.Delete(xfile);
             return newSimulations;
         }
@@ -225,9 +215,9 @@ namespace Models.Core.Apsim710File
             XmlNode child = systemNode.FirstChild;
             while (child != null)
             {
-                if (child.Name == "simulation")
+                if (child.Name.ToLower() == "simulation")
                     this.AddComponent(child, ref destParent);
-                else if (child.Name == "folder")
+                else if (child.Name.ToLower() == "folder")
                 {
                     XmlNode newFolder = this.AddCompNode(destParent, "Folder", XmlUtilities.NameAttr(child));
                     this.AddFoldersAndSimulations(child, newFolder);
@@ -344,6 +334,8 @@ namespace Models.Core.Apsim710File
                     newNode = CopyNode(compNode, destParent, "Swim3");
                     this.AddCompNode(destParent, "CERESSoilTemperature", "Temperature");
                     AddNutrients(compNode, ref destParent);
+                    AddSwimNutrientData(compNode, ref destParent);
+                    AddInitialWater(compNode, ref destParent);
                 }
                 else if (compNode.Name.ToLower() == "soilwater")
                 {
@@ -351,10 +343,7 @@ namespace Models.Core.Apsim710File
                     this.soilWaterExists = newNode != null;
                     this.AddCompNode(destParent, "CERESSoilTemperature", "Temperature");
                     AddNutrients(compNode, ref destParent);
-                }
-                else if (compNode.Name == "InitialWater")
-                {
-                    newNode = CopyNode(compNode, destParent, "InitialWater");
+                    AddInitialWater(compNode, ref destParent);
                 }
                 else if (compNode.Name == "SoilOrganicMatter")
                 {
@@ -456,39 +445,164 @@ namespace Models.Core.Apsim710File
             this.AddCompNode(destParent, "Nutrient", "Nutrient");
             XmlNode newNO3Node = this.AddCompNode(destParent, "Solute", "NO3");
             XmlNode newNH4Node = this.AddCompNode(destParent, "Solute", "NH4");
-            XmlNode newUREANode = this.AddCompNode(destParent, "Solute", "UREA");
+            XmlNode newUREANode = this.AddCompNode(destParent, "Solute", "Urea");
 
             XmlNode srcNode = XmlUtilities.FindByType(compNode.ParentNode, "Sample");
+
+            XmlNode thicknessSrc = srcNode;
+            if (thicknessSrc == null)
+                thicknessSrc = XmlUtilities.FindByType(compNode.ParentNode, "Water");
+
+            XmlNode arrayNode;
+            XmlNode childNode;
+
+            // find soil layers and values for NO3
+            arrayNode = XmlUtilities.Find(thicknessSrc, "Thickness");
+            this.CopyNodeAndValueArray(arrayNode, newNO3Node, "Thickness", "Thickness");
+
+            // find soil layers and values for NH4
+            arrayNode = XmlUtilities.Find(thicknessSrc, "Thickness");
+            this.CopyNodeAndValueArray(arrayNode, newNH4Node, "Thickness", "Thickness");
+
+            // find soil layers for UREA
+            arrayNode = XmlUtilities.Find(thicknessSrc, "Thickness");
+            this.CopyNodeAndValueArray(arrayNode, newUREANode, "Thickness", "Thickness");
+
+            InitNodeValueArray(newUREANode, "InitialValues", arrayNode.ChildNodes.Count, 0.0);
+            childNode = newUREANode.AppendChild(newUREANode.OwnerDocument.CreateElement("InitialValuesUnits"));
+            if (childNode != null)
+                childNode.InnerText = "1";  // ensure kg/ha units
+
+            //if source for solutes exists, copy values
             if (srcNode != null)
             {
-                XmlNode arrayNode;
-
                 // values are ppm
-                // find soil layers and values for NO3
-                arrayNode = XmlUtilities.Find(srcNode, "Thickness");
-                this.CopyNodeAndValueArray(arrayNode, newNO3Node, "Thickness", "Thickness");
                 arrayNode = XmlUtilities.Find(srcNode, "NO3");
                 this.CopyNodeAndValueArray(arrayNode, newNO3Node, "NO3", "InitialValues");
 
-                // find soil layers and values for NH4
-                srcNode = XmlUtilities.FindByType(compNode.ParentNode, "Sample");
-                arrayNode = XmlUtilities.Find(srcNode, "Thickness");
-                this.CopyNodeAndValueArray(arrayNode, newNH4Node, "Thickness", "Thickness");
                 arrayNode = XmlUtilities.Find(srcNode, "NH4");
                 this.CopyNodeAndValueArray(arrayNode, newNH4Node, "NH4", "InitialValues");
 
-                // find soil layers for UREA
-                srcNode = XmlUtilities.FindByType(compNode.ParentNode, "Sample");
-                arrayNode = XmlUtilities.Find(srcNode, "Thickness");
-                this.CopyNodeAndValueArray(arrayNode, newUREANode, "Thickness", "Thickness");
-
-                // initialise the UREA with some default values
-                InitNodeValueArray(newUREANode, "InitialValues", arrayNode.ChildNodes.Count, 0.0);
-                XmlNode childNode = newUREANode.AppendChild(newUREANode.OwnerDocument.CreateElement("InitialValuesUnits"));
+            }
+            else //if it doesn't, initialise with 0 like classic defaults to
+            {
+                // initialise with some default values
+                InitNodeValueArray(newNO3Node, "InitialValues", arrayNode.ChildNodes.Count, 0.0);
+                childNode = newNO3Node.AppendChild(newNO3Node.OwnerDocument.CreateElement("InitialValuesUnits"));
                 if (childNode != null)
-                {
                     childNode.InnerText = "1";  // ensure kg/ha units
-                }
+
+                InitNodeValueArray(newNH4Node, "InitialValues", arrayNode.ChildNodes.Count, 0.0);
+                childNode = newNH4Node.AppendChild(newNH4Node.OwnerDocument.CreateElement("InitialValuesUnits"));
+                if (childNode != null)
+                    childNode.InnerText = "1";  // ensure kg/ha units
+
+            }
+        }
+
+        /// <summary>
+        /// Add the InitialWater component
+        /// </summary>
+        /// <param name="compNode">The source component node in the .apsim file</param>
+        /// <param name="destParent">The parent of the new component in the .apsimx file</param>
+        private void AddInitialWater(XmlNode compNode, ref XmlNode destParent)
+        {
+            XmlNode newInitialWaterNode = this.AddCompNode(destParent, "InitialWater", "InitialWater");
+            XmlNode srcNode = XmlUtilities.FindByType(compNode.ParentNode, "InitialWater");
+
+            XmlNode thicknessSrc = srcNode;
+            if (thicknessSrc == null)
+                thicknessSrc = XmlUtilities.FindByType(compNode.ParentNode, "Water");
+
+            // find soil layers and values for NO3
+            XmlNode arrayNode = XmlUtilities.Find(thicknessSrc, "Thickness");
+            this.CopyNodeAndValueArray(arrayNode, newInitialWaterNode, "Thickness", "Thickness");
+
+            if (srcNode != null)
+            {
+                arrayNode = XmlUtilities.Find(srcNode, "FractionFull");
+                if (arrayNode != null)
+                    XmlUtilities.SetValue(newInitialWaterNode, "FractionFull", XmlUtilities.Value(srcNode, "FractionFull"));
+                else
+                    XmlUtilities.SetValue(newInitialWaterNode, "FractionFull", "1");
+            }
+            else
+            {
+                XmlUtilities.SetValue(newInitialWaterNode, "FractionFull", "1");
+            }
+
+            if (srcNode != null)
+            {
+                arrayNode = XmlUtilities.Find(srcNode, "DepthWetSoil");
+                if (arrayNode != null)
+                    XmlUtilities.SetValue(newInitialWaterNode, "DepthWetSoil", XmlUtilities.Value(srcNode, "DepthWetSoil"));
+                else
+                    XmlUtilities.SetValue(newInitialWaterNode, "DepthWetSoil", "NaN");
+            }
+            else
+            {
+                XmlUtilities.SetValue(newInitialWaterNode, "DepthWetSoil", "NaN");
+            }
+
+            if (srcNode != null)
+            {
+                arrayNode = XmlUtilities.Find(srcNode, "PercentMethod");
+                if (arrayNode != null)
+                    XmlUtilities.SetValue(newInitialWaterNode, "PercentMethod", XmlUtilities.Value(srcNode, "PercentMethod"));
+                else
+                    XmlUtilities.SetValue(newInitialWaterNode, "PercentMethod", "EvenlyDistributed");
+            }
+            else
+            {
+                XmlUtilities.SetValue(newInitialWaterNode, "PercentMethod", "EvenlyDistributed");
+            }
+
+            if (srcNode != null)
+            {
+                arrayNode = XmlUtilities.Find(srcNode, "RelativeTo");
+                if (arrayNode != null)
+                    XmlUtilities.SetValue(newInitialWaterNode, "RelativeTo", XmlUtilities.Value(srcNode, "RelativeTo"));
+                else
+                    XmlUtilities.SetValue(newInitialWaterNode, "RelativeTo", "ll15");
+            }
+            else
+            {
+                XmlUtilities.SetValue(newInitialWaterNode, "RelativeTo", "ll15");
+            }
+        }
+
+        /// <summary>
+        /// Appends EXCO and FIP data to already existing solute nodes.
+        /// </summary>
+        /// <param name="compNode">Swim object being imported.</param>
+        /// <param name="destParent">New soil object being created.</param>
+        private void AddSwimNutrientData(XmlNode compNode, ref XmlNode destParent)
+        {
+            var sampleNode = XmlUtilities.FindByType(compNode.ParentNode, "Sample");
+            var swimSoluteNode = XmlUtilities.FindByType(compNode, "SwimSoluteParameters");
+            if (swimSoluteNode == null || sampleNode == null)
+                return;
+
+            var oldThickness = XmlUtilities.Values(swimSoluteNode, "Thickness/double").Select(Convert.ToDouble).ToArray();
+            var newThickness = XmlUtilities.Values(sampleNode, "Thickness/double").Select(Convert.ToDouble).ToArray();
+
+            XmlDocument helper = new();
+            foreach (var solute in destParent.SelectNodes("Solute").Cast<XmlNode>())
+            {
+                var name = solute.SelectSingleNode("Name")?.InnerXml;
+                if (string.IsNullOrEmpty(name))
+                    continue;
+                var target = $"{name}Exco";
+                var data = XmlUtilities.Values(swimSoluteNode, $"{target}/double").Select(Convert.ToDouble).ToArray();
+                var newData = SoilUtilities.MapConcentration(data, oldThickness, newThickness, data.Last());
+                helper.LoadXml($"<EXCO>{string.Join("", newData.Select(s => $"<double>{s}</double>"))}</EXCO>");
+                CopyNode(helper.DocumentElement, solute, "EXCO");
+
+                target = $"{name}FIP";
+                data = XmlUtilities.Values(swimSoluteNode, $"{target}/double").Select(Convert.ToDouble).ToArray();
+                newData = SoilUtilities.MapConcentration(data, oldThickness, newThickness, data.Last());
+                helper.LoadXml($"<FIP>{string.Join("", newData.Select(s => $"<double>{s}</double>"))}</FIP>");
+                CopyNode(helper.DocumentElement, solute, "FIP");
             }
         }
 
@@ -663,6 +777,8 @@ namespace Models.Core.Apsim710File
             this.CopyNodeAndValueArray(childNode, newNode, "DUL", "DUL");
             childNode = XmlUtilities.Find(compNode, "SAT");
             this.CopyNodeAndValueArray(childNode, newNode, "SAT", "SAT");
+            childNode = XmlUtilities.Find(compNode, "KS");
+            this.CopyNodeAndValueArray(childNode, newNode, "KS", "KS");
 
             this.AddChildComponents(compNode, newNode);
 
@@ -1156,20 +1272,7 @@ namespace Models.Core.Apsim710File
 
                 string childText = string.Empty;
                 childNode = XmlUtilities.Find(oper, "date");
-                DateTime when;
-                if (childNode != null && DateTime.TryParse(childNode.InnerText, out when))
-                    childText = when.ToString("yyyy-MM-dd");
-                else if (childNode != null && childNode.InnerText != string.Empty)
-                {
-                    childText = DateUtilities.GetDateISO(childNode.InnerText);
-                    if (childText == "0001-01-01")
-                    {
-                        childText = DateUtilities.GetDate(childNode.InnerText, this.startDate).ToString("yyyy-MM-dd");
-                    }
-                }
-                else
-                    childText = "0001-01-01";
-                dateNode.InnerText = childText;
+                dateNode.InnerText = DateUtilities.ValidateDateString(childNode?.InnerText ?? string.Empty);
 
                 XmlNode actionNode = operationNode.AppendChild(destParent.OwnerDocument.CreateElement("Action"));
 

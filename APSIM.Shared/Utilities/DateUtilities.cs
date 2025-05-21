@@ -85,8 +85,8 @@ namespace APSIM.Shared.Utilities
             rxYearShort = new Regex(@"^\d\d$"),
             rxDateNoSymbol = new Regex(@"^\d\d\w\w\w$|^\w\w\w\d\d$"),
             rxDateAllNums = new Regex(@"^\d\d?-\d\d?-(\d{4}|\d{2})$|^\d\d?-\d\d?$"),
-            rxISO = new Regex(@"^\d\d\d\d-\d\d-\d\d$|^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d$"),
-            rxDateAndTime = new Regex(@"^(\d+)/(\d+)/(\d+)\s\d+:\d+:\d+\s*\w*$");
+            rxISO = new Regex(@"^\d\d\d\d-\d?\d-\d?\d$|^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d$"),
+            rxDateAndTime = new Regex(@"^(\d+)[\W_ ](\d+)[\W_ ]*(\d+)\s\d+:\d+:\d+\s*\w*$");
 
         /// <summary>
         /// Convert any valid date string into a DateTime objects.
@@ -345,30 +345,18 @@ namespace APSIM.Shared.Utilities
         /// <returns>Return null if not valid, otherwise it returns a string with the valid dd-MMM string or a valid date as a string (yyyy-mm-dd)</returns>
         public static string ValidateDateString(string dateStr)
         {
-            DateAsParts parts;
-            parts = ParseDateString(dateStr);
-            if (parts.parseError)
-                return null;
+            return Validate(dateStr, true);
+        }
 
-            DateTime date;
-            try
-            {
-                date = GetDate(parts);
-            }
-            catch
-            {
-                return null;
-            }
-
-            if (parts.yearWasMissing)
-            {
-                //for consistency, return it as 'Title' case (ie, 01-Jan, not 1-jan)
-                return date.ToString(DEFAULT_FORMAT_DAY_MONTH, CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                return date.ToString(DEFAULT_FORMAT_DAY_MONTH_YEAR, CultureInfo.InvariantCulture);
-            }
+        /// <summary>
+        /// Takes in a string and checks to see if it is in the correct format for either a full date with year, month and date (in any recognised date format).
+        /// Will return null if not valid or if only a day and month was provided
+        /// </summary>
+        /// <param name="dateStr"></param>
+        /// <returns>Return null if not valid, otherwise it returns a string with the valid string (yyyy-mm-dd)</returns>
+        public static string ValidateDateStringWithYear(string dateStr)
+        {
+            return Validate(dateStr, false);
         }
 
         /// <summary>
@@ -408,6 +396,16 @@ namespace APSIM.Shared.Utilities
             return GetNextDate(dateToChange, date);
         }
 
+        /// <summary>
+        /// Converts a DateTime object to the standard yyyy-mm-dd we use in APSIM
+        /// </summary>
+        /// <param name="date">A DateTime Object</param>
+        /// <returns>Date as string in (yyyy-mm-dd)</returns>
+        public static string GetDateAsString(DateTime date)
+        {
+            return date.ToString("yyyy-MM-dd");
+        }
+
         /////////////////////////////////////////////////////////////////////////////   
         /////////////////////////////////////////////////////////////////////////////  
         /////////////////////////////////////////////////////////////////////////////  
@@ -421,6 +419,45 @@ namespace APSIM.Shared.Utilities
         private static DateTime GetDate(DateAsParts parts)
         {
             return GetDate(parts.day, parts.month, parts.year);
+        }
+
+        /// <summary>
+        /// Checks if a string is formatted to be a date, returns null if it can't be a date, or a formatted date string if it can.
+        /// </summary>
+        /// <param name="input">The given string to be checked</param>
+        /// <param name="allowPartialDate">If a day-month is allowed or if it must be a full date</param>
+        /// <returns>A formatted date as a string</returns>
+        private static string Validate(string input, bool allowPartialDate)
+        {
+            DateAsParts parts;
+            parts = ParseDateString(input);
+            if (parts.parseError)
+                return null;
+
+            DateTime date;
+            try
+            {
+                date = GetDate(parts);
+            }
+            catch
+            {
+                return null;
+            }
+
+            if (parts.yearWasMissing) {
+                if (allowPartialDate) {
+                    //for consistency, return it as 'Title' case (ie, 01-Jan, not 1-jan)
+                    return date.ToString(DEFAULT_FORMAT_DAY_MONTH, CultureInfo.InvariantCulture);
+                } 
+                else
+                {
+                    return null;
+                }
+            }
+            else 
+            {
+                return date.ToString(DEFAULT_FORMAT_DAY_MONTH_YEAR, CultureInfo.InvariantCulture);
+            }
         }
 
         /// <summary>
@@ -473,7 +510,7 @@ namespace APSIM.Shared.Utilities
                 foreach (char c in VALID_SEPERATORS)
                     symbols += c + " ";
 
-                if (types > 1)
+                if (types > 0)
                 {
                     Match match = rxDateAndTime.Match(dateTrimmed);
                     if (match.Success)
@@ -846,6 +883,24 @@ namespace APSIM.Shared.Utilities
         public static DateTime DMYtoDate(string dmy)
         {
             return GetDate(dmy);
+        }
+
+        /// <summary>
+        /// Takes in a string and checks to see if it could be date with three components, day, month and year. Returns true if it could be,
+        /// false if not. Does not actually parse into a DateTime to avoid throwing an error.
+        /// This is used to test if a number with a . is a date or a double.
+        /// </summary>
+        /// <param name="dateStr"></param>
+        public static bool ValidateStringHasYear(string dateStr)
+        {
+            DateAsParts parts;
+            parts = ParseDateString(dateStr);
+            if (parts.parseError)
+                return false;
+            else if (parts.yearWasMissing)
+                return false;
+            else
+                return true;
         }
 
         /// <summary>
