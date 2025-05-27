@@ -181,6 +181,42 @@
                   ],
                   "Enabled": false,
                   "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Factorial.Factor, Models",
+                  "Specification": "",
+                  "Name": "Septoria",
+                  "ResourceName": null,
+                  "Children": [
+                    {
+                      "$type": "Models.Factorial.CompositeFactor, Models",
+                      "Specifications": [
+                        "[InitialSoilInfestation].NumberOfImmigrants.FixedValue = 0"
+                      ],
+                      "Paths": null,
+                      "Values": null,
+                      "Name": "Clean",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Factorial.CompositeFactor, Models",
+                      "Specifications": [
+                        "[InitialSoilInfestation].NumberOfImmigrants.FixedValue = 100"
+                      ],
+                      "Paths": null,
+                      "Values": null,
+                      "Name": "Infected",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
+                  "Enabled": true,
+                  "ReadOnly": false
                 }
               ],
               "Enabled": true,
@@ -4319,7 +4355,7 @@
                   "XAxis": 3,
                   "YAxis": 0,
                   "ColourArgb": -2793984,
-                  "FactorToVaryColours": "Genotype",
+                  "FactorToVaryColours": "Septoria",
                   "FactorToVaryMarkers": "Irrig",
                   "FactorToVaryLines": null,
                   "Marker": 11,
@@ -4387,7 +4423,7 @@
                   "XAxis": 3,
                   "YAxis": 0,
                   "ColourArgb": -2793984,
-                  "FactorToVaryColours": "Genotype",
+                  "FactorToVaryColours": "Septoria",
                   "FactorToVaryMarkers": "Irrig",
                   "FactorToVaryLines": null,
                   "Marker": 11,
