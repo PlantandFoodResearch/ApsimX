@@ -204,7 +204,7 @@
                     {
                       "$type": "Models.Factorial.CompositeFactor, Models",
                       "Specifications": [
-                        "[InitialSoilInfestation].NumberOfImmigrants.FixedValue = 100"
+                        "[InitialSoilInfestation].NumberOfImmigrants.FixedValue = 1"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -404,7 +404,7 @@
                       "$type": "Models.LifeCycle.Infestation, Models",
                       "TypeOfInfestation": 2,
                       "InfestingOrganisumName": "Septoria_InDebri",
-                      "InfestingPhaseName": "MyceliumOnDecayingFoliage",
+                      "InfestingPhaseName": "ConidiaOnDecayingFoliage",
                       "InfestationDate": "15-May",
                       "InfestationEndDate": "15-Aug",
                       "ChronoAgeOfImmigrants": 0,
@@ -414,8 +414,8 @@
                       "Children": [
                         {
                           "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 100.0,
-                          "Units": null,
+                          "FixedValue": 1.0,
+                          "Units": "conidia / m2",
                           "Name": "NumberOfImmigrants",
                           "ResourceName": null,
                           "Children": [],
@@ -453,6 +453,16 @@
                           "Name": "ConidiaOnDecayingFoliage",
                           "ResourceName": null,
                           "Children": [
+                            {
+                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
+                              "NameOfLifeCycleForMigrants": "Septoria_OnLivePlant",
+                              "NameOfPhaseForMigrants": "ConidiaOnFreshFoliage",
+                              "Name": "MigrantDestinationPhase",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
                             {
                               "$type": "Models.Functions.DivideFunction, Models",
                               "Name": "Development",
@@ -882,16 +892,6 @@
                               ],
                               "Enabled": true,
                               "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
-                              "NameOfLifeCycleForMigrants": "Septoria_OnLivePlant",
-                              "NameOfPhaseForMigrants": "ConidiaOnFreshFoliage",
-                              "Name": "MigrantDestinationPhase",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
                             }
                           ],
                           "Enabled": true,
@@ -910,6 +910,16 @@
                           "Name": "MyceliumOnDecayingFoliage",
                           "ResourceName": null,
                           "Children": [
+                            {
+                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
+                              "NameOfLifeCycleForProgeny": "Septoria_InDebri",
+                              "NameOfPhaseForProgeny": "ConidiaOnDecayingFoliage",
+                              "Name": "ProgenyDestinationPhase",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
                             {
                               "$type": "Models.Functions.Constant, Models",
                               "FixedValue": 0.0,
@@ -1013,16 +1023,6 @@
                               ],
                               "Enabled": true,
                               "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
-                              "NameOfLifeCycleForProgeny": "Septoria_InDebri",
-                              "NameOfPhaseForProgeny": "ConidiaOnDecayingFoliage",
-                              "Name": "ProgenyDestinationPhase",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
                             }
                           ],
                           "Enabled": true,
@@ -1059,6 +1059,16 @@
                           "Name": "ConidiaOnFreshFoliage",
                           "ResourceName": null,
                           "Children": [
+                            {
+                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
+                              "NameOfLifeCycleForMigrants": "Septoria_OnLivePlant",
+                              "NameOfPhaseForMigrants": "ConidiaOnFreshFoliage",
+                              "Name": "MigrantDestinationPhase",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
                             {
                               "$type": "Models.Functions.DivideFunction, Models",
                               "Name": "Development",
@@ -1588,16 +1598,6 @@
                               ],
                               "Enabled": true,
                               "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
-                              "NameOfLifeCycleForMigrants": "Septoria_OnLivePlant",
-                              "NameOfPhaseForMigrants": "ConidiaOnFreshFoliage",
-                              "Name": "MigrantDestinationPhase",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
                             }
                           ],
                           "Enabled": true,
@@ -1616,6 +1616,26 @@
                           "Name": "MyceliumOnLiveFoliage",
                           "ResourceName": null,
                           "Children": [
+                            {
+                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
+                              "NameOfLifeCycleForProgeny": "Septoria_OnLivePlant",
+                              "NameOfPhaseForProgeny": "ConidiaOnFreshFoliage",
+                              "Name": "ProgenyDestinationPhase",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
+                              "NameOfLifeCycleForMigrants": "Septoria_InDebri",
+                              "NameOfPhaseForMigrants": "MyceliumOnDecayingFoliage",
+                              "Name": "MigrantDestinationPhase",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
                             {
                               "$type": "Models.Functions.DivideFunction, Models",
                               "Name": "Development",
@@ -1878,16 +1898,6 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
-                              "NameOfLifeCycleForMigrants": "Septoria_InDebri",
-                              "NameOfPhaseForMigrants": "MyceliumOnDecayingFoliage",
-                              "Name": "MigrantDestinationPhase",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
                               "$type": "Models.Functions.MultiplyFunction, Models",
                               "Name": "Reproduction",
                               "ResourceName": null,
@@ -1940,16 +1950,6 @@
                                   "ReadOnly": false
                                 }
                               ],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
-                              "NameOfLifeCycleForProgeny": "Septoria_OnLivePlant",
-                              "NameOfPhaseForProgeny": "ConidiaOnFreshFoliage",
-                              "Name": "ProgenyDestinationPhase",
-                              "ResourceName": null,
-                              "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             },
@@ -2034,6 +2034,26 @@
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": false,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.LifeCycle.PlantOrganFunctionalDimensionReduction, Models",
+                              "HostOrganName": "Wheat.Leaf",
+                              "Name": "PlantOrganFunctionalDimensionReduction1",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.5,
+                                  "Units": "??? LAI units per day???",
+                                  "Name": "DimensionReductionPerIndividual",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
                               "ReadOnly": false
                             }
                           ],
@@ -2195,7 +2215,8 @@
                     "[Septoria_OnLivePlant].ConidiaOnFreshFoliage.CohortCount",
                     "[Septoria_OnLivePlant].MyceliumOnLiveFoliage.TotalPopulation",
                     "[Septoria_OnLivePlant].MyceliumOnLiveFoliage.CohortCount",
-                    "[Wheat].Leaf.Live.Wt"
+                    "[Wheat].Leaf.Live.Wt",
+                    "[Septoria_OnLivePlant].MyceliumOnLiveFoliage.PlantOrganFunctionalDimensionReduction1.DimensionReductionPerIndividual"
                   ],
                   "EventNames": [
                     "[Clock].DoReport"
@@ -3847,6 +3868,17 @@
               "Minimum": null,
               "Maximum": null,
               "Interval": null
+            },
+            {
+              "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+              "Title": "Wheat.LAI",
+              "Position": 2,
+              "Inverted": false,
+              "CrossesAtZero": false,
+              "LabelOnOneLine": false,
+              "Minimum": null,
+              "Maximum": null,
+              "Interval": null
             }
           ],
           "LegendPosition": 0,
@@ -3863,9 +3895,9 @@
               "XAxis": 3,
               "YAxis": 0,
               "ColourArgb": -16777216,
-              "FactorToVaryColours": "SimulationName",
-              "FactorToVaryMarkers": null,
-              "FactorToVaryLines": "Experiment",
+              "FactorToVaryColours": "Septoria",
+              "FactorToVaryMarkers": "Genotype",
+              "FactorToVaryLines": null,
               "Marker": 11,
               "MarkerSize": 0,
               "Line": 4,
@@ -3881,6 +3913,35 @@
               "CumulativeX": false,
               "Filter": null,
               "Name": "Series",
+              "ResourceName": null,
+              "Children": [],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Series, Models",
+              "Type": 1,
+              "XAxis": 3,
+              "YAxis": 2,
+              "ColourArgb": -16747854,
+              "FactorToVaryColours": "Septoria",
+              "FactorToVaryMarkers": null,
+              "FactorToVaryLines": null,
+              "Marker": 11,
+              "MarkerSize": 0,
+              "Line": 1,
+              "LineThickness": 0,
+              "TableName": "ReportPests",
+              "XFieldName": "Clock.Today",
+              "YFieldName": "Septoria_OnLivePlant.MyceliumOnLiveFoliage.TotalPopulation",
+              "X2FieldName": null,
+              "Y2FieldName": null,
+              "ShowInLegend": true,
+              "IncludeSeriesNameInLegend": false,
+              "Cumulative": false,
+              "CumulativeX": false,
+              "Filter": null,
+              "Name": "Series1",
               "ResourceName": null,
               "Children": [],
               "Enabled": true,
@@ -4356,8 +4417,8 @@
                   "YAxis": 0,
                   "ColourArgb": -2793984,
                   "FactorToVaryColours": "Septoria",
-                  "FactorToVaryMarkers": "Irrig",
-                  "FactorToVaryLines": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
                   "Marker": 11,
                   "MarkerSize": 0,
                   "Line": 4,
@@ -4424,8 +4485,8 @@
                   "YAxis": 0,
                   "ColourArgb": -2793984,
                   "FactorToVaryColours": "Septoria",
-                  "FactorToVaryMarkers": "Irrig",
-                  "FactorToVaryLines": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
                   "Marker": 11,
                   "MarkerSize": 0,
                   "Line": 4,
@@ -4492,8 +4553,8 @@
                   "YAxis": 0,
                   "ColourArgb": -16736653,
                   "FactorToVaryColours": "Genotype",
-                  "FactorToVaryMarkers": "Irrig",
-                  "FactorToVaryLines": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
                   "Marker": 11,
                   "MarkerSize": 0,
                   "Line": 4,
@@ -4560,8 +4621,8 @@
                   "YAxis": 0,
                   "ColourArgb": -16736653,
                   "FactorToVaryColours": "Genotype",
-                  "FactorToVaryMarkers": "Genotype",
-                  "FactorToVaryLines": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
                   "Marker": 11,
                   "MarkerSize": 1,
                   "Line": 4,
@@ -4627,12 +4688,12 @@
                   "XAxis": 3,
                   "YAxis": 2,
                   "ColourArgb": -16747854,
-                  "FactorToVaryColours": "Genotype",
-                  "FactorToVaryMarkers": null,
-                  "FactorToVaryLines": "Irrig",
+                  "FactorToVaryColours": "Septoria",
+                  "FactorToVaryMarkers": "Genotype",
+                  "FactorToVaryLines": null,
                   "Marker": 11,
                   "MarkerSize": 0,
-                  "Line": 0,
+                  "Line": 4,
                   "LineThickness": 0,
                   "TableName": "ReportPests",
                   "XFieldName": "Clock.Today",
