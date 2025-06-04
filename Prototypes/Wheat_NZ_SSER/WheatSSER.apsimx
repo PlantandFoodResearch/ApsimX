@@ -601,13 +601,22 @@
                               "ReadOnly": false
                             },
                             {
+                              "$type": "Models.Memo, Models",
+                              "Text": "Conidia are asexual propagules produced by the fungus in pycnidia on infected plant tissue, but not in the soil or debris directly.\n\nThey can persist for some time, but are subject to mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors\n\nThe \"population\" of conidia in this pool **declines** over time due to these mortality factors.\n\nNew conidia are **added** from infected plants or **removed** into the debris or plants by rain splash.",
+                              "Name": "Memo",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
                               "$type": "Models.Functions.MultiplyFunction, Models",
                               "Name": "Migration",
                               "ResourceName": null,
                               "Children": [
                                 {
                                   "$type": "Models.Functions.VariableReference, Models",
-                                  "VariableName": "[External_Inocumum].ConidiaOnSoilOrDebri",
+                                  "VariableName": "[ConidiaOnSoilOrDebri].CurrentCohort.Population",
                                   "Name": "CohortPopulation",
                                   "ResourceName": null,
                                   "Children": [],
@@ -616,7 +625,7 @@
                                 },
                                 {
                                   "$type": "Models.Functions.MinimumFunction, Models",
-                                  "Name": "DispersalFunction",
+                                  "Name": "MinimumFunction",
                                   "ResourceName": null,
                                   "Children": [
                                     {
@@ -666,43 +675,6 @@
                                               ],
                                               "Enabled": true,
                                               "ReadOnly": false
-                                            },
-                                            {
-                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                                              "Name": "CoverFactor",
-                                              "ResourceName": null,
-                                              "Children": [
-                                                {
-                                                  "$type": "Models.Functions.XYPairs, Models",
-                                                  "X": [
-                                                    0.0,
-                                                    0.5,
-                                                    1.0,
-                                                    5.0
-                                                  ],
-                                                  "Y": [
-                                                    0.0,
-                                                    0.5,
-                                                    1.0
-                                                  ],
-                                                  "Name": "XYPairs",
-                                                  "ResourceName": null,
-                                                  "Children": [],
-                                                  "Enabled": true,
-                                                  "ReadOnly": false
-                                                },
-                                                {
-                                                  "$type": "Models.Functions.VariableReference, Models",
-                                                  "VariableName": "[Wheat].Leaf.CoverTotal",
-                                                  "Name": "XValue",
-                                                  "ResourceName": null,
-                                                  "Children": [],
-                                                  "Enabled": true,
-                                                  "ReadOnly": false
-                                                }
-                                              ],
-                                              "Enabled": true,
-                                              "ReadOnly": false
                                             }
                                           ],
                                           "Enabled": true,
@@ -739,42 +711,6 @@
                                                 {
                                                   "$type": "Models.Functions.VariableReference, Models",
                                                   "VariableName": "[Irrigation].IrrigationApplied",
-                                                  "Name": "XValue",
-                                                  "ResourceName": null,
-                                                  "Children": [],
-                                                  "Enabled": true,
-                                                  "ReadOnly": false
-                                                }
-                                              ],
-                                              "Enabled": true,
-                                              "ReadOnly": false
-                                            },
-                                            {
-                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                                              "Name": "CoverFactor",
-                                              "ResourceName": null,
-                                              "Children": [
-                                                {
-                                                  "$type": "Models.Functions.XYPairs, Models",
-                                                  "X": [
-                                                    0.0,
-                                                    0.5,
-                                                    1.0
-                                                  ],
-                                                  "Y": [
-                                                    1.0,
-                                                    1.0,
-                                                    0.05
-                                                  ],
-                                                  "Name": "XYPairs",
-                                                  "ResourceName": null,
-                                                  "Children": [],
-                                                  "Enabled": true,
-                                                  "ReadOnly": false
-                                                },
-                                                {
-                                                  "$type": "Models.Functions.VariableReference, Models",
-                                                  "VariableName": "[Wheat].Leaf.CoverTotal",
                                                   "Name": "XValue",
                                                   "ResourceName": null,
                                                   "Children": [],
@@ -831,10 +767,19 @@
                                               ],
                                               "Enabled": true,
                                               "ReadOnly": false
-                                            },
+                                            }
+                                          ],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        },
+                                        {
+                                          "$type": "Models.Functions.MultiplyFunction, Models",
+                                          "Name": "CoverFactor",
+                                          "ResourceName": null,
+                                          "Children": [
                                             {
                                               "$type": "Models.Functions.LinearInterpolationFunction, Models",
-                                              "Name": "CoverFactor",
+                                              "Name": "LeafCov",
                                               "ResourceName": null,
                                               "Children": [
                                                 {
@@ -842,9 +787,11 @@
                                                   "X": [
                                                     0.0,
                                                     0.5,
-                                                    1.0
+                                                    1.0,
+                                                    2.0
                                                   ],
                                                   "Y": [
+                                                    0.0,
                                                     0.0,
                                                     1.0,
                                                     1.0
@@ -891,15 +838,6 @@
                                   "ReadOnly": false
                                 }
                               ],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Memo, Models",
-                              "Text": "Conidia are asexual propagules produced by the fungus in pycnidia on infected plant tissue, but not in the soil or debris directly.\n\nThey can persist for some time, but are subject to mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors\n\nThe \"population\" of conidia in this pool **declines** over time due to these mortality factors.\n\nNew conidia are **added** from infected plants or **removed** into the debris or plants by rain splash.",
-                              "Name": "Memo",
-                              "ResourceName": null,
-                              "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             }
