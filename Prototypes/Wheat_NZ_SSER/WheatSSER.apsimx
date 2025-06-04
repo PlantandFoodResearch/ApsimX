@@ -191,7 +191,7 @@
                     {
                       "$type": "Models.Factorial.CompositeFactor, Models",
                       "Specifications": [
-                        "[InitialSoilInfestation].NumberOfImmigrants.FixedValue = 0"
+                        "[Initial_Conidia_Infestation].NumberOfImmigrants.FixedValue=0"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -204,7 +204,7 @@
                     {
                       "$type": "Models.Factorial.CompositeFactor, Models",
                       "Specifications": [
-                        "[InitialSoilInfestation].NumberOfImmigrants.FixedValue = 1"
+                        "[Initial_Conidia_Infestation].NumberOfImmigrants.FixedValue=1"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -908,7 +908,7 @@
                             },
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 1.0,
+                              "FixedValue": 0.0,
                               "Units": "individuals /d",
                               "Name": "Reproduction",
                               "ResourceName": null,
@@ -918,7 +918,7 @@
                             },
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 2.0,
+                              "FixedValue": 0.0,
                               "Units": "individuals /d",
                               "Name": "Mortality",
                               "ResourceName": null,
@@ -928,9 +928,18 @@
                             },
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 1.0,
+                              "FixedValue": 0.0,
                               "Units": null,
                               "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Memo, Models",
+                              "Text": "***Adding a Life Cycle***\n\nThe first step in building a population model is to build the LifeCycle. \n\nTo do this, go to the FIELD object, right click and select **Add Model > LifeCycle** \n\n***Initiating the LifeCycle Model***\n\nThe initial populations of all stages of individuals needs to be initiated with some individuals.\n\nThis is done at the **LifeCycle** level. \n\nSelect the LifeCycle model and then for \"Initial population at each LifeStage\" enter **\"1,0\"** for the two LifeStages (Juvenile and Adult) that we are using in our example, i.d., we have 1 juvenile and 0 adults. \n\n***Adding a Life Stage***\n\nThe LifeStage icon represents one LifeStage of the species being modelled.  A number of \nenvironmental factors (eg. temperature, moisture, predators, availability of food, diseases, \netc.) influence the species’ rate of development, survival and reproduction.  The LifeCycle model can be \nset to simulate these processes by adding functions to the LifeStage, each of which \ncontrols some aspect of the LifeStage. \n\nEach LifeStage defines a particular stage (eg. egg, pupa, adult, etc.) together with its \nenvironment and attributes.  The number of stages is set by the user.  \n\nFor the PseudoAphid two stages are required (juvenile and adult); however several stages could be used depending \nupon the detail required by the model or the life cycle of the organism.  Many insects may \nrequire a number of LifeStages depending upon the instars that are present.  For example, a \nmodel of a tree fern would probably include stages corresponding to spore, gametophyte, \ngamete and sporophyte.  However, it is conceivable that a user may wish to condense two of \nthese three stages into one for a particular model and might end up with the three stages of \nspore, gametophyte-gamete and sporophyte.  Exactly how the model is constructed depends \ncompletely on the requirements and applications of the user.\n\n**To add a LifeStage to the life cycle** right click on the LifeCycle and select **Add model > select LifeStage**. \n\nFor this tutorial:\n\nAdd a lifstage and rename it to **Juvenile**.\n\nAdd a second LifeStage and rename to **Adult**.\n\n",
+                              "Name": "Memo",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
