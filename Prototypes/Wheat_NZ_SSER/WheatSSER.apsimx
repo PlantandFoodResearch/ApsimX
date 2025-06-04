@@ -409,7 +409,7 @@
                       "InfestationEndDate": "16-May",
                       "ChronoAgeOfImmigrants": 0,
                       "PhysAgeOfImmigrants": 0.0,
-                      "Name": "InitialConidiaInfestation",
+                      "Name": "Initial_Conidia_Infestation",
                       "ResourceName": null,
                       "Children": [
                         {
@@ -454,19 +454,126 @@
                           "ResourceName": null,
                           "Children": [
                             {
-                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
-                              "NameOfLifeCycleForMigrants": "Septoria_OnLivePlant",
-                              "NameOfPhaseForMigrants": "ConidiaOnFreshFoliage",
-                              "Name": "MigrantDestinationPhase",
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
                               "ResourceName": null,
-                              "Children": [],
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.1,
+                                  "Units": "per day",
+                                  "Name": "MortalityRateAtOptimumConditions",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 1,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        4.0,
+                                        10.0,
+                                        20.0,
+                                        27.0,
+                                        35.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        0.25,
+                                        1.0,
+                                        1.0,
+                                        0.25,
+                                        0.0
+                                      ],
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Need review and literature\n\nhttps://www.sciencedirect.com/science/article/pii/S0261219405002292",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.HourlySinPpAdjusted, Models",
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                  "Name": "HumidityResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        0.2,
+                                        0.5,
+                                        2.0
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        1.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "Name": "XYPairs",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[IWeather].VPD",
+                                      "Name": "XValue",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Assumption (needs checking and adjustment):\n\nNear 0 kPa → air is saturated → conidia survive well.\n\nVPD between 0.2 and 0.5 kPa → best survival (multiplier = 1).\n\nVPD above 0.5 kPa → progressive increase in mortality.\n\nVPD ≥ 2 kPa → air is very dry, leading to rapid conidia death.\n\n",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.25,
-                              "Units": null,
+                              "FixedValue": 0.0,
+                              "Units": "per day",
                               "Name": "Development",
                               "ResourceName": null,
                               "Children": [],
@@ -476,7 +583,7 @@
                             {
                               "$type": "Models.Functions.Constant, Models",
                               "FixedValue": 0.0,
-                              "Units": "individuals /d",
+                              "Units": "per day",
                               "Name": "Reproduction",
                               "ResourceName": null,
                               "Children": [],
@@ -484,20 +591,313 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": "individuals /d",
-                              "Name": "Mortality",
+                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
+                              "NameOfLifeCycleForMigrants": "Plant_Infestation",
+                              "NameOfPhaseForMigrants": "LatentPhase",
+                              "Name": "MigrantDestinationPhase",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": null,
+                              "$type": "Models.Functions.MultiplyFunction, Models",
                               "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[External_Inocumum].ConidiaOnSoilOrDebri",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.MinimumFunction, Models",
+                                  "Name": "DispersalFunction",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.AddFunction, Models",
+                                      "Name": "Dispersal",
+                                      "ResourceName": null,
+                                      "Children": [
+                                        {
+                                          "$type": "Models.Functions.MultiplyFunction, Models",
+                                          "Name": "RainFactor",
+                                          "ResourceName": null,
+                                          "Children": [
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "RainFallFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    2.0,
+                                                    15.0,
+                                                    30.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    0.0,
+                                                    1.0,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[IWeather].Rain",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            },
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "CoverFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    0.5,
+                                                    1.0,
+                                                    5.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    0.5,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[Wheat].Leaf.CoverTotal",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            }
+                                          ],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        },
+                                        {
+                                          "$type": "Models.Functions.MultiplyFunction, Models",
+                                          "Name": "IrrigFactor",
+                                          "ResourceName": null,
+                                          "Children": [
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "IrrigationFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    1.0,
+                                                    2.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    1.0,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[Irrigation].IrrigationApplied",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            },
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "CoverFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    0.5,
+                                                    1.0
+                                                  ],
+                                                  "Y": [
+                                                    1.0,
+                                                    1.0,
+                                                    0.05
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[Wheat].Leaf.CoverTotal",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            }
+                                          ],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        },
+                                        {
+                                          "$type": "Models.Functions.MultiplyFunction, Models",
+                                          "Name": "WindFact",
+                                          "ResourceName": null,
+                                          "Children": [
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "WindFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    3.0,
+                                                    8.0,
+                                                    10.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    0.0,
+                                                    1.0,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[Weather].Wind",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            },
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "CoverFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    0.5,
+                                                    1.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    1.0,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[Wheat].LAI",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            }
+                                          ],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        }
+                                      ],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 1.0,
+                                      "Units": "individuals /d",
+                                      "Name": "One",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Memo, Models",
+                              "Text": "Conidia are asexual propagules produced by the fungus in pycnidia on infected plant tissue, but not in the soil or debris directly.\n\nThey can persist for some time, but are subject to mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors\n\nThe \"population\" of conidia in this pool **declines** over time due to these mortality factors.\n\nNew conidia are **added** from infected plants or **removed** into the debris or plants by rain splash.",
+                              "Name": "Memo",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -678,7 +1078,7 @@
                             {
                               "$type": "Models.LifeCycle.PlantOrganFunctionalDimensionReduction, Models",
                               "HostOrganName": "Wheat.Leaf",
-                              "Name": "DamagetoLAI",
+                              "Name": "DamageToLAI",
                               "ResourceName": null,
                               "Children": [
                                 {
