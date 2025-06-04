@@ -994,7 +994,7 @@
                             },
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 4.0,
+                              "FixedValue": 0.0,
                               "Units": "individuals /d",
                               "Name": "Reproduction",
                               "ResourceName": null,
@@ -1014,7 +1014,7 @@
                             },
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 2.0,
+                              "FixedValue": 0.0,
                               "Units": null,
                               "Name": "Migration",
                               "ResourceName": null,
@@ -1075,11 +1075,11 @@
                               "Name": "NumberOfImmigrants",
                               "ResourceName": null,
                               "Children": [],
-                              "Enabled": true,
+                              "Enabled": false,
                               "ReadOnly": false
                             }
                           ],
-                          "Enabled": true,
+                          "Enabled": false,
                           "ReadOnly": false
                         },
                         {
@@ -1093,7 +1093,7 @@
                               "Name": "Memo",
                               "ResourceName": null,
                               "Children": [],
-                              "Enabled": true,
+                              "Enabled": false,
                               "ReadOnly": false
                             },
                             {
@@ -1116,7 +1116,7 @@
                                   "Name": "MigrantDestinationPhase",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1156,7 +1156,7 @@
                                               "Name": "Response",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -1165,7 +1165,7 @@
                                               "Name": "Memo",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -1173,11 +1173,11 @@
                                               "Name": "InterpolationMethod",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -1202,7 +1202,7 @@
                                               "Name": "XYPairs",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -1211,15 +1211,15 @@
                                               "Name": "XValue",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -1229,11 +1229,11 @@
                                       "Name": "DurationInOptConditions",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1243,7 +1243,7 @@
                                   "Name": "Reproduction",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1253,7 +1253,7 @@
                                   "Name": "Mortality",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1267,7 +1267,7 @@
                                       "Name": "CohortPopulation",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -1307,7 +1307,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -1316,11 +1316,11 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 },
                                                 {
@@ -1343,7 +1343,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -1352,15 +1352,15 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 }
                                               ],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -1388,7 +1388,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -1397,11 +1397,11 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 },
                                                 {
@@ -1424,7 +1424,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -1433,15 +1433,15 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 }
                                               ],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -1471,7 +1471,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -1480,11 +1480,11 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 },
                                                 {
@@ -1507,7 +1507,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -1516,19 +1516,19 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 }
                                               ],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -1538,19 +1538,19 @@
                                           "Name": "One",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 }
                               ],
-                              "Enabled": true,
+                              "Enabled": false,
                               "ReadOnly": false
                             },
                             {
@@ -1573,7 +1573,7 @@
                                   "Name": "ProgenyDestinationPhase",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1583,7 +1583,7 @@
                                   "Name": "Development",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1597,7 +1597,7 @@
                                       "Name": "CohortPopulation",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -1607,11 +1607,11 @@
                                       "Name": "MortalityRate",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1621,7 +1621,7 @@
                                   "Name": "Migration",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1635,7 +1635,7 @@
                                       "Name": "CohortPopulation",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -1660,7 +1660,7 @@
                                           "Name": "XYPairs",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -1669,23 +1669,23 @@
                                           "Name": "XValue",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 }
                               ],
-                              "Enabled": true,
+                              "Enabled": false,
                               "ReadOnly": false
                             }
                           ],
-                          "Enabled": true,
+                          "Enabled": false,
                           "ReadOnly": false
                         },
                         {
@@ -1699,7 +1699,7 @@
                               "Name": "Memo",
                               "ResourceName": null,
                               "Children": [],
-                              "Enabled": true,
+                              "Enabled": false,
                               "ReadOnly": false
                             },
                             {
@@ -1722,7 +1722,7 @@
                                   "Name": "MigrantDestinationPhase",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1760,7 +1760,7 @@
                                               "Name": "Response",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -1768,7 +1768,7 @@
                                               "Name": "InterpolationMethod",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -1777,11 +1777,11 @@
                                               "Name": "Memo",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -1806,7 +1806,7 @@
                                               "Name": "XYPairs",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -1815,15 +1815,15 @@
                                               "Name": "XValue",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -1833,11 +1833,11 @@
                                       "Name": "DurationInOptConditions",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1851,7 +1851,7 @@
                                       "Name": "CohortPopulation",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -1861,7 +1861,7 @@
                                       "Name": "MortanityRate",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -1887,7 +1887,7 @@
                                           "Name": "Response",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -1896,7 +1896,7 @@
                                           "Name": "InterpolationMethod",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -1905,11 +1905,11 @@
                                           "Name": "Memo",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -1930,7 +1930,7 @@
                                           "Name": "XYPairs",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -1939,15 +1939,15 @@
                                           "Name": "XValue",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1957,7 +1957,7 @@
                                   "Name": "Reproduction",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -1971,7 +1971,7 @@
                                       "Name": "CohortPopulation",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -2011,7 +2011,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -2020,11 +2020,11 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 },
                                                 {
@@ -2047,7 +2047,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -2056,15 +2056,15 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 }
                                               ],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -2092,7 +2092,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -2101,11 +2101,11 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 },
                                                 {
@@ -2128,7 +2128,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -2137,15 +2137,15 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 }
                                               ],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -2175,7 +2175,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -2184,11 +2184,11 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 },
                                                 {
@@ -2213,7 +2213,7 @@
                                                       "Name": "XYPairs",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     },
                                                     {
@@ -2222,19 +2222,19 @@
                                                       "Name": "XValue",
                                                       "ResourceName": null,
                                                       "Children": [],
-                                                      "Enabled": true,
+                                                      "Enabled": false,
                                                       "ReadOnly": false
                                                     }
                                                   ],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 }
                                               ],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -2244,19 +2244,19 @@
                                           "Name": "One",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 }
                               ],
-                              "Enabled": true,
+                              "Enabled": false,
                               "ReadOnly": false
                             },
                             {
@@ -2279,7 +2279,7 @@
                                   "Name": "ProgenyDestinationPhase",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -2289,7 +2289,7 @@
                                   "Name": "MigrantDestinationPhase",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -2327,7 +2327,7 @@
                                               "Name": "Response",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -2336,7 +2336,7 @@
                                               "Name": "InterpolationMethod",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -2345,11 +2345,11 @@
                                               "Name": "Memo",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -2374,7 +2374,7 @@
                                               "Name": "XYPairs",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -2383,11 +2383,11 @@
                                               "Name": "XValue",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -2412,7 +2412,7 @@
                                               "Name": "XYPairs",
                                               "ResourceName": null,
                                               "Children": [],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             },
                                             {
@@ -2426,7 +2426,7 @@
                                                   "Name": "NitrogenStressFactor",
                                                   "ResourceName": null,
                                                   "Children": [],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 },
                                                 {
@@ -2435,19 +2435,19 @@
                                                   "Name": "WaterStressFactor",
                                                   "ResourceName": null,
                                                   "Children": [],
-                                                  "Enabled": true,
+                                                  "Enabled": false,
                                                   "ReadOnly": false
                                                 }
                                               ],
-                                              "Enabled": true,
+                                              "Enabled": false,
                                               "ReadOnly": false
                                             }
                                           ],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -2457,11 +2457,11 @@
                                       "Name": "DurationInOptConditions",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -2471,7 +2471,7 @@
                                   "Name": "Mortality",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -2485,7 +2485,7 @@
                                       "Name": "CohortPopulation",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -2494,7 +2494,7 @@
                                       "Name": "FractionLeafSenescence",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -2550,7 +2550,7 @@
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -2564,7 +2564,7 @@
                                       "Name": "CohortPopulation",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     },
                                     {
@@ -2589,7 +2589,7 @@
                                           "Name": "XYPairs",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         },
                                         {
@@ -2598,15 +2598,15 @@
                                           "Name": "XValue",
                                           "ResourceName": null,
                                           "Children": [],
-                                          "Enabled": true,
+                                          "Enabled": false,
                                           "ReadOnly": false
                                         }
                                       ],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 },
                                 {
@@ -2705,23 +2705,23 @@
                                       "Name": "DimensionReductionPerIndividual",
                                       "ResourceName": null,
                                       "Children": [],
-                                      "Enabled": true,
+                                      "Enabled": false,
                                       "ReadOnly": false
                                     }
                                   ],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 }
                               ],
-                              "Enabled": true,
+                              "Enabled": false,
                               "ReadOnly": false
                             }
                           ],
-                          "Enabled": true,
+                          "Enabled": false,
                           "ReadOnly": false
                         }
                       ],
-                      "Enabled": true,
+                      "Enabled": false,
                       "ReadOnly": false
                     }
                   ],
@@ -2867,16 +2867,16 @@
                     "[Clock].Today",
                     "[Clock].Today.DayOfYear",
                     "",
-                    "[Septoria_InDebri].ConidiaOnDecayingFoliage.TotalPopulation",
-                    "[Septoria_InDebri].ConidiaOnDecayingFoliage.CohortCount",
-                    "[Septoria_InDebri].MyceliumOnDecayingFoliage.TotalPopulation",
-                    "[Septoria_InDebri].MyceliumOnDecayingFoliage.CohortCount",
-                    "[Septoria_OnLivePlant].ConidiaOnFreshFoliage.TotalPopulation",
-                    "[Septoria_OnLivePlant].ConidiaOnFreshFoliage.CohortCount",
-                    "[Septoria_OnLivePlant].MyceliumOnLiveFoliage.TotalPopulation",
-                    "[Septoria_OnLivePlant].MyceliumOnLiveFoliage.CohortCount",
+                    "//[Septoria_InDebri].ConidiaOnDecayingFoliage.TotalPopulation",
+                    "//[Septoria_InDebri].ConidiaOnDecayingFoliage.CohortCount",
+                    "//[Septoria_InDebri].MyceliumOnDecayingFoliage.TotalPopulation",
+                    "//[Septoria_InDebri].MyceliumOnDecayingFoliage.CohortCount",
+                    "//[Septoria_OnLivePlant].ConidiaOnFreshFoliage.TotalPopulation",
+                    "//[Septoria_OnLivePlant].ConidiaOnFreshFoliage.CohortCount",
+                    "//[Septoria_OnLivePlant].MyceliumOnLiveFoliage.TotalPopulation",
+                    "//[Septoria_OnLivePlant].MyceliumOnLiveFoliage.CohortCount",
                     "[Wheat].Leaf.Live.Wt",
-                    "[Septoria_OnLivePlant].MyceliumOnLiveFoliage.PlantOrganFunctionalDimensionReduction1.DimensionReductionPerIndividual",
+                    "//[Septoria_OnLivePlant].MyceliumOnLiveFoliage.PlantOrganFunctionalDimensionReduction1.DimensionReductionPerIndividual",
                     "",
                     "[External_Inocumum].ConidiaOnSoilOrDebri.TotalPopulation",
                     "[External_Inocumum].ConidiaOnSoilOrDebri.CohortCount",
