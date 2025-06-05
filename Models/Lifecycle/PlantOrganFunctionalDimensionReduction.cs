@@ -48,8 +48,8 @@ namespace Models.LifeCycle
                 foreach (Cohort c in ParentPhase.Cohorts)
                 {
                     ParentPhase.CurrentCohort = c;
-                   // DimensionReduction += c.Population * DimensionReductionPerIndividual.Value();
-                    DimensionReduction = Math.Max(0, c.Population * DimensionReductionPerIndividual.Value());
+                   DimensionReduction += c.Population * DimensionReductionPerIndividual.Value();
+                   //DimensionReduction = Math.Max(0, c.Population * DimensionReductionPerIndividual.Value());
                 }
 
                 if (hostOrgan is ICanopy canopy)
