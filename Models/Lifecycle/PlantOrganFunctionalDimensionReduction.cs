@@ -44,17 +44,21 @@ namespace Models.LifeCycle
                     throw new Exception($"Cannot find host organ: {HostOrganName}");
 
                 double DimensionReduction = 0;
+                double ThisPopulation = 0;
 
                 foreach (Cohort c in ParentPhase.Cohorts)
                 {
                     ParentPhase.CurrentCohort = c;
-                   DimensionReduction += c.Population * DimensionReductionPerIndividual.Value();
-                   //DimensionReduction = Math.Max(0, c.Population * DimensionReductionPerIndividual.Value());
+                    ThisPopulation = c.Population;
+                    // DimensionReduction += c.Population * DimensionReductionPerIndividual.Value();
+                    DimensionReduction = ThisPopulation * DimensionReductionPerIndividual.Value();
+                    // DimensionReduction = 0; // just to test debugging
                 }
 
                 if (hostOrgan is ICanopy canopy)
                     //canopy.LAI -= DimensionReduction;
-                    canopy.LAI = Math.Max(0, canopy.LAI - DimensionReduction);
+                    canopy.LAI = Math.Max(0, (canopy.LAI - DimensionReduction));
+                  //canopy.LAI = canopy.LAI; // just to test debugging 
                 else if (hostOrgan is IRoot root)
                     root.RootLengthDensityModifierDueToDamage = DimensionReduction;
                 else

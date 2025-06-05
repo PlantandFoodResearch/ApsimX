@@ -113,7 +113,7 @@
                       "Specifications": [
                         "[Weather].FileName = 20993_Lincoln_Had_RCPpast.met",
                         "[Clock].Start = 1/1/1971",
-                        "[Clock].End = 1/1/1991"
+                        "[Clock].End = 1/1/1972"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -128,7 +128,7 @@
                       "Specifications": [
                         "[Weather].FileName = 20993_Lincoln_Had_RCP85.met",
                         "[Clock].Start = 1/1/2050",
-                        "[Clock].End = 1/1/2070"
+                        "[Clock].End = 1/1/2051"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -1030,8 +1030,8 @@
                               "Children": [
                                 {
                                   "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.5,
-                                  "Units": "??? LAI units per day???",
+                                  "FixedValue": 0.005,
+                                  "Units": "LAI per individual per day",
                                   "Name": "DimensionReductionPerIndividual",
                                   "ResourceName": null,
                                   "Children": [],
