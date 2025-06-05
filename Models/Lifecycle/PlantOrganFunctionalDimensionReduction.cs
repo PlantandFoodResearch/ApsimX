@@ -50,15 +50,13 @@ namespace Models.LifeCycle
                 {
                     ParentPhase.CurrentCohort = c;
                     ThisPopulation = c.Population;
-                    // DimensionReduction += c.Population * DimensionReductionPerIndividual.Value();
+                    // DimensionReduction += c.Population * DimensionReductionPerIndividual.Value();//FIXME Bug? Why cumm?
                     DimensionReduction = ThisPopulation * DimensionReductionPerIndividual.Value();
-                    // DimensionReduction = 0; // just to test debugging
                 }
 
                 if (hostOrgan is ICanopy canopy)
-                    //canopy.LAI -= DimensionReduction;
+                    //canopy.LAI -= DimensionReduction; //FIXME: LAI going <0 and error in RUE via - RadInt
                     canopy.LAI = Math.Max(0, (canopy.LAI - DimensionReduction));
-                  //canopy.LAI = canopy.LAI; // just to test debugging 
                 else if (hostOrgan is IRoot root)
                     root.RootLengthDensityModifierDueToDamage = DimensionReduction;
                 else
