@@ -44,15 +44,19 @@ namespace Models.LifeCycle
                     throw new Exception($"Cannot find host organ: {HostOrganName}");
 
                 double DimensionReduction = 0;
+                double ThisPopulation = 0;
 
                 foreach (Cohort c in ParentPhase.Cohorts)
                 {
                     ParentPhase.CurrentCohort = c;
-                    DimensionReduction += c.Population * DimensionReductionPerIndividual.Value();
+                    ThisPopulation = c.Population;
+                    // DimensionReduction += c.Population * DimensionReductionPerIndividual.Value();//FIXME Bug? Why cumm?
+                    DimensionReduction = ThisPopulation * DimensionReductionPerIndividual.Value();
                 }
 
                 if (hostOrgan is ICanopy canopy)
-                    canopy.LAI -= DimensionReduction;
+                    //canopy.LAI -= DimensionReduction; //FIXME: LAI going <0 and error in RUE via - RadInt
+                    canopy.LAI = Math.Max(0, (canopy.LAI - DimensionReduction));
                 else if (hostOrgan is IRoot root)
                     root.RootLengthDensityModifierDueToDamage = DimensionReduction;
                 else

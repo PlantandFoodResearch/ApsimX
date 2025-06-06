@@ -19,12 +19,12 @@ namespace Models.LifeCycle
     public class MigrantDestinationPhase : Model
     {
         /// <summary> Specifies the destination LifeCycle that migrants from this LifeCyclePhaseReproduction will be created in</summary>
-        [Description("Select Life cycle that progeny will be added to")]
+        [Description("Select Life cycle that migrants will be added to")]
         [Display(Type = DisplayType.LifeCycleName)]
         public string NameOfLifeCycleForMigrants { get; set; }
 
         /// <summary> Specifies the destination LifeCyclePhase that migrants from this LifeCyclePhaseReproduction will be created in</summary>
-        [Description("Select Life cycle phase that progeny will be added to")]
+        [Description("Select Life cycle phase that migrants will be added to")]
         [Display(Type = DisplayType.LifePhaseName)]
         public string NameOfPhaseForMigrants { get; set; }
 
