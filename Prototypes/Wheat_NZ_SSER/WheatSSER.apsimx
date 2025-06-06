@@ -16,7 +16,22 @@
     },
     {
       "$type": "Models.Factorial.Experiment, Models",
-      "DisabledSimNames": null,
+      "DisabledSimNames": [
+        "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationCurrentClimateSeptoriaClean",
+        "SimulationExpIrrigRainfedGenotypeGenotype02LocationCurrentClimateSeptoriaClean",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype02LocationCurrentClimateSeptoriaClean",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationFutureClimateSeptoriaClean",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationFutureClimateSeptoriaClean",
+        "SimulationExpIrrigRainfedGenotypeGenotype02LocationFutureClimateSeptoriaClean",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype02LocationFutureClimateSeptoriaClean",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationCurrentClimateSeptoriaInfected",
+        "SimulationExpIrrigRainfedGenotypeGenotype02LocationCurrentClimateSeptoriaInfected",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype02LocationCurrentClimateSeptoriaInfected",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationFutureClimateSeptoriaInfected",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationFutureClimateSeptoriaInfected",
+        "SimulationExpIrrigRainfedGenotypeGenotype02LocationFutureClimateSeptoriaInfected",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype02LocationFutureClimateSeptoriaInfected"
+      ],
       "Name": "SimulationExp",
       "ResourceName": null,
       "Children": [
@@ -113,7 +128,7 @@
                       "Specifications": [
                         "[Weather].FileName = 20993_Lincoln_Had_RCPpast.met",
                         "[Clock].Start = 1/1/1971",
-                        "[Clock].End = 1/1/1972"
+                        "[Clock].End = 1/1/1973"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -128,7 +143,7 @@
                       "Specifications": [
                         "[Weather].FileName = 20993_Lincoln_Had_RCP85.met",
                         "[Clock].Start = 1/1/2050",
-                        "[Clock].End = 1/1/2051"
+                        "[Clock].End = 1/1/2052"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -402,13 +417,13 @@
                   "Children": [
                     {
                       "$type": "Models.LifeCycle.Infestation, Models",
-                      "TypeOfInfestation": 1,
+                      "TypeOfInfestation": 2,
                       "InfestingOrganisumName": "External_Inocumum",
                       "InfestingPhaseName": "ConidiaOnSoilOrDebri",
                       "InfestationDate": "15-May",
-                      "InfestationEndDate": "16-May",
-                      "ChronoAgeOfImmigrants": 0,
-                      "PhysAgeOfImmigrants": 0.0,
+                      "InfestationEndDate": "15-June",
+                      "ChronoAgeOfImmigrants": 2,
+                      "PhysAgeOfImmigrants": 0.1,
                       "Name": "Initial_Conidia_Infestation",
                       "ResourceName": null,
                       "Children": [
@@ -454,15 +469,53 @@
                           "ResourceName": null,
                           "Children": [
                             {
+                              "$type": "Models.Memo, Models",
+                              "Text": "Conidia are asexual propagules produced by the fungus in pycnidia on infected plant tissue, but not in the soil or debris directly.\n\nThey can persist for some time, but are subject to mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors\n\nThe \"population\" of conidia in this pool **declines** over time due to these mortality factors.\n\nNew conidia are **added** from infected plants or **removed** into the debris or plants by rain splash.",
+                              "Name": "Memo",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals per day",
+                              "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals per day",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
                               "$type": "Models.Functions.MultiplyFunction, Models",
                               "Name": "Mortality",
                               "ResourceName": null,
                               "Children": [
                                 {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[ConidiaOnSoilOrDebri].CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
                                   "$type": "Models.Functions.Constant, Models",
                                   "FixedValue": 0.1,
-                                  "Units": "per day",
-                                  "Name": "MortalityRateAtOptimumConditions",
+                                  "Units": "fractional",
+                                  "Name": "MaxDailyRate",
                                   "ResourceName": null,
                                   "Children": [],
                                   "Enabled": true,
@@ -485,12 +538,12 @@
                                         35.0
                                       ],
                                       "Y": [
+                                        1.0,
+                                        0.75,
                                         0.0,
-                                        0.25,
-                                        1.0,
-                                        1.0,
-                                        0.25,
-                                        0.0
+                                        0.0,
+                                        0.75,
+                                        1.0
                                       ],
                                       "Name": "Response",
                                       "ResourceName": null,
@@ -533,10 +586,10 @@
                                         2.0
                                       ],
                                       "Y": [
+                                        1.0,
                                         0.0,
-                                        1.0,
-                                        1.0,
-                                        0.0
+                                        0.0,
+                                        1.0
                                       ],
                                       "Name": "XYPairs",
                                       "ResourceName": null,
@@ -565,47 +618,27 @@
                                   ],
                                   "Enabled": true,
                                   "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Memo, Models",
+                                  "Text": "Mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors",
+                                  "Name": "Memo",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.0,
+                                  "Units": "fractional",
+                                  "Name": "TestZero",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": false,
+                                  "ReadOnly": false
                                 }
                               ],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": "per day",
-                              "Name": "Development",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": "per day",
-                              "Name": "Reproduction",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
-                              "NameOfLifeCycleForMigrants": "Plant_Infestation",
-                              "NameOfPhaseForMigrants": "LatentPhase",
-                              "Name": "MigrantDestinationPhase",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Memo, Models",
-                              "Text": "Conidia are asexual propagules produced by the fungus in pycnidia on infected plant tissue, but not in the soil or debris directly.\n\nThey can persist for some time, but are subject to mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors\n\nThe \"population\" of conidia in this pool **declines** over time due to these mortality factors.\n\nNew conidia are **added** from infected plants or **removed** into the debris or plants by rain splash.",
-                              "Name": "Memo",
-                              "ResourceName": null,
-                              "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             },
@@ -629,8 +662,18 @@
                                   "ResourceName": null,
                                   "Children": [
                                     {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 1.0,
+                                      "Units": "fractional per day",
+                                      "Name": "MaximumDispersal",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
                                       "$type": "Models.Functions.AddFunction, Models",
-                                      "Name": "Dispersal",
+                                      "Name": "DispersalDrivers",
                                       "ResourceName": null,
                                       "Children": [
                                         {
@@ -824,10 +867,9 @@
                                       "ReadOnly": false
                                     },
                                     {
-                                      "$type": "Models.Functions.Constant, Models",
-                                      "FixedValue": 1.0,
-                                      "Units": "individuals /d",
-                                      "Name": "One",
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Dispersal is maximum 100% population per day (value of 1)\n\nIf less than that (0 to 1) than causes are:\n\n",
+                                      "Name": "Memo",
                                       "ResourceName": null,
                                       "Children": [],
                                       "Enabled": true,
@@ -838,6 +880,16 @@
                                   "ReadOnly": false
                                 }
                               ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
+                              "NameOfLifeCycleForMigrants": "Plant_Infestation",
+                              "NameOfPhaseForMigrants": "LatentPhase",
+                              "Name": "MigrantDestinationPhase",
+                              "ResourceName": null,
+                              "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             }
@@ -855,15 +907,6 @@
                       "ResourceName": null,
                       "Children": [
                         {
-                          "$type": "Models.Memo, Models",
-                          "Text": "***Adding a Life Cycle***\n\nThe first step in building a population model is to build the LifeCycle. \n\nTo do this, go to the FIELD object, right click and select **Add Model > LifeCycle** \n\n***Initiating the LifeCycle Model***\n\nThe initial populations of all stages of individuals needs to be initiated with some individuals.\n\nThis is done at the **LifeCycle** level. \n\nSelect the LifeCycle model and then for \"Initial population at each LifeStage\" enter **\"1,0\"** for the two LifeStages (Juvenile and Adult) that we are using in our example, i.d., we have 1 juvenile and 0 adults. \n\n***Adding a Life Stage***\n\nThe LifeStage icon represents one LifeStage of the species being modelled.  A number of \nenvironmental factors (eg. temperature, moisture, predators, availability of food, diseases, \netc.) influence the species’ rate of development, survival and reproduction.  The LifeCycle model can be \nset to simulate these processes by adding functions to the LifeStage, each of which \ncontrols some aspect of the LifeStage. \n\nEach LifeStage defines a particular stage (eg. egg, pupa, adult, etc.) together with its \nenvironment and attributes.  The number of stages is set by the user.  \n\nFor the PseudoAphid two stages are required (juvenile and adult); however several stages could be used depending \nupon the detail required by the model or the life cycle of the organism.  Many insects may \nrequire a number of LifeStages depending upon the instars that are present.  For example, a \nmodel of a tree fern would probably include stages corresponding to spore, gametophyte, \ngamete and sporophyte.  However, it is conceivable that a user may wish to condense two of \nthese three stages into one for a particular model and might end up with the three stages of \nspore, gametophyte-gamete and sporophyte.  Exactly how the model is constructed depends \ncompletely on the requirements and applications of the user.\n\n**To add a LifeStage to the life cycle** right click on the LifeCycle and select **Add model > select LifeStage**. \n\nFor this tutorial:\n\nAdd a lifstage and rename it to **Juvenile**.\n\nAdd a second LifeStage and rename to **Adult**.\n\n",
-                          "Name": "Memo",
-                          "ResourceName": null,
-                          "Children": [],
-                          "Enabled": true,
-                          "ReadOnly": false
-                        },
-                        {
                           "$type": "Models.LifeCycle.LifeCyclePhase, Models",
                           "LifeCyclePhaseForGraduates": null,
                           "CurrentCohort": null,
@@ -877,39 +920,126 @@
                           "ResourceName": null,
                           "Children": [
                             {
-                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
-                              "NameOfLifeCycleForProgeny": "Plant_Infestation",
-                              "NameOfPhaseForProgeny": "LatentPhase",
-                              "Name": "ConidiaToMycelium",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
-                              "NameOfLifeCycleForMigrants": "Plant_Infestation",
-                              "NameOfPhaseForMigrants": "SymptomaticPhase",
-                              "Name": "MyceliumToSymptomatic",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.25,
-                              "Units": null,
+                              "$type": "Models.Functions.MultiplyFunction, Models",
                               "Name": "Development",
                               "ResourceName": null,
-                              "Children": [],
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.3,
+                                  "Units": "fractional",
+                                  "Name": "MaxDailyRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 1,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        10.0,
+                                        20.0,
+                                        30.0,
+                                        "NaN",
+                                        "NaN"
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        1.0,
+                                        1.0,
+                                        0.0,
+                                        "NaN",
+                                        "NaN"
+                                      ],
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Need review and literature\n\nhttps://www.sciencedirect.com/science/article/pii/S0261219405002292",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.HourlySinPpAdjusted, Models",
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                  "Name": "HumidityResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        0.5,
+                                        1.5,
+                                        2.0
+                                      ],
+                                      "Y": [
+                                        1.0,
+                                        1.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "Name": "XYPairs",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[IWeather].VPD",
+                                      "Name": "XValue",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Assumption (needs checking and adjustment):\n\nNear 0 kPa → air is saturated → conidia survive well.\n\nVPD between 0.2 and 0.5 kPa → best survival (multiplier = 1).\n\nVPD above 0.5 kPa → progressive increase in mortality.\n\nVPD ≥ 2 kPa → air is very dry, leading to rapid conidia death.\n\n",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
                               "$type": "Models.Functions.Constant, Models",
                               "FixedValue": 0.0,
-                              "Units": "individuals /d",
+                              "Units": "individuals per day",
                               "Name": "Reproduction",
                               "ResourceName": null,
                               "Children": [],
@@ -917,31 +1047,205 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": "individuals /d",
+                              "$type": "Models.Functions.MultiplyFunction, Models",
                               "Name": "Mortality",
                               "ResourceName": null,
-                              "Children": [],
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[LatentPhase].CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.01,
+                                  "Units": "fractional",
+                                  "Name": "MaxDailyRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 1,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        4.0,
+                                        10.0,
+                                        20.0,
+                                        27.0,
+                                        35.0
+                                      ],
+                                      "Y": [
+                                        1.0,
+                                        0.75,
+                                        0.0,
+                                        0.0,
+                                        0.75,
+                                        1.0
+                                      ],
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Need review and literature\n\nhttps://www.sciencedirect.com/science/article/pii/S0261219405002292",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.HourlySinPpAdjusted, Models",
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                  "Name": "HumidityResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        0.2,
+                                        0.5,
+                                        2.0
+                                      ],
+                                      "Y": [
+                                        1.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                      ],
+                                      "Name": "XYPairs",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[IWeather].VPD",
+                                      "Name": "XValue",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Assumption (needs checking and adjustment):\n\nNear 0 kPa → air is saturated → conidia survive well.\n\nVPD between 0.2 and 0.5 kPa → best survival (multiplier = 1).\n\nVPD above 0.5 kPa → progressive increase in mortality.\n\nVPD ≥ 2 kPa → air is very dry, leading to rapid conidia death.\n\n",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Memo, Models",
+                                  "Text": "Mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors",
+                                  "Name": "Memo",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.0,
+                                  "Units": "fractional",
+                                  "Name": "TestZero",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": false,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": null,
+                              "$type": "Models.Functions.MultiplyFunction, Models",
                               "Name": "Migration",
                               "ResourceName": null,
-                              "Children": [],
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[LatentPhase].CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.05,
+                                  "Units": "individuals per day",
+                                  "Name": "MaxRate",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "This is incorrect ... we should have transition to next phase via DEVELOPMENT ... using migration as a quick temporary fix only",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Memo, Models",
-                              "Text": "***Adding a Life Cycle***\n\nThe first step in building a population model is to build the LifeCycle. \n\nTo do this, go to the FIELD object, right click and select **Add Model > LifeCycle** \n\n***Initiating the LifeCycle Model***\n\nThe initial populations of all stages of individuals needs to be initiated with some individuals.\n\nThis is done at the **LifeCycle** level. \n\nSelect the LifeCycle model and then for \"Initial population at each LifeStage\" enter **\"1,0\"** for the two LifeStages (Juvenile and Adult) that we are using in our example, i.d., we have 1 juvenile and 0 adults. \n\n***Adding a Life Stage***\n\nThe LifeStage icon represents one LifeStage of the species being modelled.  A number of \nenvironmental factors (eg. temperature, moisture, predators, availability of food, diseases, \netc.) influence the species’ rate of development, survival and reproduction.  The LifeCycle model can be \nset to simulate these processes by adding functions to the LifeStage, each of which \ncontrols some aspect of the LifeStage. \n\nEach LifeStage defines a particular stage (eg. egg, pupa, adult, etc.) together with its \nenvironment and attributes.  The number of stages is set by the user.  \n\nFor the PseudoAphid two stages are required (juvenile and adult); however several stages could be used depending \nupon the detail required by the model or the life cycle of the organism.  Many insects may \nrequire a number of LifeStages depending upon the instars that are present.  For example, a \nmodel of a tree fern would probably include stages corresponding to spore, gametophyte, \ngamete and sporophyte.  However, it is conceivable that a user may wish to condense two of \nthese three stages into one for a particular model and might end up with the three stages of \nspore, gametophyte-gamete and sporophyte.  Exactly how the model is constructed depends \ncompletely on the requirements and applications of the user.\n\n**To add a LifeStage to the life cycle** right click on the LifeCycle and select **Add model > select LifeStage**. \n\nFor this tutorial:\n\nAdd a lifstage and rename it to **Juvenile**.\n\nAdd a second LifeStage and rename to **Adult**.\n\n",
-                              "Name": "Memo",
+                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
+                              "NameOfLifeCycleForMigrants": "Plant_Infestation",
+                              "NameOfPhaseForMigrants": "SymptomaticPhase",
+                              "Name": "ConidiaToMycelium",
                               "ResourceName": null,
-                              "Children": [],
+                              "Children": [
+                                {
+                                  "$type": "Models.Memo, Models",
+                                  "Text": "This is incorrect ... we should have transition to next phase via DEVELOPMENT ... using migration as a quick temporary fix only",
+                                  "Name": "Memo",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             }
@@ -963,12 +1267,571 @@
                           "ResourceName": null,
                           "Children": [
                             {
-                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
-                              "NameOfLifeCycleForProgeny": "Plant_Infestation",
-                              "NameOfPhaseForProgeny": "LatentPhase",
-                              "Name": "MyceliumToPycnidia",
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.0,
+                              "Units": "individuals per day",
+                              "Name": "Development",
                               "ResourceName": null,
                               "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Reproduction",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[SymptomaticPhase].CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.8,
+                                  "Units": "fractional",
+                                  "Name": "MaxDailyRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 1,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        12.0,
+                                        22.0,
+                                        30.0,
+                                        "NaN",
+                                        "NaN"
+                                      ],
+                                      "Y": [
+                                        0.0,
+                                        1.0,
+                                        1.0,
+                                        0.0,
+                                        "NaN",
+                                        "NaN"
+                                      ],
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Need review and literature\n\nhttps://www.sciencedirect.com/science/article/pii/S0261219405002292",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.HourlySinPpAdjusted, Models",
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                  "Name": "HumidityResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        0.4,
+                                        1.2,
+                                        2.0
+                                      ],
+                                      "Y": [
+                                        1.0,
+                                        1.0,
+                                        1.0,
+                                        0.0
+                                      ],
+                                      "Name": "XYPairs",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[IWeather].VPD",
+                                      "Name": "XValue",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Assumption (needs checking and adjustment):\n\nNear 0 kPa → air is saturated → conidia survive well.\n\nVPD between 0.2 and 0.5 kPa → best survival (multiplier = 1).\n\nVPD above 0.5 kPa → progressive increase in mortality.\n\nVPD ≥ 2 kPa → air is very dry, leading to rapid conidia death.\n\n",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.MultiplyFunction, Models",
+                                  "Name": "RainFactor",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                      "Name": "RainFallFactor",
+                                      "ResourceName": null,
+                                      "Children": [
+                                        {
+                                          "$type": "Models.Functions.XYPairs, Models",
+                                          "X": [
+                                            0.0,
+                                            1.0,
+                                            5.0,
+                                            30.0
+                                          ],
+                                          "Y": [
+                                            0.0,
+                                            1.0,
+                                            1.0,
+                                            1.0
+                                          ],
+                                          "Name": "XYPairs",
+                                          "ResourceName": null,
+                                          "Children": [],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        },
+                                        {
+                                          "$type": "Models.Functions.VariableReference, Models",
+                                          "VariableName": "[IWeather].Rain",
+                                          "Name": "XValue",
+                                          "ResourceName": null,
+                                          "Children": [],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        }
+                                      ],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Mortality",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[SymptomaticPhase].CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.0,
+                                  "Units": "fractional",
+                                  "Name": "MaxDailyRate",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.SubDailyInterpolation, Models",
+                                  "agregationMethod": 1,
+                                  "Name": "TemperatureResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        4.0,
+                                        10.0,
+                                        20.0,
+                                        27.0,
+                                        35.0
+                                      ],
+                                      "Y": [
+                                        1.0,
+                                        0.75,
+                                        0.0,
+                                        0.0,
+                                        0.75,
+                                        1.0
+                                      ],
+                                      "Name": "Response",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Need review and literature\n\nhttps://www.sciencedirect.com/science/article/pii/S0261219405002292",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.HourlySinPpAdjusted, Models",
+                                      "Name": "InterpolationMethod",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                  "Name": "HumidityResponse",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.XYPairs, Models",
+                                      "X": [
+                                        0.0,
+                                        0.2,
+                                        0.5,
+                                        2.0
+                                      ],
+                                      "Y": [
+                                        1.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                      ],
+                                      "Name": "XYPairs",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.VariableReference, Models",
+                                      "VariableName": "[IWeather].VPD",
+                                      "Name": "XValue",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Assumption (needs checking and adjustment):\n\nNear 0 kPa → air is saturated → conidia survive well.\n\nVPD between 0.2 and 0.5 kPa → best survival (multiplier = 1).\n\nVPD above 0.5 kPa → progressive increase in mortality.\n\nVPD ≥ 2 kPa → air is very dry, leading to rapid conidia death.\n\n",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Memo, Models",
+                                  "Text": "Mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors",
+                                  "Name": "Memo",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.0,
+                                  "Units": "fractional",
+                                  "Name": "TestZero",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": false,
+                                  "ReadOnly": false
+                                }
+                              ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Migration",
+                              "ResourceName": null,
+                              "Children": [
+                                {
+                                  "$type": "Models.Functions.VariableReference, Models",
+                                  "VariableName": "[SymptomaticPhase].CurrentCohort.Population",
+                                  "Name": "CohortPopulation",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.MinimumFunction, Models",
+                                  "Name": "MinimumFunction",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 0.3,
+                                      "Units": "fractional per day",
+                                      "Name": "MaximumDispersal",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.AddFunction, Models",
+                                      "Name": "DispersalDrivers",
+                                      "ResourceName": null,
+                                      "Children": [
+                                        {
+                                          "$type": "Models.Functions.MultiplyFunction, Models",
+                                          "Name": "RainFactor",
+                                          "ResourceName": null,
+                                          "Children": [
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "RainFallFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    2.0,
+                                                    15.0,
+                                                    30.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    0.0,
+                                                    1.0,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[IWeather].Rain",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            }
+                                          ],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        },
+                                        {
+                                          "$type": "Models.Functions.MultiplyFunction, Models",
+                                          "Name": "IrrigFactor",
+                                          "ResourceName": null,
+                                          "Children": [
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "IrrigationFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    1.0,
+                                                    2.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    1.0,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[Irrigation].IrrigationApplied",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            }
+                                          ],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        },
+                                        {
+                                          "$type": "Models.Functions.MultiplyFunction, Models",
+                                          "Name": "WindFact",
+                                          "ResourceName": null,
+                                          "Children": [
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "WindFactor",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    3.0,
+                                                    8.0,
+                                                    10.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    0.0,
+                                                    1.0,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[Weather].Wind",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            }
+                                          ],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        },
+                                        {
+                                          "$type": "Models.Functions.MultiplyFunction, Models",
+                                          "Name": "CoverFactor",
+                                          "ResourceName": null,
+                                          "Children": [
+                                            {
+                                              "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                                              "Name": "LeafCov",
+                                              "ResourceName": null,
+                                              "Children": [
+                                                {
+                                                  "$type": "Models.Functions.XYPairs, Models",
+                                                  "X": [
+                                                    0.0,
+                                                    0.5,
+                                                    1.0,
+                                                    2.0
+                                                  ],
+                                                  "Y": [
+                                                    0.0,
+                                                    0.0,
+                                                    1.0,
+                                                    1.0
+                                                  ],
+                                                  "Name": "XYPairs",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                },
+                                                {
+                                                  "$type": "Models.Functions.VariableReference, Models",
+                                                  "VariableName": "[Wheat].LAI",
+                                                  "Name": "XValue",
+                                                  "ResourceName": null,
+                                                  "Children": [],
+                                                  "Enabled": true,
+                                                  "ReadOnly": false
+                                                }
+                                              ],
+                                              "Enabled": true,
+                                              "ReadOnly": false
+                                            }
+                                          ],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        }
+                                      ],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Memo, Models",
+                                      "Text": "Dispersal is maximum 100% population per day (value of 1)\n\nIf less than that (0 to 1) than causes are:\n\n",
+                                      "Name": "Memo",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                }
+                              ],
                               "Enabled": true,
                               "ReadOnly": false
                             },
@@ -983,40 +1846,10 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.25,
-                              "Units": null,
-                              "Name": "Development",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": "individuals /d",
-                              "Name": "Reproduction",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": "individuals /d",
-                              "Name": "Mortality",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
-                              "Units": null,
-                              "Name": "Migration",
+                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
+                              "NameOfLifeCycleForProgeny": "Plant_Infestation",
+                              "NameOfPhaseForProgeny": "LatentPhase",
+                              "Name": "MyceliumToPycnidia",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -1039,6 +1872,33 @@
                                   "ReadOnly": false
                                 }
                               ],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Core.Folder, Models",
+                              "ShowInDocs": false,
+                              "Name": "Rates",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Core.Folder, Models",
+                              "ShowInDocs": false,
+                              "Name": "Damage",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Core.Folder, Models",
+                              "ShowInDocs": false,
+                              "Name": "Flux",
+                              "ResourceName": null,
+                              "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             }
@@ -5689,17 +6549,6 @@
                   "Minimum": null,
                   "Maximum": null,
                   "Interval": null
-                },
-                {
-                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
-                  "Title": "Wheat.LAI",
-                  "Position": 2,
-                  "Inverted": false,
-                  "CrossesAtZero": false,
-                  "LabelOnOneLine": false,
-                  "Minimum": null,
-                  "Maximum": null,
-                  "Interval": null
                 }
               ],
               "LegendPosition": 0,
@@ -5738,19 +6587,116 @@
                   "Children": [],
                   "Enabled": true,
                   "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Graph, Models",
+              "Caption": null,
+              "Axis": [
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 3,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                },
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 0,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                }
+              ],
+              "LegendPosition": 0,
+              "LegendOrientation": 0,
+              "AnnotationLocation": 0,
+              "DisabledSeries": [],
+              "LegendOutsideGraph": false,
+              "Name": "TotalPopulations",
+              "ResourceName": null,
+              "Children": [
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -16777216,
+                  "FactorToVaryColours": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "ReportPests",
+                  "XFieldName": "Clock.Today",
+                  "YFieldName": "External_Inocumum.ConidiaOnSoilOrDebri.TotalPopulation",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": null,
+                  "Name": "Innoculum",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
                 },
                 {
                   "$type": "Models.Series, Models",
                   "Type": 1,
                   "XAxis": 3,
-                  "YAxis": 2,
-                  "ColourArgb": -16747854,
-                  "FactorToVaryColours": "Septoria",
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": null,
                   "FactorToVaryMarkers": null,
-                  "FactorToVaryLines": null,
+                  "FactorToVaryLines": "Septoria",
                   "Marker": 11,
                   "MarkerSize": 0,
-                  "Line": 1,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "ReportPests",
+                  "XFieldName": "Clock.Today",
+                  "YFieldName": "Plant_Infestation.LatentPhase.TotalPopulation",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": null,
+                  "Name": "Latent",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -3376729,
+                  "FactorToVaryColours": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
                   "LineThickness": 0,
                   "TableName": "ReportPests",
                   "XFieldName": "Clock.Today",
@@ -5762,7 +6708,133 @@
                   "Cumulative": false,
                   "CumulativeX": false,
                   "Filter": null,
-                  "Name": "Series1",
+                  "Name": "Syntomatic",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Graph, Models",
+              "Caption": null,
+              "Axis": [
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 3,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                },
+                {
+                  "$type": "APSIM.Shared.Graphing.Axis, APSIM.Shared",
+                  "Title": null,
+                  "Position": 0,
+                  "Inverted": false,
+                  "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
+                  "Minimum": null,
+                  "Maximum": null,
+                  "Interval": null
+                }
+              ],
+              "LegendPosition": 0,
+              "LegendOrientation": 0,
+              "AnnotationLocation": 0,
+              "DisabledSeries": [],
+              "LegendOutsideGraph": false,
+              "Name": "Cohorts",
+              "ResourceName": null,
+              "Children": [
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -16777216,
+                  "FactorToVaryColours": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "ReportPests",
+                  "XFieldName": "Clock.Today",
+                  "YFieldName": "External_Inocumum.ConidiaOnSoilOrDebri.CohortCount",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": null,
+                  "Name": "Innoculum",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -1663232,
+                  "FactorToVaryColours": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "ReportPests",
+                  "XFieldName": "Clock.Today",
+                  "YFieldName": "Plant_Infestation.LatentPhase.CohortCount",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": null,
+                  "Name": "Latent",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Series, Models",
+                  "Type": 1,
+                  "XAxis": 3,
+                  "YAxis": 0,
+                  "ColourArgb": -3376729,
+                  "FactorToVaryColours": null,
+                  "FactorToVaryMarkers": null,
+                  "FactorToVaryLines": "Septoria",
+                  "Marker": 11,
+                  "MarkerSize": 0,
+                  "Line": 4,
+                  "LineThickness": 0,
+                  "TableName": "ReportPests",
+                  "XFieldName": "Clock.Today",
+                  "YFieldName": "Plant_Infestation.SymptomaticPhase.CohortCount",
+                  "X2FieldName": null,
+                  "Y2FieldName": null,
+                  "ShowInLegend": true,
+                  "IncludeSeriesNameInLegend": false,
+                  "Cumulative": false,
+                  "CumulativeX": false,
+                  "Filter": null,
+                  "Name": "Syntomatic",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
