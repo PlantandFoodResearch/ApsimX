@@ -10698,7 +10698,7 @@
                       "Name": "Genotype02",
                       "ResourceName": null,
                       "Children": [],
-                      "Enabled": true,
+                      "Enabled": false,
                       "ReadOnly": false
                     }
                   ],
@@ -10899,6 +10899,14 @@
               "ResourceName": null,
               "Children": [
                 {
+                  "$type": "Models.PMF.Plant, Models",
+                  "Name": "Wheat",
+                  "ResourceName": "Wheat",
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": true,
                   "Name": "ManagerFolder",
@@ -11009,9 +11017,9 @@
                       "InfestingOrganisumName": "External_Inocumum",
                       "InfestingPhaseName": "ConidiaOnSoilOrDebri",
                       "InfestationDate": "15-May",
-                      "InfestationEndDate": "15-June",
-                      "ChronoAgeOfImmigrants": 2,
-                      "PhysAgeOfImmigrants": 0.1,
+                      "InfestationEndDate": "20-May",
+                      "ChronoAgeOfImmigrants": 1,
+                      "PhysAgeOfImmigrants": 0.5,
                       "Name": "Initial_Conidia_Infestation",
                       "ResourceName": null,
                       "Children": [
@@ -11847,7 +11855,7 @@
                           "Children": [
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.0,
+                              "FixedValue": 0.2,
                               "Units": "individuals per day",
                               "Name": "Development",
                               "ResourceName": null,
@@ -12418,7 +12426,7 @@
                               "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
                               "NameOfLifeCycleForMigrants": "External_Inocumum",
                               "NameOfPhaseForMigrants": "ConidiaOnSoilOrDebri",
-                              "Name": "PycnidiaToInoculum",
+                              "Name": "MyceliumToPycnidia",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -12428,7 +12436,7 @@
                               "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
                               "NameOfLifeCycleForProgeny": "Plant_Infestation",
                               "NameOfPhaseForProgeny": "LatentPhase",
-                              "Name": "MyceliumToPycnidia",
+                              "Name": "MyceliumToConidia",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -12442,11 +12450,60 @@
                               "Children": [
                                 {
                                   "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.005,
+                                  "FixedValue": 0.5,
                                   "Units": "LAI per individual per day",
-                                  "Name": "DimensionReductionPerIndividual",
+                                  "Name": "DimensionReductionPerIndividualx",
                                   "ResourceName": null,
                                   "Children": [],
+                                  "Enabled": false,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.MultiplyFunction, Models",
+                                  "Name": "DimensionReductionPerIndividual",
+                                  "ResourceName": null,
+                                  "Children": [
+                                    {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 0.0002,
+                                      "Units": "m2 (e.g., 2 cm2 of leaf)",
+                                      "Name": "AverageAreaOfLesion",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 0.05,
+                                      "Units": "fractional (e.g., of coinidia leaf population as 5/100)",
+                                      "Name": "EfficiencyOfInfection",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 0.05,
+                                      "Units": "fractional (i.e., of infection timeline as 1/20 days)",
+                                      "Name": "FractionDamagedPerDay",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    },
+                                    {
+                                      "$type": "Models.Functions.Constant, Models",
+                                      "FixedValue": 1000000.0,
+                                      "Units": "Trying to represent a million conidium",
+                                      "Name": "DebugQuickFix",
+                                      "ResourceName": null,
+                                      "Children": [],
+                                      "Enabled": true,
+                                      "ReadOnly": false
+                                    }
+                                  ],
                                   "Enabled": true,
                                   "ReadOnly": false
                                 }
@@ -14373,14 +14430,6 @@
                   "ReadOnly": false
                 },
                 {
-                  "$type": "Models.PMF.Plant, Models",
-                  "Name": "Wheat",
-                  "ResourceName": "Wheat",
-                  "Children": [],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
                   "$type": "Models.Irrigation, Models",
                   "Name": "Irrigation",
                   "ResourceName": null,
@@ -16042,7 +16091,7 @@
                   "X2FieldName": null,
                   "Y2FieldName": null,
                   "ShowInLegend": true,
-                  "IncludeSeriesNameInLegend": false,
+                  "IncludeSeriesNameInLegend": true,
                   "Cumulative": false,
                   "CumulativeX": false,
                   "Filter": null,
@@ -16071,7 +16120,7 @@
                   "X2FieldName": null,
                   "Y2FieldName": null,
                   "ShowInLegend": true,
-                  "IncludeSeriesNameInLegend": false,
+                  "IncludeSeriesNameInLegend": true,
                   "Cumulative": false,
                   "CumulativeX": false,
                   "Filter": null,
@@ -16100,7 +16149,7 @@
                   "X2FieldName": null,
                   "Y2FieldName": null,
                   "ShowInLegend": true,
-                  "IncludeSeriesNameInLegend": false,
+                  "IncludeSeriesNameInLegend": true,
                   "Cumulative": false,
                   "CumulativeX": false,
                   "Filter": null,
@@ -16168,7 +16217,7 @@
                   "X2FieldName": null,
                   "Y2FieldName": null,
                   "ShowInLegend": true,
-                  "IncludeSeriesNameInLegend": false,
+                  "IncludeSeriesNameInLegend": true,
                   "Cumulative": false,
                   "CumulativeX": false,
                   "Filter": null,
@@ -16197,7 +16246,7 @@
                   "X2FieldName": null,
                   "Y2FieldName": null,
                   "ShowInLegend": true,
-                  "IncludeSeriesNameInLegend": false,
+                  "IncludeSeriesNameInLegend": true,
                   "Cumulative": false,
                   "CumulativeX": false,
                   "Filter": null,
@@ -16226,7 +16275,7 @@
                   "X2FieldName": null,
                   "Y2FieldName": null,
                   "ShowInLegend": true,
-                  "IncludeSeriesNameInLegend": false,
+                  "IncludeSeriesNameInLegend": true,
                   "Cumulative": false,
                   "CumulativeX": false,
                   "Filter": null,
