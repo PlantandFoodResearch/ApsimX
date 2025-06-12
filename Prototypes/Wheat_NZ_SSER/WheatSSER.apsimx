@@ -11025,7 +11025,7 @@
                       "Children": [
                         {
                           "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 1.0,
+                          "FixedValue": 1000000.0,
                           "Units": "conidia / m2",
                           "Name": "NumberOfImmigrants",
                           "ResourceName": null,
@@ -12495,8 +12495,8 @@
                                     },
                                     {
                                       "$type": "Models.Functions.Constant, Models",
-                                      "FixedValue": 1000000.0,
-                                      "Units": "Trying to represent a million conidium",
+                                      "FixedValue": 1.0,
+                                      "Units": "Trying to represent a million conidium (if 1 than no effect)",
                                       "Name": "DebugQuickFix",
                                       "ResourceName": null,
                                       "Children": [],
