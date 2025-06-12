@@ -7344,7 +7344,7 @@
                         "[Grain].MaximumPotentialGrainSize.FixedValue = 0.051",
                         "[Grain].NumberFunction.GrainNumber.GrainsPerGramOfStem.FixedValue = 26",
                         "[Leaf].ExtinctionCoeff.VegetativePhase.FixedValue = 0.5",
-                        "[Structure].BranchingRate.PotentialBranchingRate.Vegetative.PotentialBranchingRate.XYPairs.Y = 0,0,0,0,4,7,12,20",
+                        "[Structure].BranchingRate.PotentialBranchingRate.Vegetative.PotentialBranchingRate.XYPairs.Y = 0,0,0,0,4,4,4,4",
                         "[Grain].MaximumNConc.FixedValue = 0.025",
                         "[Grain].MaxNConcDailyGrowth.FixedValue = 0.025",
                         "[Leaf].ExtinctionCoeff.DevelopmentFactor.XYPairs.Y = 1,1,1,1,1.4",
@@ -10678,7 +10678,7 @@
                     {
                       "$type": "Models.Factorial.CompositeFactor, Models",
                       "Specifications": [
-                        "[AutoSow].Script.CultivarName = Wakanui"
+                        "[AutoSow].Script.CultivarName = Discovery"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -10691,7 +10691,7 @@
                     {
                       "$type": "Models.Factorial.CompositeFactor, Models",
                       "Specifications": [
-                        "[AutoSow].Script.CultivarName = Discovery"
+                        "[AutoSow].Script.CultivarName = Wakanui"
                       ],
                       "Paths": null,
                       "Values": null,
