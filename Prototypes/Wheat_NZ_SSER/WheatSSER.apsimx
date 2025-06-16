@@ -7365,7 +7365,7 @@
                       "Children": [
                         {
                           "$type": "Models.Memo, Models",
-                          "Text": "This is a spring wheat with a high grain number and later tillering",
+                          "Text": "This is a spring wheat with a high grain number and later tillering\nFixed number of branches to 4 to avoid explosion at low LAI\n[Structure].BranchingRate.PotentialBranchingRate.Vegetative.PotentialBranchingRate.XYPairs.Y = 0,0,0,0,4,4,4,4",
                           "Name": "Memo",
                           "ResourceName": null,
                           "Children": [],
@@ -11018,14 +11018,14 @@
                       "InfestingPhaseName": "ConidiaOnSoilOrDebri",
                       "InfestationDate": "15-May",
                       "InfestationEndDate": "20-May",
-                      "ChronoAgeOfImmigrants": 1,
-                      "PhysAgeOfImmigrants": 0.5,
+                      "ChronoAgeOfImmigrants": 0,
+                      "PhysAgeOfImmigrants": 0.0,
                       "Name": "Initial_Conidia_Infestation",
                       "ResourceName": null,
                       "Children": [
                         {
                           "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 1000000.0,
+                          "FixedValue": 1.0,
                           "Units": "conidia / m2",
                           "Name": "NumberOfImmigrants",
                           "ResourceName": null,
@@ -11218,11 +11218,11 @@
                                 {
                                   "$type": "Models.Functions.Constant, Models",
                                   "FixedValue": 0.0,
-                                  "Units": "fractional",
-                                  "Name": "TestZero",
+                                  "Units": "0 or 1",
+                                  "Name": "Switch",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": false,
+                                  "Enabled": true,
                                   "ReadOnly": false
                                 }
                               ],
@@ -11465,6 +11465,16 @@
                                   ],
                                   "Enabled": true,
                                   "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 1.0,
+                                  "Units": "0 or 1",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
                                 }
                               ],
                               "Enabled": true,
@@ -11507,8 +11517,18 @@
                           "ResourceName": null,
                           "Children": [
                             {
-                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "$type": "Models.Functions.Constant, Models",
+                              "FixedValue": 0.5,
+                              "Units": "fractional",
                               "Name": "Development",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Functions.MultiplyFunction, Models",
+                              "Name": "Developmentx",
                               "ResourceName": null,
                               "Children": [
                                 {
@@ -11616,6 +11636,16 @@
                                       "ReadOnly": false
                                     }
                                   ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.0,
+                                  "Units": "test",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
                                   "Enabled": true,
                                   "ReadOnly": false
                                 }
@@ -11768,10 +11798,10 @@
                                   "$type": "Models.Functions.Constant, Models",
                                   "FixedValue": 0.0,
                                   "Units": "fractional",
-                                  "Name": "TestZero",
+                                  "Name": "Switch",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": false,
+                                  "Enabled": true,
                                   "ReadOnly": false
                                 }
                               ],
@@ -11794,7 +11824,7 @@
                                 },
                                 {
                                   "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.05,
+                                  "FixedValue": 0.01,
                                   "Units": "individuals per day",
                                   "Name": "MaxRate",
                                   "ResourceName": null,
@@ -11809,6 +11839,16 @@
                                       "ReadOnly": false
                                     }
                                   ],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.0,
+                                  "Units": "test",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
                                   "Enabled": true,
                                   "ReadOnly": false
                                 }
@@ -11829,11 +11869,11 @@
                                   "Name": "Memo",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": true,
+                                  "Enabled": false,
                                   "ReadOnly": false
                                 }
                               ],
-                              "Enabled": true,
+                              "Enabled": false,
                               "ReadOnly": false
                             }
                           ],
@@ -11855,7 +11895,7 @@
                           "Children": [
                             {
                               "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.2,
+                              "FixedValue": 0.5,
                               "Units": "individuals per day",
                               "Name": "Development",
                               "ResourceName": null,
@@ -12423,20 +12463,20 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
-                              "NameOfLifeCycleForMigrants": "External_Inocumum",
-                              "NameOfPhaseForMigrants": "ConidiaOnSoilOrDebri",
-                              "Name": "MyceliumToPycnidia",
+                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
+                              "NameOfLifeCycleForProgeny": "Plant_Infestation",
+                              "NameOfPhaseForProgeny": "LatentPhase",
+                              "Name": "MyceliumToLatentConidia",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.LifeCycle.ProgenyDestinationPhase, Models",
-                              "NameOfLifeCycleForProgeny": "Plant_Infestation",
-                              "NameOfPhaseForProgeny": "LatentPhase",
-                              "Name": "MyceliumToConidia",
+                              "$type": "Models.LifeCycle.MigrantDestinationPhase, Models",
+                              "NameOfLifeCycleForMigrants": "External_Inocumum",
+                              "NameOfPhaseForMigrants": "ConidiaOnSoilOrDebri",
+                              "Name": "MyceliumToPycnidiaOnSoil",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -12495,7 +12535,7 @@
                                     },
                                     {
                                       "$type": "Models.Functions.Constant, Models",
-                                      "FixedValue": 1.0,
+                                      "FixedValue": 100000.0,
                                       "Units": "Trying to represent a million conidium (if 1 than no effect)",
                                       "Name": "DebugQuickFix",
                                       "ResourceName": null,
