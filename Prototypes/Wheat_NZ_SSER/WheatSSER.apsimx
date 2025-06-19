@@ -10630,6 +10630,18 @@
     {
       "$type": "Models.Factorial.Experiment, Models",
       "DisabledSimNames": [
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationLincoln_CurrentClimateSeptoriaClean",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationLincoln_FutureClimateSeptoriaClean",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationLincoln_FutureClimateSeptoriaClean",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationSouthland_CurrentClimateSeptoriaClean",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationSouthland_FutureClimateSeptoriaClean",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationSouthland_FutureClimateSeptoriaClean",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationLincoln_CurrentClimateSeptoriaInfected",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationLincoln_FutureClimateSeptoriaInfected",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationLincoln_FutureClimateSeptoriaInfected",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationSouthland_CurrentClimateSeptoriaInfected",
+        "SimulationExpIrrigRainfedGenotypeGenotype01LocationSouthland_FutureClimateSeptoriaInfected",
+        "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationSouthland_FutureClimateSeptoriaInfected",
         "SimulationExpIrrigRainfedGenotypeGenotype01LocationFutureClimateSeptoriaInfected",
         "SimulationExpIrrigRainfedGenotypeGenotype01LocationFutureClimateSeptoriaClean",
         "SimulationExpIrrigIrrigatedGenotypeGenotype01LocationCurrentClimateSeptoriaClean",
@@ -10745,7 +10757,7 @@
                       ],
                       "Paths": null,
                       "Values": null,
-                      "Name": "CurrentClimate",
+                      "Name": "Lincoln_CurrentClimate",
                       "ResourceName": null,
                       "Children": [],
                       "Enabled": true,
@@ -10760,7 +10772,37 @@
                       ],
                       "Paths": null,
                       "Values": null,
-                      "Name": "FutureClimate",
+                      "Name": "Lincoln_FutureClimate",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Factorial.CompositeFactor, Models",
+                      "Specifications": [
+                        "[Weather].FileName = 10731_South_Had_RCPpast.met",
+                        "[Clock].Start = 1/1/1971",
+                        "[Clock].End = 1/1/1973"
+                      ],
+                      "Paths": null,
+                      "Values": null,
+                      "Name": "Southland_CurrentClimate",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Factorial.CompositeFactor, Models",
+                      "Specifications": [
+                        "[Weather].FileName = 10731_South_Had_RCP85.met",
+                        "[Clock].Start = 1/1/2050",
+                        "[Clock].End = 1/1/2052"
+                      ],
+                      "Paths": null,
+                      "Values": null,
+                      "Name": "Southland_FutureClimate",
                       "ResourceName": null,
                       "Children": [],
                       "Enabled": true,
@@ -10819,7 +10861,7 @@
                     {
                       "$type": "Models.Factorial.CompositeFactor, Models",
                       "Specifications": [
-                        "[Initial_Conidia_Infestation].NumberOfImmigrants.FixedValue=0"
+                        "[Initial_Conidia_Infestation].NumberOfImmigrants.FixedValue = 0"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -10832,7 +10874,7 @@
                     {
                       "$type": "Models.Factorial.CompositeFactor, Models",
                       "Specifications": [
-                        "[Initial_Conidia_Infestation].NumberOfImmigrants.FixedValue=1"
+                        "[Initial_Conidia_Infestation].NumberOfImmigrants.FixedValue = 1000000"
                       ],
                       "Paths": null,
                       "Values": null,
@@ -11037,32 +11079,6 @@
                   "ResourceName": null,
                   "Children": [
                     {
-                      "$type": "Models.LifeCycle.Infestation, Models",
-                      "TypeOfInfestation": 1,
-                      "InfestingOrganisumName": "External_Inocumum",
-                      "InfestingPhaseName": "ConidiaOnSoilOrDebri",
-                      "InfestationDate": "15-Sep",
-                      "InfestationEndDate": "",
-                      "ChronoAgeOfImmigrants": 0,
-                      "PhysAgeOfImmigrants": 0.0,
-                      "Name": "Initial_Conidia_Infestation",
-                      "ResourceName": null,
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 1000000.0,
-                          "Units": "conidia / m2",
-                          "Name": "NumberOfImmigrants",
-                          "ResourceName": null,
-                          "Children": [],
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "Enabled": true,
-                      "ReadOnly": false
-                    },
-                    {
                       "$type": "Models.LifeCycle.LifeCycle, Models",
                       "Name": "External_Inocumum",
                       "ResourceName": null,
@@ -11082,7 +11098,7 @@
                           "Children": [
                             {
                               "$type": "Models.Memo, Models",
-                              "Text": "Conidia are asexual propagules produced by the fungus in pycnidia on infected plant tissue, but not in the soil or debris directly.\n\nThey can persist for some time, but are subject to mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors\n\nThe \"population\" of conidia in this pool **declines** over time due to these mortality factors.\n\nNew conidia are **added** from infected plants or **removed** into the debris or plants by rain splash.",
+                              "Text": "Conidia are asexual propagules produced by the fungus in pycnidia on infected plant tissue, but not in the soil or debris directly.\n\nThey can persist for some time, but are subject to mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors\n\nThe \"population\" of conidia in this pool **declines** over time due to these mortality factors.\n\nNew conidia are **added** from infected plants or **removed** into the debris or plants by rain splash.\n\nUnder optimal splash or wind events, 1–10% of conidia may be transferred upward into the canopy.\n\nNot all deposited conidia lead to infection — here for a potential migration rate, we focus only on arrival, not successful infection",
                               "Name": "Memo",
                               "ResourceName": null,
                               "Children": [],
@@ -11115,6 +11131,16 @@
                               "ResourceName": null,
                               "Children": [
                                 {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 1.0,
+                                  "Units": "0 or 1",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
                                   "$type": "Models.Functions.VariableReference, Models",
                                   "VariableName": "[ConidiaOnSoilOrDebri].CurrentCohort.Population",
                                   "Name": "CohortPopulation",
@@ -11125,7 +11151,7 @@
                                 },
                                 {
                                   "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.1,
+                                  "FixedValue": 0.05,
                                   "Units": "fractional",
                                   "Name": "MaxDailyRate",
                                   "ResourceName": null,
@@ -11233,18 +11259,8 @@
                                 },
                                 {
                                   "$type": "Models.Memo, Models",
-                                  "Text": "Mortality from:\n\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors",
+                                  "Text": "Mortality from:\n- Desiccation\n\n- Microbial antagonism\n\n- UV exposure\n\n- Other environmental factors",
                                   "Name": "Memo",
-                                  "ResourceName": null,
-                                  "Children": [],
-                                  "Enabled": true,
-                                  "ReadOnly": false
-                                },
-                                {
-                                  "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.0,
-                                  "Units": "0 or 1",
-                                  "Name": "Switch",
                                   "ResourceName": null,
                                   "Children": [],
                                   "Enabled": true,
@@ -11259,6 +11275,16 @@
                               "Name": "Migration",
                               "ResourceName": null,
                               "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 1.0,
+                                  "Units": "0 or 1",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
                                 {
                                   "$type": "Models.Functions.VariableReference, Models",
                                   "VariableName": "[ConidiaOnSoilOrDebri].CurrentCohort.Population",
@@ -11275,7 +11301,7 @@
                                   "Children": [
                                     {
                                       "$type": "Models.Functions.Constant, Models",
-                                      "FixedValue": 1.0,
+                                      "FixedValue": 0.1,
                                       "Units": "fractional per day",
                                       "Name": "MaximumDispersal",
                                       "ResourceName": null,
@@ -11490,16 +11516,6 @@
                                   ],
                                   "Enabled": true,
                                   "ReadOnly": false
-                                },
-                                {
-                                  "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 1.0,
-                                  "Units": "0 or 1",
-                                  "Name": "Switch",
-                                  "ResourceName": null,
-                                  "Children": [],
-                                  "Enabled": true,
-                                  "ReadOnly": false
                                 }
                               ],
                               "Enabled": true,
@@ -11542,20 +11558,20 @@
                           "ResourceName": null,
                           "Children": [
                             {
-                              "$type": "Models.Functions.Constant, Models",
-                              "FixedValue": 0.5,
-                              "Units": "fractional",
+                              "$type": "Models.Functions.MultiplyFunction, Models",
                               "Name": "Development",
                               "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
-                              "$type": "Models.Functions.MultiplyFunction, Models",
-                              "Name": "Developmentx",
-                              "ResourceName": null,
                               "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 1.0,
+                                  "Units": "0 or 1",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
                                 {
                                   "$type": "Models.Functions.Constant, Models",
                                   "FixedValue": 0.3,
@@ -11663,16 +11679,6 @@
                                   ],
                                   "Enabled": true,
                                   "ReadOnly": false
-                                },
-                                {
-                                  "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.0,
-                                  "Units": "test",
-                                  "Name": "Switch",
-                                  "ResourceName": null,
-                                  "Children": [],
-                                  "Enabled": true,
-                                  "ReadOnly": false
                                 }
                               ],
                               "Enabled": true,
@@ -11693,6 +11699,16 @@
                               "Name": "Mortality",
                               "ResourceName": null,
                               "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 1.0,
+                                  "Units": "fractional",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
                                 {
                                   "$type": "Models.Functions.VariableReference, Models",
                                   "VariableName": "[LatentPhase].CurrentCohort.Population",
@@ -11818,16 +11834,6 @@
                                   "Children": [],
                                   "Enabled": true,
                                   "ReadOnly": false
-                                },
-                                {
-                                  "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.0,
-                                  "Units": "fractional",
-                                  "Name": "Switch",
-                                  "ResourceName": null,
-                                  "Children": [],
-                                  "Enabled": true,
-                                  "ReadOnly": false
                                 }
                               ],
                               "Enabled": true,
@@ -11838,6 +11844,16 @@
                               "Name": "Migration",
                               "ResourceName": null,
                               "Children": [
+                                {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 0.0,
+                                  "Units": "test",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
                                 {
                                   "$type": "Models.Functions.VariableReference, Models",
                                   "VariableName": "[LatentPhase].CurrentCohort.Population",
@@ -11866,16 +11882,6 @@
                                   ],
                                   "Enabled": true,
                                   "ReadOnly": false
-                                },
-                                {
-                                  "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.0,
-                                  "Units": "test",
-                                  "Name": "Switch",
-                                  "ResourceName": null,
-                                  "Children": [],
-                                  "Enabled": true,
-                                  "ReadOnly": false
                                 }
                               ],
                               "Enabled": true,
@@ -11894,11 +11900,11 @@
                                   "Name": "Memo",
                                   "ResourceName": null,
                                   "Children": [],
-                                  "Enabled": false,
+                                  "Enabled": true,
                                   "ReadOnly": false
                                 }
                               ],
-                              "Enabled": false,
+                              "Enabled": true,
                               "ReadOnly": false
                             }
                           ],
@@ -12117,6 +12123,16 @@
                               "ResourceName": null,
                               "Children": [
                                 {
+                                  "$type": "Models.Functions.Constant, Models",
+                                  "FixedValue": 1.0,
+                                  "Units": "0 or 1",
+                                  "Name": "Switch",
+                                  "ResourceName": null,
+                                  "Children": [],
+                                  "Enabled": true,
+                                  "ReadOnly": false
+                                },
+                                {
                                   "$type": "Models.Functions.VariableReference, Models",
                                   "VariableName": "[SymptomaticPhase].CurrentCohort.Population",
                                   "Name": "CohortPopulation",
@@ -12127,7 +12143,7 @@
                                 },
                                 {
                                   "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.0,
+                                  "FixedValue": 0.05,
                                   "Units": "fractional",
                                   "Name": "MaxDailyRate",
                                   "ResourceName": null,
@@ -12240,16 +12256,6 @@
                                   "ResourceName": null,
                                   "Children": [],
                                   "Enabled": true,
-                                  "ReadOnly": false
-                                },
-                                {
-                                  "$type": "Models.Functions.Constant, Models",
-                                  "FixedValue": 0.0,
-                                  "Units": "fractional",
-                                  "Name": "TestZero",
-                                  "ResourceName": null,
-                                  "Children": [],
-                                  "Enabled": false,
                                   "ReadOnly": false
                                 }
                               ],
@@ -12550,11 +12556,21 @@
                                   "Children": [
                                     {
                                       "$type": "Models.Functions.Constant, Models",
-                                      "FixedValue": 100000000.0,
-                                      "Units": "Trying to represent a million conidium (if 1 than no effect)",
-                                      "Name": "DebugQuickFix",
+                                      "FixedValue": 1.0,
+                                      "Units": "Trying to represent the impact by a higher population of 10^4 conidia - see Memo",
+                                      "Name": "PopulationAdjustment",
                                       "ResourceName": null,
-                                      "Children": [],
+                                      "Children": [
+                                        {
+                                          "$type": "Models.Memo, Models",
+                                          "Text": "This is a temporary fix for the lack of response in [Initial_Conidia_Infestation].NumberOfImmigrants to represent higher populations ... the damage is being adjusted respectivelly to compensate for a fixed population (potential bug in LifeCycle to be evaluated). ",
+                                          "Name": "Memo",
+                                          "ResourceName": null,
+                                          "Children": [],
+                                          "Enabled": true,
+                                          "ReadOnly": false
+                                        }
+                                      ],
                                       "Enabled": true,
                                       "ReadOnly": false
                                     },
@@ -14277,6 +14293,32 @@
                       ],
                       "Enabled": false,
                       "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.LifeCycle.Infestation, Models",
+                      "TypeOfInfestation": 2,
+                      "InfestingOrganisumName": "External_Inocumum",
+                      "InfestingPhaseName": "ConidiaOnSoilOrDebri",
+                      "InfestationDate": "15-May",
+                      "InfestationEndDate": "15-June",
+                      "ChronoAgeOfImmigrants": 2,
+                      "PhysAgeOfImmigrants": 0.1,
+                      "Name": "Initial_Conidia_Infestation",
+                      "ResourceName": null,
+                      "Children": [
+                        {
+                          "$type": "Models.Functions.Constant, Models",
+                          "FixedValue": 1.0,
+                          "Units": "conidia / m2",
+                          "Name": "NumberOfImmigrants",
+                          "ResourceName": null,
+                          "Children": [],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        }
+                      ],
+                      "Enabled": true,
+                      "ReadOnly": false
                     }
                   ],
                   "Enabled": true,
@@ -15768,8 +15810,8 @@
               "YAxis": 0,
               "ColourArgb": -16777216,
               "FactorToVaryColours": "Septoria",
-              "FactorToVaryMarkers": "Genotype",
-              "FactorToVaryLines": null,
+              "FactorToVaryMarkers": null,
+              "FactorToVaryLines": "Location",
               "Marker": 11,
               "MarkerSize": 0,
               "Line": 4,
@@ -15796,7 +15838,7 @@
               "XAxis": 3,
               "YAxis": 2,
               "ColourArgb": -16747854,
-              "FactorToVaryColours": "Septoria",
+              "FactorToVaryColours": "Location",
               "FactorToVaryMarkers": null,
               "FactorToVaryLines": null,
               "Marker": 11,
@@ -15816,7 +15858,7 @@
               "Name": "Series1",
               "ResourceName": null,
               "Children": [],
-              "Enabled": true,
+              "Enabled": false,
               "ReadOnly": false
             }
           ],
@@ -16154,7 +16196,7 @@
               "AnnotationLocation": 0,
               "DisabledSeries": [],
               "LegendOutsideGraph": false,
-              "Name": "TotalPopulations",
+              "Name": "TotalPopulation",
               "ResourceName": null,
               "Children": [
                 {
