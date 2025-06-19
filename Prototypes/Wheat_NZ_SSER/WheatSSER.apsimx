@@ -11079,6 +11079,32 @@
                   "ResourceName": null,
                   "Children": [
                     {
+                      "$type": "Models.LifeCycle.Infestation, Models",
+                      "TypeOfInfestation": 2,
+                      "InfestingOrganisumName": "External_Inocumum",
+                      "InfestingPhaseName": "ConidiaOnSoilOrDebri",
+                      "InfestationDate": "15-May",
+                      "InfestationEndDate": "15-June",
+                      "ChronoAgeOfImmigrants": 2,
+                      "PhysAgeOfImmigrants": 0.1,
+                      "Name": "Initial_Conidia_Infestation",
+                      "ResourceName": null,
+                      "Children": [
+                        {
+                          "$type": "Models.Functions.Constant, Models",
+                          "FixedValue": 1.0,
+                          "Units": "conidia / m2",
+                          "Name": "NumberOfImmigrants",
+                          "ResourceName": null,
+                          "Children": [],
+                          "Enabled": true,
+                          "ReadOnly": false
+                        }
+                      ],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
                       "$type": "Models.LifeCycle.LifeCycle, Models",
                       "Name": "External_Inocumum",
                       "ResourceName": null,
@@ -12554,26 +12580,6 @@
                                   "Name": "DimensionReductionPerIndividual",
                                   "ResourceName": null,
                                   "Children": [
-                                    {
-                                      "$type": "Models.Functions.Constant, Models",
-                                      "FixedValue": 1.0,
-                                      "Units": "Trying to represent the impact by a higher population of 10^4 conidia - see Memo",
-                                      "Name": "PopulationAdjustment",
-                                      "ResourceName": null,
-                                      "Children": [
-                                        {
-                                          "$type": "Models.Memo, Models",
-                                          "Text": "This is a temporary fix for the lack of response in [Initial_Conidia_Infestation].NumberOfImmigrants to represent higher populations ... the damage is being adjusted respectivelly to compensate for a fixed population (potential bug in LifeCycle to be evaluated). ",
-                                          "Name": "Memo",
-                                          "ResourceName": null,
-                                          "Children": [],
-                                          "Enabled": true,
-                                          "ReadOnly": false
-                                        }
-                                      ],
-                                      "Enabled": true,
-                                      "ReadOnly": false
-                                    },
                                     {
                                       "$type": "Models.Functions.Constant, Models",
                                       "FixedValue": 0.0002,
@@ -14292,32 +14298,6 @@
                         }
                       ],
                       "Enabled": false,
-                      "ReadOnly": false
-                    },
-                    {
-                      "$type": "Models.LifeCycle.Infestation, Models",
-                      "TypeOfInfestation": 2,
-                      "InfestingOrganisumName": "External_Inocumum",
-                      "InfestingPhaseName": "ConidiaOnSoilOrDebri",
-                      "InfestationDate": "15-May",
-                      "InfestationEndDate": "15-June",
-                      "ChronoAgeOfImmigrants": 2,
-                      "PhysAgeOfImmigrants": 0.1,
-                      "Name": "Initial_Conidia_Infestation",
-                      "ResourceName": null,
-                      "Children": [
-                        {
-                          "$type": "Models.Functions.Constant, Models",
-                          "FixedValue": 1.0,
-                          "Units": "conidia / m2",
-                          "Name": "NumberOfImmigrants",
-                          "ResourceName": null,
-                          "Children": [],
-                          "Enabled": true,
-                          "ReadOnly": false
-                        }
-                      ],
-                      "Enabled": true,
                       "ReadOnly": false
                     }
                   ],
