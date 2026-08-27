@@ -22,7 +22,7 @@ namespace Models.AgPasture
         //----------------------- Constants -----------------------
 
         /// <summary>Average carbon content in plant dry matter (kg/kg).</summary>
-        private const double CarbonFractionInDM = 0.4;
+        private const double CarbonConcentration = 0.4;
 
         /// <summary>Carbon to nitrogen ratio of proteins (kg/kg).</summary>
         private const double CNratioProtein = 3.5;
@@ -40,13 +40,13 @@ namespace Models.AgPasture
         //---------------------------- Parameters -----------------------
 
         /// <summary>Fraction of excess N, above optimum N for live tissues and minimum for dead tissue, that is remobilisable per day (0-1).</summary>
-        public double FractionNRemobilisable { get; set; } = 0.1;
+        public double FractionNRemobilisable { get; set; }
 
         /// <summary>Sugar fraction on new growth, i.e. soluble carbohydrate (0-1).</summary>
         public double FractionSugarNewGrowth { get; set; } = 0.0;
 
         /// <summary>Digestibility of cell walls (0-1).</summary>
-        public double DigestibilityCellWall { get; set; } = 0.5;
+        public double DigestibilityCellWall { get; set; }
 
         /// <summary>Digestibility of proteins (0-1).</summary>
         public double DigestibilityProtein { get; set; } = 1.0;
@@ -144,7 +144,13 @@ namespace Models.AgPasture
         public void Update()
         {
             dryMatter.Wt += DMTransferredIn - DMTransferredOut;
+            if (dryMatter.Wt < 0 && MathUtilities.FloatsAreEqual(dryMatter.Wt, 0))
+                dryMatter.Wt = 0;
+
             dryMatter.N += NTransferredIn - (NTransferredOut + NRemobilised);
+            if (dryMatter.N < 0 && MathUtilities.FloatsAreEqual(dryMatter.N, 0))
+                dryMatter.N = 0;
+
             if (dryMatter.Wt < 0)
                 throw new Exception($"{species.Name} {Name} tissue has negative dry matter");
             if (dryMatter.N < 0)
@@ -172,23 +178,23 @@ namespace Models.AgPasture
 
                 // get the N amount remobilisable (all N in this tissue above the given nConc threshold)
                 double dmRemaining = DM.Wt - DMTransferredOut;
-                double dmRemainingNConc =  DM.NConc;
+                double dmRemainingNConc = DM.NConc;
                 double dmTransferredInNConc = MathUtilities.Divide(NTransferredIn, DMTransferredIn, 0);
 
                 double potentialRemobilisableN = 0;
                 if (Name != "DeadTissue")
                 {
-                    // Calculate the N remobilisable as the dry matter (after removing the amount leaving the tissue)
-                    // multiplied by the N concentration above the threshold concentration.
-                    // NOTE: Don't do this for dead material.
+                    // calculate the N remobilisable as the dry matter (after removing the amount leaving the tissue)
+                    //  multiplied by the N concentration above the threshold concentration.
+                    // NOTE: don't do this for dead material.
                     potentialRemobilisableN = dmRemaining * Math.Max(0.0, dmRemainingNConc - nConcThreshold);
                 }
 
-                // The N transferred into this tissue is remobilisable at the same concentration as above
-                // i.e. the concentration of N of the incoming material above the threshold value.
+                // the N transferred into this tissue is remobilisable at the same concentration as above,
+                //  i.e. the concentration of N of the incoming material above the threshold value.
                 potentialRemobilisableN += DMTransferredIn * Math.Max(0.0, dmTransferredInNConc - nConcThreshold);
 
-                // Only a fraction of the above calculated potential remobilisable N is remobilisable per day
+                // only a fraction of the above calculated potential remobilisable N is remobilisable per day
                 NRemobilisable = Math.Max(0.0, potentialRemobilisableN * FractionNRemobilisable);
             }
         }
@@ -235,7 +241,7 @@ namespace Models.AgPasture
             Digestibility = 0.0;
             if (DM.Wt > 0.0)
             {
-                double cnTissue = DM.Wt * CarbonFractionInDM / DM.N;
+                double cnTissue = DM.Wt * CarbonConcentration / DM.N;
                 double ratio1 = CNratioCellWall / cnTissue;
                 double ratio2 = CNratioCellWall / CNratioProtein;
                 double fractionSugar = DMTransferredIn * FractionSugarNewGrowth / DM.Wt;
