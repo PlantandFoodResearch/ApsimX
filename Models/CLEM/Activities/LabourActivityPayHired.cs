@@ -25,7 +25,7 @@ namespace Models.CLEM.Activities
     public class LabourActivityPayHired : CLEMActivityBase, IValidatableObject, IHandlesActivityCompanionModels
     {
         [Link]
-        private IClock clock = null;
+        private readonly IClock clock = null;
         private double amountToDo;
         private double amountToSkip;
         private string task = "";
@@ -79,7 +79,7 @@ namespace Models.CLEM.Activities
         private void OnCLEMStartOfTimeStep(object sender, EventArgs e)
         {
             task = "available";
-            ResourceRequestList.Clear();
+            ResourceRequestList = new List<ResourceRequest>(); 
             ManageActivityResourcesAndTasks("labour available");
         }
 
@@ -90,7 +90,7 @@ namespace Models.CLEM.Activities
         private void OnCLEMHerdSummary(object sender, EventArgs e)
         {
             task = "used";
-            ResourceRequestList.Clear();
+            ResourceRequestList = new List<ResourceRequest>();
             ManageActivityResourcesAndTasks("labour used");
         }
 
@@ -99,25 +99,25 @@ namespace Models.CLEM.Activities
         {
             amountToSkip = 0;
 
-            int currentmonth = clock.Today.Month;
-            double totaldays = 0;
-            double totalfees = 0;
-            foreach (LabourType item in labour.Items.Where(a => a.Hired))
+            int currentMonth = clock.Today.Month;
+            double totalDays = 0;
+            double totalFees = 0;
+            foreach (LabourType item in labour.Items.Where(a => a.IsHired))
             {
                 double days = 0;
                 switch (task)
                 {
                     case "available":
-                        days = item.LabourAvailability.GetAvailability(currentmonth - 1);
+                        days = item.LabourAvailability.GetAvailability(currentMonth - 1);
                         break;
                     case "used":
-                        days = item.LabourAvailability.GetAvailability(currentmonth - 1) - item.AvailableDays;
+                        days = item.LabourAvailability.GetAvailability(currentMonth - 1) - item.AvailableDays;
                         break;
                 }
-                totaldays += days;
-                totalfees += days * item.PayRate();
+                totalDays += days;
+                totalFees += days * item.PayRate();
             }
-            amountToDo = totaldays;
+            amountToDo = totalDays;
 
             // provide updated measure for companion models
             foreach (var valueToSupply in valuesForCompanionModels)
@@ -128,10 +128,10 @@ namespace Models.CLEM.Activities
                         valuesForCompanionModels[valueToSupply.Key] = 1;
                         break;
                     case "per day":
-                        valuesForCompanionModels[valueToSupply.Key] = totaldays;
+                        valuesForCompanionModels[valueToSupply.Key] = totalDays;
                         break;
                     case "per total charged":
-                        valuesForCompanionModels[valueToSupply.Key] = totalfees;
+                        valuesForCompanionModels[valueToSupply.Key] = totalFees;
                         break;
                     default:
                         throw new NotImplementedException(UnknownUnitsErrorText(this, valueToSupply.Key));
@@ -185,7 +185,7 @@ namespace Models.CLEM.Activities
             else
             {
                 // make sure labour hired present
-                if (labour.Items.Where(a => a.Hired).Count() == 0)
+                if (labour.Items.Where(a => a.IsHired).Count() == 0)
                 {
                     string[] memberNames = new string[] { "Hired labour" };
                     results.Add(new ValidationResult("No [r=LabourType] of hired labour has been defined in [r=Labour]\r\nThis activity will not be performed without hired labour.", memberNames));
@@ -200,18 +200,5 @@ namespace Models.CLEM.Activities
             return results;
         }
         #endregion
-
-        #region descriptive summary
-        /// <inheritdoc/>
-        public override string ModelSummary()
-        {
-            using (StringWriter htmlWriter = new StringWriter())
-            {
-                htmlWriter.Write("\r\n<div class=\"activityentry\">Pay all hired labour based on associated Fee components</div>");
-                return htmlWriter.ToString();
-            }
-        }
-        #endregion
-
     }
 }

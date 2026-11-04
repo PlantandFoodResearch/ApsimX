@@ -1,19 +1,19 @@
-﻿namespace UnitTests.Graph
+﻿using APSIM.Shared.Utilities;
+using Models.Core;
+using Models;
+using Models.Storage;
+using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using static UnitTests.Graph.MockSimulationDescriptionGenerator;
+using APSIM.Shared.Graphing;
+using Series = Models.Series;
+using System.Data;
+using UnitTests.Storage;
+using APSIMCore = APSIM.Core;
+
+namespace UnitTests.Graph
 {
-    using APSIM.Shared.Utilities;
-    using Models.Core;
-    using Models;
-    using Models.Storage;
-    using NUnit.Framework;
-    using System.Collections.Generic;
-    using System.Linq;
-    using static UnitTests.Graph.MockSimulationDescriptionGenerator;
-    using APSIM.Shared.Graphing;
-    using Series = Models.Series;
-    using Moq;
-    using System.Data;
-    using System;
-    using UnitTests.Storage;
 
     [TestFixture]
     class SeriesTests
@@ -27,7 +27,7 @@
                 Name = "Sim1",
                 Children = new List<IModel>()
                 {
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -42,7 +42,7 @@
                     }
                 }
             };
-            sim.ParentAllDescendants();
+            APSIMCore.Node.Create(sim);
 
             string data =
                 "CheckpointName  SimulationID  Col1  Col2\r\n" +
@@ -54,30 +54,30 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = sim.Children[0] as Graph;
+            var graph = sim.Children[0] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].XFieldName, "Col1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].YFieldName, "Col2");
-            Assert.IsNull(definitions[0].SeriesDefinitions[0].YError);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].LineThickness, LineThickness.Normal);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].MarkerSize, MarkerSize.Normal);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].ShowInLegend, false);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Series");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Type, SeriesType.Bar);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 1, 2, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new int[] { 10, 10, 20, 20 });
-            Assert.IsNull(definitions[0].SeriesDefinitions[0].X2);
-            Assert.IsNull(definitions[0].SeriesDefinitions[0].Y2);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].XAxis, AxisPosition.Bottom);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].YAxis, AxisPosition.Left);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].XFieldUnits, "()");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].YFieldUnits, "(g)");
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions[0].XFieldName, Is.EqualTo("Col1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].YFieldName, Is.EqualTo("Col2"));
+            Assert.That(definitions[0].SeriesDefinitions[0].YError, Is.Null);
+            Assert.That(definitions[0].SeriesDefinitions[0].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[0].LineThickness, Is.EqualTo(LineThickness.Normal));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].MarkerSize, Is.EqualTo(MarkerSize.Normal));
+            Assert.That(definitions[0].SeriesDefinitions[0].ShowInLegend, Is.False);
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Series"));
+            Assert.That(definitions[0].SeriesDefinitions[0].Type, Is.EqualTo(SeriesType.Bar));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 1, 2, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new int[] { 10, 10, 20, 20 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].X2, Is.Null);
+            Assert.That(definitions[0].SeriesDefinitions[0].Y2, Is.Null);
+            Assert.That(definitions[0].SeriesDefinitions[0].XAxis, Is.EqualTo(AxisPosition.Bottom));
+            Assert.That(definitions[0].SeriesDefinitions[0].YAxis, Is.EqualTo(AxisPosition.Left));
+            Assert.That(definitions[0].SeriesDefinitions[0].XFieldUnits, Is.EqualTo("()"));
+            Assert.That(definitions[0].SeriesDefinitions[0].YFieldUnits, Is.EqualTo("(g)"));
         }
 
         /// <summary>Create two series definitions due to a single 'VaryBy' grouping.</summary>
@@ -89,7 +89,7 @@
                 Name = "Folder",
                 Children = new List<IModel>()
                 {
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -110,7 +110,7 @@
                     })
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID   Exp Col1  Col2\r\n" +
@@ -122,46 +122,46 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[0] as Graph;
+            var graph = folder.Children[0] as Models.Graph;
             var series = graph.Children[0] as Series;
 
             var descriptors = series.GetDescriptorNames(reader).ToList();
-            Assert.AreEqual(descriptors[0], "Exp");
+            Assert.That(descriptors[0], Is.EqualTo("Exp"));
 
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 2);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(2));
             foreach (var definition in definitions[0].SeriesDefinitions)
             {
-                Assert.AreEqual(definition.XFieldName, "Col1");
-                Assert.AreEqual(definition.YFieldName, "Col2");
-                Assert.IsNull(definition.YError);
-                Assert.AreEqual(definition.Line, LineType.Solid);
-                Assert.AreEqual(definition.LineThickness, LineThickness.Normal);
-                Assert.AreEqual(definition.Marker, MarkerType.FilledCircle);
-                Assert.AreEqual(definition.MarkerSize, MarkerSize.Normal);
-                Assert.AreEqual(definition.ShowInLegend, false);
-                Assert.AreEqual(definition.Type, SeriesType.Bar);
-                Assert.IsNull(definition.X2);
-                Assert.IsNull(definition.Y2);
-                Assert.AreEqual(definition.XAxis, AxisPosition.Bottom);
-                Assert.AreEqual(definition.YAxis, AxisPosition.Left);
-                Assert.AreEqual(definition.XFieldUnits, "()");
-                Assert.AreEqual(definition.YFieldUnits, "(g)");
+                Assert.That(definition.XFieldName, Is.EqualTo("Col1"));
+                Assert.That(definition.YFieldName, Is.EqualTo("Col2"));
+                Assert.That(definition.YError, Is.Null);
+                Assert.That(definition.Line, Is.EqualTo(LineType.Solid));
+                Assert.That(definition.LineThickness, Is.EqualTo(LineThickness.Normal));
+                Assert.That(definition.Marker, Is.EqualTo(MarkerType.FilledCircle));
+                Assert.That(definition.MarkerSize, Is.EqualTo(MarkerSize.Normal));
+                Assert.That(definition.ShowInLegend, Is.False);
+                Assert.That(definition.Type, Is.EqualTo(SeriesType.Bar));
+                Assert.That(definition.X2, Is.Null);
+                Assert.That(definition.Y2, Is.Null);
+                Assert.That(definition.XAxis, Is.EqualTo(AxisPosition.Bottom));
+                Assert.That(definition.YAxis, Is.EqualTo(AxisPosition.Left));
+                Assert.That(definition.XFieldUnits, Is.EqualTo("()"));
+                Assert.That(definition.YFieldUnits, Is.EqualTo("(g)"));
             }
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Exp1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 1 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new int[] { 10, 10 });
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Exp1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 1 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new int[] { 10, 10 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Exp2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 2, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new int[] { 20, 20 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Exp2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 2, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new int[] { 20, 20 }));
         }
 
         /// <summary>Create four series definitions due to a two 'VaryBy' groupings.</summary>
@@ -180,7 +180,7 @@
                         new Description("Sim3", "Irr", "Wet", "Fert", "0"),
                         new Description("Sim4", "Irr", "Wet", "Fert", "10")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -197,7 +197,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID     Irr  Fert   Col1  Col2\r\n" +
@@ -213,59 +213,59 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var series = graph.Children[0] as Series;
             var descriptors = series.GetDescriptorNames(reader).ToList();
-            Assert.AreEqual(descriptors[0], "Irr");
-            Assert.AreEqual(descriptors[1], "Fert");
+            Assert.That(descriptors[0], Is.EqualTo("Irr"));
+            Assert.That(descriptors[1], Is.EqualTo("Fert"));
 
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 4);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(4));
             foreach (var definition in definitions[0].SeriesDefinitions)
             {
-                Assert.AreEqual(definition.XFieldName, "Col1");
-                Assert.AreEqual(definition.YFieldName, "Col2");
-                Assert.IsNull(definition.YError);
-                Assert.AreEqual(definition.LineThickness, LineThickness.Normal);
-                Assert.AreEqual(definition.Marker, MarkerType.FilledCircle);
-                Assert.AreEqual(definition.MarkerSize, MarkerSize.Normal);
-                Assert.AreEqual(definition.ShowInLegend, false);
-                Assert.AreEqual(definition.Type, SeriesType.Bar);
-                Assert.IsNull(definition.X2);
-                Assert.IsNull(definition.Y2);
-                Assert.AreEqual(definition.XAxis, AxisPosition.Bottom);
-                Assert.AreEqual(definition.YAxis, AxisPosition.Left);
-                Assert.AreEqual(definition.XFieldUnits, "()");
-                Assert.AreEqual(definition.YFieldUnits, "(g)");
+                Assert.That(definition.XFieldName, Is.EqualTo("Col1"));
+                Assert.That(definition.YFieldName, Is.EqualTo("Col2"));
+                Assert.That(definition.YError, Is.Null);
+                Assert.That(definition.LineThickness, Is.EqualTo(LineThickness.Normal));
+                Assert.That(definition.Marker, Is.EqualTo(MarkerType.FilledCircle));
+                Assert.That(definition.MarkerSize, Is.EqualTo(MarkerSize.Normal));
+                Assert.That(definition.ShowInLegend, Is.False);
+                Assert.That(definition.Type, Is.EqualTo(SeriesType.Bar));
+                Assert.That(definition.X2, Is.Null);
+                Assert.That(definition.Y2, Is.Null);
+                Assert.That(definition.XAxis, Is.EqualTo(AxisPosition.Bottom));
+                Assert.That(definition.YAxis, Is.EqualTo(AxisPosition.Left));
+                Assert.That(definition.XFieldUnits, Is.EqualTo("()"));
+                Assert.That(definition.YFieldUnits, Is.EqualTo("(g)"));
             }
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Dry0");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new int[] { 10, 20 });
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Dry0"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new int[] { 10, 20 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Line, LineType.Dash);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Dry10");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new int[] { 30, 40 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Line, Is.EqualTo(LineType.Dash));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Dry10"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new int[] { 30, 40 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Title, "Wet0");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Y as double[], new int[] { 50, 60 });
+            Assert.That(definitions[0].SeriesDefinitions[2].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[2].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[2].Title, Is.EqualTo("Wet0"));
+            Assert.That(definitions[0].SeriesDefinitions[2].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[2].Y as double[], Is.EqualTo(new int[] { 50, 60 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Line, LineType.Dash);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Title, "Wet10");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Y as double[], new int[] { 70, 80 });
+            Assert.That(definitions[0].SeriesDefinitions[3].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[3].Line, Is.EqualTo(LineType.Dash));
+            Assert.That(definitions[0].SeriesDefinitions[3].Title, Is.EqualTo("Wet10"));
+            Assert.That(definitions[0].SeriesDefinitions[3].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[3].Y as double[], Is.EqualTo(new int[] { 70, 80 }));
         }
 
         /// <summary>Create six series definitions due to a three 'VaryBy' groupings.</summary>
@@ -308,7 +308,7 @@
                         new Description("Sim7", "Irr", "Wet", "Fert", "0", "Cultivar", "Late"),
                         new Description("Sim8", "Irr", "Wet", "Fert", "20", "Cultivar", "Late")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -326,81 +326,81 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var series = graph.Children[0] as Series;
             var descriptors = series.GetDescriptorNames(reader).ToList();
-            Assert.AreEqual(descriptors[0], "Irr");
-            Assert.AreEqual(descriptors[1], "Fert");
-            Assert.AreEqual(descriptors[2], "Cultivar");
+            Assert.That(descriptors[0], Is.EqualTo("Irr"));
+            Assert.That(descriptors[1], Is.EqualTo("Fert"));
+            Assert.That(descriptors[2], Is.EqualTo("Cultivar"));
 
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 8);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(8));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Dry0Early");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new int[] { 10, 20 });
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Dry0Early"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new int[] { 10, 20 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Line, LineType.Dash);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Dry20Early");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new int[] { 30, 40 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Line, Is.EqualTo(LineType.Dash));
+            Assert.That(definitions[0].SeriesDefinitions[1].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Dry20Early"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new int[] { 30, 40 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Title, "Wet0Early");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Y as double[], new int[] { 50, 60 });
+            Assert.That(definitions[0].SeriesDefinitions[2].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[2].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[2].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[2].Title, Is.EqualTo("Wet0Early"));
+            Assert.That(definitions[0].SeriesDefinitions[2].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[2].Y as double[], Is.EqualTo(new int[] { 50, 60 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Line, LineType.Dash);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Title, "Wet20Early");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Y as double[], new int[] { 70, 80 });
+            Assert.That(definitions[0].SeriesDefinitions[3].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[3].Line, Is.EqualTo(LineType.Dash));
+            Assert.That(definitions[0].SeriesDefinitions[3].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[3].Title, Is.EqualTo("Wet20Early"));
+            Assert.That(definitions[0].SeriesDefinitions[3].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[3].Y as double[], Is.EqualTo(new int[] { 70, 80 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Title, "Dry0Late");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Y as double[], new int[] { 90, 100 });
+            Assert.That(definitions[0].SeriesDefinitions[4].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[4].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[4].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[4].Title, Is.EqualTo("Dry0Late"));
+            Assert.That(definitions[0].SeriesDefinitions[4].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[4].Y as double[], Is.EqualTo(new int[] { 90, 100 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Line, LineType.Dash);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Title, "Dry20Late");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Y as double[], new int[] { 110, 120 });
+            Assert.That(definitions[0].SeriesDefinitions[5].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[5].Line, Is.EqualTo(LineType.Dash));
+            Assert.That(definitions[0].SeriesDefinitions[5].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[5].Title, Is.EqualTo("Dry20Late"));
+            Assert.That(definitions[0].SeriesDefinitions[5].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[5].Y as double[], Is.EqualTo(new int[] { 110, 120 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Title, "Wet0Late");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Y as double[], new int[] { 130, 140 });
+            Assert.That(definitions[0].SeriesDefinitions[6].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[6].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[6].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[6].Title, Is.EqualTo("Wet0Late"));
+            Assert.That(definitions[0].SeriesDefinitions[6].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[6].Y as double[], Is.EqualTo(new int[] { 130, 140 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Line, LineType.Dash);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Title, "Wet20Late");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Y as double[], new int[] { 150, 160 });
+            Assert.That(definitions[0].SeriesDefinitions[7].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[7].Line, Is.EqualTo(LineType.Dash));
+            Assert.That(definitions[0].SeriesDefinitions[7].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[7].Title, Is.EqualTo("Wet20Late"));
+            Assert.That(definitions[0].SeriesDefinitions[7].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[7].Y as double[], Is.EqualTo(new int[] { 150, 160 }));
         }
 
         /// <summary>
-        /// Create series definitions where it works its way though the colours sequentially and 
+        /// Create series definitions where it works its way though the colours sequentially and
         /// when it runs out of colours it works through the marker types. Useful when there
         /// are a lot of descriptor values.
         /// </summary>
@@ -455,7 +455,7 @@
                         new Description("Sim11", "ABC", "K"),
                         new Description("Sim12", "ABC", "L"),
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -473,81 +473,81 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var series = graph.Children[0] as Series;
             var descriptors = series.GetDescriptorNames(reader).ToList();
-            Assert.AreEqual(descriptors[0], "ABC");
+            Assert.That(descriptors[0], Is.EqualTo("ABC"));
 
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 12);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(12));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "A");
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("A"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "B");
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[1].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("B"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Colour, ColourUtilities.Colours[2]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Title, "C");
+            Assert.That(definitions[0].SeriesDefinitions[2].Colour, Is.EqualTo(ColourUtilities.Colours[2]));
+            Assert.That(definitions[0].SeriesDefinitions[2].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[2].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[2].Title, Is.EqualTo("C"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Colour, ColourUtilities.Colours[3]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Title, "D");
+            Assert.That(definitions[0].SeriesDefinitions[3].Colour, Is.EqualTo(ColourUtilities.Colours[3]));
+            Assert.That(definitions[0].SeriesDefinitions[3].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[3].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[3].Title, Is.EqualTo("D"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Colour, ColourUtilities.Colours[4]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[4].Title, "E");
+            Assert.That(definitions[0].SeriesDefinitions[4].Colour, Is.EqualTo(ColourUtilities.Colours[4]));
+            Assert.That(definitions[0].SeriesDefinitions[4].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[4].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[4].Title, Is.EqualTo("E"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Colour, ColourUtilities.Colours[5]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[5].Title, "F");
+            Assert.That(definitions[0].SeriesDefinitions[5].Colour, Is.EqualTo(ColourUtilities.Colours[5]));
+            Assert.That(definitions[0].SeriesDefinitions[5].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[5].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[5].Title, Is.EqualTo("F"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Colour, ColourUtilities.Colours[6]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[6].Title, "G");
+            Assert.That(definitions[0].SeriesDefinitions[6].Colour, Is.EqualTo(ColourUtilities.Colours[6]));
+            Assert.That(definitions[0].SeriesDefinitions[6].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[6].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[6].Title, Is.EqualTo("G"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Colour, ColourUtilities.Colours[7]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[7].Title, "H");
+            Assert.That(definitions[0].SeriesDefinitions[7].Colour, Is.EqualTo(ColourUtilities.Colours[7]));
+            Assert.That(definitions[0].SeriesDefinitions[7].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[7].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[7].Title, Is.EqualTo("H"));
 
             // Run out of colours, go back to first colour but increment markertype.
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[8].Colour, ColourUtilities.Colours[0]); 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[8].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[8].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[8].Title, "I");
+            Assert.That(definitions[0].SeriesDefinitions[8].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[8].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[8].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[8].Title, Is.EqualTo("I"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[9].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[9].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[9].Title, "J");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[9].Line, LineType.Solid);
+            Assert.That(definitions[0].SeriesDefinitions[9].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[9].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[9].Title, Is.EqualTo("J"));
+            Assert.That(definitions[0].SeriesDefinitions[9].Line, Is.EqualTo(LineType.Solid));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[10].Colour, ColourUtilities.Colours[2]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[10].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[10].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[10].Title, "K");
+            Assert.That(definitions[0].SeriesDefinitions[10].Colour, Is.EqualTo(ColourUtilities.Colours[2]));
+            Assert.That(definitions[0].SeriesDefinitions[10].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[10].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[10].Title, Is.EqualTo("K"));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[11].Colour, ColourUtilities.Colours[3]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[11].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[11].Line, LineType.Solid);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[11].Title, "L");
+            Assert.That(definitions[0].SeriesDefinitions[11].Colour, Is.EqualTo(ColourUtilities.Colours[3]));
+            Assert.That(definitions[0].SeriesDefinitions[11].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[11].Line, Is.EqualTo(LineType.Solid));
+            Assert.That(definitions[0].SeriesDefinitions[11].Title, Is.EqualTo("L"));
 
         }
 
@@ -560,7 +560,7 @@
                 Name = "Sim1",
                 Children = new List<IModel>()
                 {
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -584,7 +584,7 @@
                     }
                 }
             };
-            sim.ParentAllDescendants();
+            APSIMCore.Node.Create(sim);
 
             string data =
                 "CheckpointName    SimulationID  Col1  Col2\r\n" +
@@ -596,34 +596,34 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = sim.Children[0] as Graph;
+            var graph = sim.Children[0] as Models.Graph;
             var series = graph.Children[0] as Series;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
+            Assert.That(definitions.Count, Is.EqualTo(1));
             // There should be 3 series - the regression line, the 1:1 line, and the
             // data series itself.
-            Assert.AreEqual(3, definitions[0].SeriesDefinitions.Count);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Series");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Type, SeriesType.Bar);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2, 3, 4 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 1.0, 1.5, 2.0, 2.5 });
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(3));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Series"));
+            Assert.That(definitions[0].SeriesDefinitions[0].Type, Is.EqualTo(SeriesType.Bar));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2, 3, 4 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 1.0, 1.5, 2.0, 2.5 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Regression line");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Type, SeriesType.Scatter);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].LineThickness, LineThickness.Normal);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].MarkerSize, MarkerSize.Normal);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1, 4 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 1, 2.5 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Regression line"));
+            Assert.That(definitions[0].SeriesDefinitions[1].Type, Is.EqualTo(SeriesType.Scatter));
+            Assert.That(definitions[0].SeriesDefinitions[1].LineThickness, Is.EqualTo(LineThickness.Normal));
+            Assert.That(definitions[0].SeriesDefinitions[1].MarkerSize, Is.EqualTo(MarkerSize.Normal));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 4 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 1, 2.5 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Title, "1:1 line");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Type, SeriesType.Scatter);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].LineThickness, LineThickness.Normal);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].MarkerSize, MarkerSize.Normal);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].X as double[], new double[] { 1, 4 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Y as double[], new double[] { 1, 4 });
+            Assert.That(definitions[0].SeriesDefinitions[2].Title, Is.EqualTo("1:1 line"));
+            Assert.That(definitions[0].SeriesDefinitions[2].Type, Is.EqualTo(SeriesType.Scatter));
+            Assert.That(definitions[0].SeriesDefinitions[2].LineThickness, Is.EqualTo(LineThickness.Normal));
+            Assert.That(definitions[0].SeriesDefinitions[2].MarkerSize, Is.EqualTo(MarkerSize.Normal));
+            Assert.That(definitions[0].SeriesDefinitions[2].X as double[], Is.EqualTo(new double[] { 1, 4 }));
+            Assert.That(definitions[0].SeriesDefinitions[2].Y as double[], Is.EqualTo(new double[] { 1, 4 }));
 
         }
 
@@ -641,7 +641,7 @@
                         new Description("Sim1", "Exp", "Exp1"),
                         new Description("Sim2", "Exp", "Exp2")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -665,7 +665,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID     Exp Col1  Col2  Col3\r\n" +
@@ -677,18 +677,18 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Series1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 1, 2, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 10, 10, 20, 20 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Series2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1, 1, 2, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 50, 50, 60, 60 });
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Series1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 1, 2, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 10, 10, 20, 20 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Series2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 1, 2, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 50, 50, 60, 60 }));
         }
 
         /// <summary>Create a single xy series definition with a 'Vary By Simulation' grouping.</summary>
@@ -705,7 +705,7 @@
                         new Description("Sim1", "SimulationName", "Sim1", "Exp", "Exp1"),
                         new Description("Sim2", "SimulationName", "Sim2", "Exp", "Exp2"),
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -721,7 +721,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID    Exp Col1  Col2\r\n" +
@@ -733,21 +733,21 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 2);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Sim1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 10, 20 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(2));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Sim1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 10, 20 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Sim2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1,  2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 30, 40 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Sim2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 30, 40 }));
 
         }
 
@@ -765,7 +765,7 @@
                         new Description("Sim1", "SimulationName", "Sim1", "Zone", "Zone1", "Zone", "Zone2"),
                         new Description("Sim2", "SimulationName", "Sim2", "Zone", "Zone1", "Zone", "Zone2")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -782,7 +782,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID   Zone Col1  Col2\r\n" +
@@ -798,35 +798,35 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 4);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Sim1Zone1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 10, 20 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(4));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Sim1Zone1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 10, 20 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Sim1Zone2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 30, 40 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Sim1Zone2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 30, 40 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Title, "Sim2Zone1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Y as double[], new double[] { 50, 60 });
+            Assert.That(definitions[0].SeriesDefinitions[2].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[2].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[2].Title, Is.EqualTo("Sim2Zone1"));
+            Assert.That(definitions[0].SeriesDefinitions[2].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[2].Y as double[], Is.EqualTo(new double[] { 50, 60 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Title, "Sim2Zone2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Y as double[], new double[] { 70, 80 });
+            Assert.That(definitions[0].SeriesDefinitions[3].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[3].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[3].Title, Is.EqualTo("Sim2Zone2"));
+            Assert.That(definitions[0].SeriesDefinitions[3].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[3].Y as double[], Is.EqualTo(new double[] { 70, 80 }));
         }
 
         /// <summary>Create a xy series definition with a 'Vary By' that doesn't exist in the data table.</summary>
@@ -845,7 +845,7 @@
                         new Description("Sim1", "SimulationName", "Sim1", "Exp", "Exp1"),
                         new Description("Sim2", "SimulationName", "Sim2", "Exp", "Exp2")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -861,7 +861,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName   SimulationID Col1  Col2\r\n" +
@@ -873,21 +873,21 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 2);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Exp1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 10, 20 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(2));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Exp1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 10, 20 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Exp2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 30, 40 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Exp2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 30, 40 }));
         }
 
         /// <summary>Create a xy series definition with a 'Vary By' that is a text field of the data table.</summary>
@@ -906,7 +906,7 @@
                         new Description("Sim1", "SimulationName", "Sim1"),
                         new Description("Sim2", "SimulationName", "Sim2")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -923,7 +923,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 " CheckpointName ABC  DEF Col1  Col2\r\n" +
@@ -939,7 +939,7 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var series1 = graph.Children[0] as Series;
 
             var descriptorNames = series1.GetDescriptorNames(reader).ToArray();
@@ -948,31 +948,31 @@
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 4);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Ad");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 10, 20 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(4));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Ad"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 10, 20 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Ae");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 30, 40 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Ae"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 30, 40 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Title, "Bd");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[2].Y as double[], new double[] { 50, 60 });
+            Assert.That(definitions[0].SeriesDefinitions[2].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[2].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[2].Title, Is.EqualTo("Bd"));
+            Assert.That(definitions[0].SeriesDefinitions[2].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[2].Y as double[], Is.EqualTo(new double[] { 50, 60 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Marker, MarkerType.FilledDiamond);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Title, "Be");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[3].Y as double[], new double[] { 70, 80 });
+            Assert.That(definitions[0].SeriesDefinitions[3].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[3].Marker, Is.EqualTo(MarkerType.FilledDiamond));
+            Assert.That(definitions[0].SeriesDefinitions[3].Title, Is.EqualTo("Be"));
+            Assert.That(definitions[0].SeriesDefinitions[3].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[3].Y as double[], Is.EqualTo(new double[] { 70, 80 }));
         }
 
         /// <summary>Create xy series definitions with a filter.</summary>
@@ -989,7 +989,7 @@
                         new Description("Sim1", "Exp", "Exp1"),
                         new Description("Sim2", "Exp", "Exp2")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -1006,7 +1006,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID     Exp   A  Col1  Col2\r\n" +
@@ -1018,19 +1018,19 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var series = graph.Children[0] as Series;
             var descriptors = series.GetDescriptorNames(reader).ToList();
-            Assert.AreEqual(descriptors[0], "Exp");
+            Assert.That(descriptors[0], Is.EqualTo("Exp"));
 
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 1);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(1));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 1 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new int[] { 10, 10 });
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 1 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new int[] { 10, 10 }));
         }
 
         /// <summary>Create xy series definitions with a filter.</summary>
@@ -1047,7 +1047,7 @@
                         new Description("Sim1", "SimulationName", "Sim1"),
                         new Description("Sim2", "SimulationName", "Sim2")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -1064,7 +1064,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID     Exp   A  Col1  Col2\r\n" +
@@ -1076,17 +1076,17 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
 
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 1);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(1));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 1 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new int[] { 10, 10 });
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 1 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new int[] { 10, 10 }));
         }
 
         /// <summary>Create xy series definitions with a filter.</summary>
@@ -1103,7 +1103,7 @@
                     new Description("Sim1", "Exp", "Exp1"),
                     new Description("Sim2", "Exp", "Exp2")
                 }),
-                new Graph()
+                new Models.Graph()
                 {
                     Children = new List<IModel>()
                     {
@@ -1120,7 +1120,7 @@
                 }
             }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID     Exp   A  Col1  Col2\r\n" +
@@ -1132,19 +1132,19 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var series = graph.Children[0] as Series;
             var descriptors = series.GetDescriptorNames(reader).ToList();
-            Assert.AreEqual(descriptors[0], "Exp");
+            Assert.That(descriptors[0], Is.EqualTo("Exp"));
 
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(1, definitions.Count);
-            Assert.AreEqual(1, definitions[0].SeriesDefinitions.Count);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(1));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 1 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new int[] { 10, 10 });
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 1 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new int[] { 10, 10 }));
         }
 
 
@@ -1170,7 +1170,7 @@
                                 new Description("Sim1", "SimulationName", "Sim1", "Exp", "Exp1"),
                                 new Description("Sim2", "SimulationName", "Sim2", "Exp", "Exp2")
                             }),
-                            new Graph()
+                            new Models.Graph()
                             {
                                 Children = new List<IModel>()
                                 {
@@ -1202,7 +1202,7 @@
             };
 
 
-            simulations.ParentAllDescendants();
+            APSIMCore.Node.Create(simulations);
 
             string data =
                 "CheckpointName    SimulationID    Exp Col1  Col2\r\n" +
@@ -1218,21 +1218,21 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = simulations.Children[0].Children[1] as Graph;
+            var graph = simulations.Children[0].Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 2);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Sim1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 10, 20 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(2));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Sim1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 10, 20 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Sim2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 30, 40 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Sim2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 30, 40 }));
 
         }
 
@@ -1257,7 +1257,7 @@
                             {
                                 new Description("Sim1", "SimulationName", "Sim1"),
                             }),
-                            new Graph()
+                            new Models.Graph()
                             {
                                 Children = new List<IModel>()
                                 {
@@ -1287,7 +1287,7 @@
             };
 
 
-            simulations.ParentAllDescendants();
+            APSIMCore.Node.Create(simulations);
 
             string data =
                 "CheckpointName    SimulationID Col1  Col2\r\n" +
@@ -1299,15 +1299,15 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = simulations.Children[0].Children[1] as Graph;
+            var graph = simulations.Children[0].Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Series1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 10, 20 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Series1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 10, 20 }));
         }
 
         /// <summary>
@@ -1325,7 +1325,7 @@
                     {
                         new Description("Sim1", "SimulationName", "Sim1"),
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -1348,7 +1348,7 @@
                 }
             };
 
-            simulations.ParentAllDescendants();
+            APSIMCore.Node.Create(simulations);
 
             List<string> checkpoints = new List<string>() { "Current" };
 
@@ -1367,13 +1367,13 @@
 
             IStorageReader reader = new MockStorageReader(report, obs);
 
-            Graph graph = simulations.FindDescendant<Graph>();
+            Models.Graph graph = simulations.Node.FindChild<Models.Graph>(recurse: true);
             GraphPage page = new GraphPage();
             page.Graphs.Add(graph);
             List<GraphPage.GraphDefinitionMap> definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(1, definitions.Count);
-            Assert.AreEqual(1, definitions[0].SeriesDefinitions.Count);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(1));
         }
 
         /// <summary>
@@ -1397,7 +1397,7 @@
                             {
                                 new Description("Sim1", "SimulationName", "Sim1", "A", "a"),
                             }),
-                            new Graph()
+                            new Models.Graph()
                             {
                                 Children = new List<IModel>()
                                 {
@@ -1427,7 +1427,7 @@
                 }
             };
 
-            simulations.ParentAllDescendants();
+            APSIMCore.Node.Create(simulations);
 
             string data =
                 "CheckpointName    SimulationID   A  Col1  Col2\r\n" +
@@ -1439,15 +1439,15 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = simulations.Children[0].Children[1] as Graph;
+            var graph = simulations.Children[0].Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "a");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 10, 20 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("a"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 10, 20 }));
         }
 
         /// <summary>Create xy series definitions from predicted/observed table.</summary>
@@ -1466,7 +1466,7 @@
                         new Description("Sim3", "SimulationName", "Sim3", "Experiment", "Exp2"),
                         new Description("Sim4", "SimulationName", "Sim4", "Experiment", "Exp2")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -1483,7 +1483,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID Predicted.Grain.Wt  Observed.Grain.Wt\r\n" +
@@ -1495,24 +1495,24 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 2);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Exp1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 1, 5 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(2));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Exp1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 1, 5 }));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Exp2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 3, 4 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 8, 6 });
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Exp2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 3, 4 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 8, 6 }));
         }
 
         /// <summary>Create xy series definitions from predicted/observed table.</summary>
@@ -1530,7 +1530,7 @@
                         new Description("Sim2", "SimulationName", "Sim2", "Experiment", "Exp1"),
                         new Description("Sim3", "SimulationName", "Sim3")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -1547,7 +1547,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID Predicted.Grain.Wt  Observed.Grain.Wt\r\n" +
@@ -1559,18 +1559,83 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph,reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Exp1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 1, 5 });
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Exp1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 1, 5 }));
+        }
+
+        /// <summary>Create xy series definitions from predicted/observed table.</summary>
+        [Test]
+        public void SeriesFromPredictedObservedWithMissingObserved()
+        {
+            var folder = new Folder()
+            {
+                Name = "Folder",
+                Children = new List<IModel>()
+                {
+                    new MockSimulationDescriptionGenerator(new List<Description>()
+                    {
+                        new Description("Sim1", "SimulationName", "Sim1", "Experiment", "Exp1"),
+                        new Description("Sim2", "SimulationName", "Sim2", "Experiment", "Exp1"),
+                        new Description("Sim3", "SimulationName", "Sim3", "Experiment", "Exp2"),
+                        new Description("Sim4", "SimulationName", "Sim4", "Experiment", "Exp2")
+                    }),
+                    new Models.Graph()
+                    {
+                        Children = new List<IModel>()
+                        {
+                            new Series()
+                            {
+                                Name = "Series1",
+                                TableName = "Report",
+                                XFieldName = "Predicted.Grain.Wt",
+                                YFieldName = "Observed.Grain.Wt",
+                                FactorToVaryColours = "Experiment",
+                                FactorToVaryMarkers = "Experiment"
+                            }
+                        }
+                    }
+                }
+            };
+            APSIMCore.Node.Create(folder);
+
+            string data =
+                "CheckpointName SimulationName SimulationID Predicted.Grain.Wt  Observed.Grain.Wt Experiment\r\n" +
+                "            ()             ()           ()                 ()                 ()         ()\r\n" +
+                "       Current           Sim1            1                  1                  1       Exp1\r\n" +
+                "       Current           Sim2            2                  2                  5       null\r\n" +
+                "       Current           Sim3            3                  3                  8       Exp2\r\n" +
+                "       Current           Sim4            4                  4                  6       Exp2\r\n";
+
+            var reader = new TextStorageReader(data);
+
+            var graph = folder.Children[1] as Models.Graph;
+            var page = new GraphPage();
+            page.Graphs.Add(graph);
+            var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
+
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(2));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Exp1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 1, 5 }));
+
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Exp2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 3, 4 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 8, 6 }));
         }
 
         /// <summary>Create xy series definitions from predicted/observed table with error bars.</summary>
@@ -1589,7 +1654,7 @@
                         new Description("Sim3", "SimulationName", "Sim3", "Experiment", "Exp2"),
                         new Description("Sim4", "SimulationName", "Sim4", "Experiment", "Exp2")
                     }),
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -1606,7 +1671,7 @@
                     }
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID Predicted.Grain.Wt  Observed.Grain.Wt  Observed.Grain.WtError\r\n" +
@@ -1618,27 +1683,27 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[1] as Graph;
+            var graph = folder.Children[1] as Models.Graph;
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 2);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Colour, ColourUtilities.Colours[0]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Title, "Exp1");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].X as double[], new double[] { 1, 2 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].Y as double[], new double[] { 1, 5 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].YError.ToList()[0], 0.1, 0.000001);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[0].YError.ToList()[1], 0.5, 0.000001);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(2));
+            Assert.That(definitions[0].SeriesDefinitions[0].Colour, Is.EqualTo(ColourUtilities.Colours[0]));
+            Assert.That(definitions[0].SeriesDefinitions[0].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[0].Title, Is.EqualTo("Exp1"));
+            Assert.That(definitions[0].SeriesDefinitions[0].X as double[], Is.EqualTo(new double[] { 1, 2 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].Y as double[], Is.EqualTo(new double[] { 1, 5 }));
+            Assert.That(definitions[0].SeriesDefinitions[0].YError.ToList()[0], Is.EqualTo(0.1).Within(0.000001));
+            Assert.That(definitions[0].SeriesDefinitions[0].YError.ToList()[1], Is.EqualTo(0.5).Within(0.000001));
 
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Colour, ColourUtilities.Colours[1]);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Marker, MarkerType.FilledCircle);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Title, "Exp2");
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].X as double[], new double[] { 3, 4 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].Y as double[], new double[] { 8, 6 });
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].YError.ToList()[0], 0.8, 0.000001);
-            Assert.AreEqual(definitions[0].SeriesDefinitions[1].YError.ToList()[1], 0.6, 0.000001);
+            Assert.That(definitions[0].SeriesDefinitions[1].Colour, Is.EqualTo(ColourUtilities.Colours[1]));
+            Assert.That(definitions[0].SeriesDefinitions[1].Marker, Is.EqualTo(MarkerType.FilledCircle));
+            Assert.That(definitions[0].SeriesDefinitions[1].Title, Is.EqualTo("Exp2"));
+            Assert.That(definitions[0].SeriesDefinitions[1].X as double[], Is.EqualTo(new double[] { 3, 4 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].Y as double[], Is.EqualTo(new double[] { 8, 6 }));
+            Assert.That(definitions[0].SeriesDefinitions[1].YError.ToList()[0], Is.EqualTo(0.8).Within(0.000001));
+            Assert.That(definitions[0].SeriesDefinitions[1].YError.ToList()[1], Is.EqualTo(0.6).Within(0.000001));
         }
 
         /// <summary>Ensure a series definition that has no data doesn't throw exception.</summary>
@@ -1650,7 +1715,7 @@
                 Name = "Folder",
                 Children = new List<IModel>()
                 {
-                    new Graph()
+                    new Models.Graph()
                     {
                         Children = new List<IModel>()
                         {
@@ -1670,7 +1735,7 @@
                     })
                 }
             };
-            folder.ParentAllDescendants();
+            APSIMCore.Node.Create(folder);
 
             string data =
                 "CheckpointName    SimulationID   Exp Col1  Col2\r\n" +
@@ -1682,18 +1747,18 @@
 
             var reader = new TextStorageReader(data);
 
-            var graph = folder.Children[0] as Graph;
+            var graph = folder.Children[0] as Models.Graph;
             var series = graph.Children[0] as Series;
 
             var descriptors = series.GetDescriptorNames(reader).ToList();
-            Assert.AreEqual(descriptors[0], "Exp");
+            Assert.That(descriptors[0], Is.EqualTo("Exp"));
 
             var page = new GraphPage();
             page.Graphs.Add(graph);
             var definitions = page.GetAllSeriesDefinitions(graph, reader, null);
 
-            Assert.AreEqual(definitions.Count, 1);
-            Assert.AreEqual(definitions[0].SeriesDefinitions.Count, 0);
+            Assert.That(definitions.Count, Is.EqualTo(1));
+            Assert.That(definitions[0].SeriesDefinitions.Count, Is.EqualTo(0));
         }
 
 

@@ -5,73 +5,307 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (GUI)",
+            "name": "Debug New Workflow",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net6.0/ApsimNG.dll",
+            "preLaunchTask": "Build Debug",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/APSIM.Workflow.dll",
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
-            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "requireExactSource": false,
+            "logging": {
+                "moduleLoad": false,
+                "threadExit": false
+            },
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": false
+            },
+            "args":[
+                "--payload-directory",
+                "/Tests/Validation",
+                "--env-string",
+                "", // provide this with line endings between env values.
+                "--pr-number",
+                "11578",
+                "--commit-sha",
+                "eb8e30"
+            ]
+        },
+
+        {
+            "name": "Apsim NG: Debug",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build Debug",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/ApsimNG.dll",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "requireExactSource": false,
+            "logging": {
+                "moduleLoad": false,
+                "threadExit": false
+            },
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": false
+            },
+            "presentation": {
+                "hidden": false,
+                "group": "APSIM UI",
+                "order": 1,
+                "focus": true
+            }
         },
         {
-            "name": "Autodocs",
+            "name": "Apsim NG: Release",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net6.0/APSIM.Documentation.dll",
+            "preLaunchTask": "Build Release",
+            "program": "${workspaceFolder}/bin/Release/net10.0/ApsimNG.dll",
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
-            "stopAtEntry": false,
+            "requireExactSource": true,
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": false
+            },
+            "presentation": {
+                "hidden": false,
+                "group": "APSIM UI",
+                "order": 2
+            }
         },
         {
-            "name": ".NET Core Launch (APSIM.Cli)",
+            "name": "APSIM.Cli: Debug",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net6.0/apsim.dll",
+            "preLaunchTask": "Clean Debug",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/apsim.dll",
             "args": [
                 "document",
                 "${workspaceFolder}/Examples/Wheat.apsimx"
             ],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "presentation": {
+                "hidden": true,
+                "group": "APSIM CLI",
+                "order": 1
+            }
         },
         {
-            "name": ".NET Core Launch (APSIM Server)",
+            "name": "Models: Debug",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net6.0/apsim-server.dll",
+            "preLaunchTask": "Clean Debug",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/Models.exe",
             "args": [
-                "-vkrf",
-                "Examples/Potato.apsimx",
+                "--apply",
+                "commands.txt"
+            ],
+            "cwd": "C:\\Users\\ric394\\Downloads\\models_workarea",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "presentation": {
+                "hidden": false,
+                "group": "Models",
+                "order": 1
+            }
+        },
+        {
+            "name": "APSIM Server: Debug",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Clean Debug",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/ApsimZMQServer.dll",
+            "args": [
+                "-v", "-a", "127.0.0.1",
+                "-p", "57220", "-P", "interactive",
+                "-f", "${workspaceFolder}/Tests/Simulation/ZMQ-Sync/ZMQ-sync.apsimx"
             ],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "presentation": {
+                "hidden": false,
+                "group": "APSIM Server",
+                "order": 4
+            }
         },
         {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach",
-            "processId": "${command:pickProcess}"
+            "processId": "${command:pickProcess}",
+            "presentation": {
+                "hidden": true,
+                "group": "attach",
+                "order": 1
+            }
         },
         {
-            "name": "Mono Launch",
-            "type": "mono",
+            "name": "Autodocs",
+            "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceRoot}/bin/Debug/net472/ApsimNG.exe",
-            "cwd": "${workspaceRoot}"
+            "preLaunchTask": "Build Debug",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/APSIM.Documentation.dll",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "justMyCode": false,
+            "requireExactSource": false,
+            "logging": {
+                "moduleLoad": false,
+                "threadExit": false
+            },
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": false
+            },
+            "presentation": {
+                "hidden": false,
+                "group": "Documentation",
+                "order": 1
+            }
         },
         {
-            "name": "Mono Attach",
-            "type": "mono",
-            "request": "attach",
-            "address": "localhost",
-            "port": 55555
+            "name": "Apsim.Workflow: Debug",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/Apsim.Workflow.dll",
+            "preLaunchTask": "Build Debug",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "requireExactSource": false,
+            "logging": {
+                "moduleLoad": false,
+                "threadExit": false
+            },
+            "args": [
+                "-d",
+                "C:/Users/RIC394/source/repos/ApsimX/Tests/Validation/Canola",
+                // "C:/Users/RIC394/source/repos/ApsimX/Tests/Validation/Maize",
+                "-v",
+                // "-l"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "Workflow",
+                "order": 1,
+            }
+
+        },
+        {
+            "name": "Apsim.Workflow: Splitter",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/Apsim.Workflow.dll",
+            "preLaunchTask": "Build Debug",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "requireExactSource": false,
+            "logging": {
+                "moduleLoad": false,
+                "threadExit": false
+            },
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": false
+            },
+            "args": [
+                "-d",
+                "${workspaceFolder}/Tests/Validation/Barley/Barley.apsimx",
+                "-s",
+                "${workspaceFolder}/Tests/Validation/Barley/split.json"
+            ]
+        },
+        {
+            "name": "Apsim.Workflow: Sim Count",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/Apsim.Workflow.dll",
+            "preLaunchTask": "Build Debug",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "requireExactSource": false,
+            "logging": {
+                "moduleLoad": false,
+                "threadExit": false
+            },
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": false
+            },
+            "args": [
+                "--sim-count",
+                ""
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "Workflow",
+                "order": 11
+            }
+        },
+        {
+            "name": "Apsim.Workflow: List directories",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/Apsim.Workflow.dll",
+            "preLaunchTask": "Build Debug",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "requireExactSource": false,
+            "logging": {
+                "moduleLoad": false,
+                "threadExit": false
+            },
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": false
+            },
+            "args": [
+                "-l",
+                ""
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "Workflow",
+                "order": 4
+            }
+        },
+        {
+            "name": "Generate Single: APSIM.Documentation",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/APSIM.Documentation.dll",
+            "preLaunchTask": "Build Debug",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "requireExactSource": false,
+            "logging": {
+                "moduleLoad": false,
+                "threadExit": false
+            },
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": false
+            },
+            // Note: the first argument is the name of the simulation 
+            // to document or the exact name of a APSIM Model.
+            // The second argument is the output directory. 
+            // The third argument is whether to include images in 
+            // the generated documentation this defaults to false if not
+            //provided.
+            "args": [
+                "Waterlogging",
+                "${workspaceFolder}/GeneratedDocumentation",
+                "true"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "Documentation",
+                "order": 5
+            }
         }
     ]
 }

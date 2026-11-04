@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using APSIM.Core;
 using Models.Core;
 using Newtonsoft.Json;
 
@@ -9,7 +11,6 @@ namespace Models.Factorial
     /// A model representing an experiment's factors
     /// </summary>
     [Serializable]
-    [ScopedModel]
     [ValidParent(ParentType = typeof(Experiment))]
     public class Factors : Model
     {
@@ -21,8 +22,10 @@ namespace Models.Factorial
             get
             {
                 List<Factor> f = new List<Factor>();
-                foreach (Factor factor in this.FindAllChildren<Factor>())
-                    f.Add(factor);
+                foreach (Factor factor in Node.FindChildren<Factor>(recurse: true))
+                    if (factor.Node.FindParent<Permutation>(recurse: true) == null)
+                        f.Add(factor);
+
                 return f;
             }
         }

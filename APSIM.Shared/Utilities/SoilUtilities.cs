@@ -1,6 +1,8 @@
-﻿using System;
+﻿using APSIM.Numerics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+
 namespace APSIM.Shared.Utilities
 {
     /// <summary>Various soil utilities.</summary>
@@ -39,6 +41,36 @@ namespace APSIM.Shared.Utilities
             return CumThickness;
         }
 
+        /// <summary>Returns an array that gives the proportion of each layer contributing to a given depth.</summary>
+        /// <param name="Thickness">The thickness.</param>
+        /// <param name="GivenDepth">The supplied depth (mm).</param>
+        static public double[] ProportionOfCumThickness(double[] Thickness, double GivenDepth)
+        {
+            // ------------------------------------------------
+            // Return the proportion of the layer contributing to Given Depth - mm/mm
+            // ------------------------------------------------
+
+            // find the layer in which GivenDepth lies
+            int GivenDepthLayer = LayerIndexOfClosestDepth(Thickness, GivenDepth);
+
+            double[] ProportionOfCumThickness = new double[Thickness.Length];
+            double[] CumThickness = ToCumThickness(Thickness);
+
+            for (int i = 0; i < Thickness.Length; i++)
+            {
+                if (i < GivenDepthLayer)
+                    ProportionOfCumThickness[i] = Thickness[i] / GivenDepth;  // the entire layer in in the target depth
+                else if (i == GivenDepthLayer)
+                    if (i == 0)
+                        ProportionOfCumThickness[i] = (GivenDepth - 0) / GivenDepth;
+                    else
+                        ProportionOfCumThickness[i] = (GivenDepth - CumThickness[i-1]) / GivenDepth;
+                else
+                    ProportionOfCumThickness[i] = 0.0;
+            }
+            return ProportionOfCumThickness;
+        }
+
         /// <summary>Return the index of the layer that contains the specified depth.</summary>
         /// <param name="thickness">The soil layer thicknesses.</param>
         /// <param name="depth">The depth to search for.</param>
@@ -61,7 +93,7 @@ namespace APSIM.Shared.Utilities
             for (int i = 0; i < thickness.Length; i++)
             {
                 CumDepth = CumDepth + thickness[i];
-                if (CumDepth >= depth) { return i; }
+                if (MathUtilities.IsGreaterThanOrEqual(CumDepth, depth)) { return i; }
             }
             throw new Exception("Depth deeper than bottom of soil profile");
         }
@@ -81,6 +113,22 @@ namespace APSIM.Shared.Utilities
             double depth_of_root_in_layer = Math.Max(0.0, depth_to_root - depth_to_layer_top);
 
             return depth_of_root_in_layer / thickness[layerIndex];
+        }
+
+
+        /// <summary>Keep the top x mm of soil and zero the rest.</summary>
+        /// <param name="values">The layered values.</param>
+        /// <param name="thickness">Soil layer thickness.</param>
+        /// <param name="depth">The depth of soil to keep</param>
+        public static double[] KeepTopXmm(IReadOnlyList<double> values, double[] thickness, double depth)
+        {
+            double[] returnValues = values.ToArray();
+            for (int i = 0; i < thickness.Length; i++)
+            {
+                double proportion = ProportionThroughLayer(thickness, i, depth);
+                returnValues[i] *= proportion;
+            }
+            return returnValues;
         }
 
         /// <summary>Calculate conversion factor from kg/ha to ppm (mg/kg)</summary>
@@ -179,7 +227,7 @@ namespace APSIM.Shared.Utilities
         {
             if (depthStrings == null)
                 return null;
-
+            depthStrings = depthStrings.Where(x => !string.IsNullOrEmpty(x)).ToArray();
             double[] Thickness = new double[depthStrings.Length];
             for (int i = 0; i != depthStrings.Length; i++)
             {
@@ -205,7 +253,7 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
-        /// Plant available water for the specified crop. Will throw if crop not found. Units: mm/mm
+        /// Plant available water for the specified crop. Units: mm/mm
         /// </summary>
         /// <param name="Thickness">The thickness.</param>
         /// <param name="LL">The ll.</param>
@@ -218,8 +266,7 @@ namespace APSIM.Shared.Utilities
             if (LL == null || DUL == null)
                 return PAWC;
             if (Thickness.Length != DUL.Length || Thickness.Length != LL.Length)
-                throw new Exception("Number of soil layers in SoilWater is different to number of layers in SoilWater.Crop");
-
+                return PAWC;
             for (int layer = 0; layer != Thickness.Length; layer++)
                 if (DUL[layer] == MathUtilities.MissingValue ||
                     LL[layer] == MathUtilities.MissingValue)
@@ -235,6 +282,39 @@ namespace APSIM.Shared.Utilities
                     PAWC[layer] = 0;
                 }
             return PAWC;
+        }
+
+        /// <summary>
+        /// Fraction of Available Soil Water for the specified crop. Units: mm/mm
+        /// </summary>
+        /// <param name="thickness">The thickness.</param>
+        /// <param name="pawmm">PAWmm of the SoilCrop</param>
+        /// <param name="pawcmm">PAWCmm of the SoilCrop</param>
+        /// <param name="depth">Depth to measure to</param>
+        /// <returns></returns>
+        public static double CalcFASW(double[] thickness, double[] pawmm, double[] pawcmm, double depth)
+        {
+            double[] usablePAWmm = pawmm;
+            double[] usablePAWCmm = pawcmm;
+            if (MathUtilities.IsLessThan(depth, MathUtilities.Sum(thickness)))
+            {
+                usablePAWmm = SoilUtilities.KeepTopXmm(pawmm, thickness, depth);
+                usablePAWCmm = SoilUtilities.KeepTopXmm(pawcmm, thickness, depth);
+            }
+
+            double sumOfUsablePAWmm = MathUtilities.Sum(usablePAWmm);
+            double sumOfUsablePAWCmm = MathUtilities.Sum(usablePAWCmm);
+
+            if (double.IsNaN(sumOfUsablePAWmm))
+                throw new Exception("Cannot calculate FASW when the sum of PAWmm is NaN.");
+
+            if (double.IsNaN(sumOfUsablePAWCmm))
+                throw new Exception("Cannot calculate FASW when the sum of PAWCmm is NaN.");
+
+            if (MathUtilities.FloatsAreEqual(sumOfUsablePAWCmm, 0))
+                throw new Exception("Cannot calculate FASW with a PAWC of 0");
+
+            return sumOfUsablePAWmm / sumOfUsablePAWCmm;
         }
 
         /// <summary>
@@ -301,43 +381,32 @@ namespace APSIM.Shared.Utilities
         /// <param name="toThickness">To thickness.</param>
         /// <param name="defaultValueForBelowProfile">The default value for below profile.</param>
         /// <param name="allowMissingValues">Tolerate missing values (double.NaN)?</param>
+        /// <param name="modelName">Model name for error reporting</param>
         /// <returns></returns>
         public static double[] MapConcentration(double[] fromValues, double[] fromThickness,
-                                                  double[] toThickness,
-                                                  double defaultValueForBelowProfile,
-                                                  bool allowMissingValues = false)
+                                                    double[] toThickness,
+                                                    double defaultValueForBelowProfile,
+                                                    bool allowMissingValues = false,
+                                                    string modelName = null)
         {
-            if (fromValues != null && !MathUtilities.AreEqual(fromThickness, toThickness))
-            {
-                if (fromValues.Length != fromThickness.Length && !allowMissingValues)
-                    throw new Exception($"In MapConcentration, the number of values ({fromValues.Length}) doesn't match the number of thicknesses ({fromThickness.Length}).");
-                if (fromValues == null || fromThickness == null)
-                    return null;
+            return MapConcentrationComplex(fromValues, fromThickness, toThickness, defaultValueForBelowProfile, allowMissingValues, modelName, false);
+        }
 
-                // convert from values to a mass basis with a dummy bottom layer.
-                List<double> values = new List<double>();
-                List<double> thickness = new List<double>();
-                for (int i = 0; i < fromValues.Length; i++)
-                {
-                    if (!allowMissingValues && double.IsNaN(fromValues[i]))
-                        break;
-
-                    values.Add(fromValues[i]);
-                    thickness.Add(fromThickness[i]);
-                }
-
-                values.Add(defaultValueForBelowProfile);
-                thickness.Add(30000);
-                double[] massValues = MathUtilities.Multiply(values.ToArray(), thickness.ToArray());
-
-                double[] newValues = MapMass(massValues, thickness.ToArray(), toThickness, allowMissingValues);
-
-                // Convert mass back to concentration and return
-                if (newValues != null)
-                    newValues = MathUtilities.Divide(newValues, toThickness);
-                return newValues;
-            }
-            return fromValues;
+        /// <summary>Map soil variables (using concentration) from one layer structure to another, interpolating in the log10 domain.</summary>
+        /// <param name="fromValues">The from values (natural domain, must be &gt; 0).</param>
+        /// <param name="fromThickness">The from thickness.</param>
+        /// <param name="toThickness">To thickness.</param>
+        /// <param name="defaultValueForBelowProfile">The default value for below profile (natural domain).</param>
+        /// <param name="allowMissingValues">Tolerate missing values (double.NaN)?</param>
+        /// <param name="modelName">Model name for error reporting</param>
+        /// <returns></returns>
+        public static double[] MapConcentrationLog10(double[] fromValues, double[] fromThickness,
+                                                        double[] toThickness,
+                                                        double defaultValueForBelowProfile,
+                                                        bool allowMissingValues = false,
+                                                        string modelName = null)
+        {
+            return MapConcentrationComplex(fromValues, fromThickness, toThickness, defaultValueForBelowProfile, allowMissingValues, modelName, true);
         }
 
         /// <summary>Map soil variables from one layer structure to another.</summary>
@@ -419,6 +488,234 @@ namespace APSIM.Shared.Utilities
             }
 
             return ToMass;
+        }
+
+        /// <summary>Map soil variables (using concentration) from one layer structure to another.</summary>
+        /// <param name="fromValues">The from values.</param>
+        /// <param name="fromThickness">The from thickness.</param>
+        /// <param name="toThickness">To thickness.</param>
+        /// <param name="allowMissingValues">Tolerate missing values (double.NaN)?</param>
+        /// <returns></returns>
+        public static double[] MapInterpolation(double[] fromValues, double[] fromThickness,
+                                                double[] toThickness,
+                                                bool allowMissingValues = false)
+        {
+            if (fromValues != null && !MathUtilities.AreEqual(fromThickness, toThickness))
+            {
+                if (fromValues.Length != fromThickness.Length && !allowMissingValues)
+                    throw new Exception($"In MapInterpolation, the number of values ({fromValues.Length}) doesn't match the number of thicknesses ({fromThickness.Length}).");
+                if (fromValues == null || fromThickness == null)
+                    return null;
+
+                double[] fromThicknessMidPoints = SoilUtilities.ToMidPoints(fromThickness);
+                List<double> values = new List<double>();
+                List<double> thickness = new List<double>();
+                for (int i = 0; i < fromValues.Length; i++)
+                {
+                    if (!allowMissingValues && double.IsNaN(fromValues[i]))
+                        break;
+                    if (!double.IsNaN(fromValues[i]))
+                    {
+                        values.Add(fromValues[i]);
+                        thickness.Add(fromThicknessMidPoints[i]);
+                    }
+                }
+
+                double[] toThicknessMidPoints = SoilUtilities.ToMidPoints(toThickness);
+                double[] newValues = new double[toThickness.Length];
+                for (int i = 0; i != toThickness.Length; i++)
+                    newValues[i] = MathUtilities.LinearInterpReal(toThicknessMidPoints[i], thickness.ToArray(), values.ToArray(), out bool didInterpolate);
+                return newValues;
+            }
+            return fromValues;
+        }
+
+        /// <summary>
+        /// Fill in missing values in an array, updating metadata to reflect any infilled values.
+        /// </summary>
+        /// <param name="values">The values to check.</param>
+        /// <param name="valuesMetadata">The metadata to update.</param>
+        /// <param name="numValues">The number of values expected.</param>
+        /// <param name="f">The function to call to get a missing value.</param>
+        public static (double[] values, string[] metadata) FillMissingValues(double[] values, string[] valuesMetadata, int numValues, Func<int, double> f)
+        {
+            double[] newValues = MathUtilities.SetArrayOfCorrectSize(values, numValues).ToArray();
+            for (int i = 0; i < numValues; i++)
+            {
+                if (i >= newValues.Length || double.IsNaN(newValues[i]))
+                    newValues[i] = f(i);
+            }
+            return (newValues, DetermineMetadata(values, valuesMetadata, newValues, "Calculated"));
+        }
+
+        /// <summary>
+        /// Examine 2 arrays of numbers (values1 and values2) and look for changed values.
+        /// If a value is changed then return null metadata for that value. If a value
+        /// isn't modified then try and return the metadata1 value, otherwise null.
+        /// </summary>
+        /// <remarks>
+        ///     values1  metadata1  values2
+        ///       10         null       10
+        ///       20         calc       25
+        ///       30         calc       30
+        ///
+        ///     metadata2
+        ///        null
+        ///        null
+        ///        calc
+        ///
+        /// </remarks>
+        /// <param name="values1">The original values.</param>
+        /// <param name="metadata1">Metadata for the original values.</param>
+        /// <param name="values2">The potentially user modified values.</param>
+        /// <param name="metaDataForModifedValue">The metadata to use for modified values</param>
+        /// <returns>Metadata for values2.</returns>
+        public static string[] DetermineMetadata(double[] values1, string[] metadata1, double[] values2, string metaDataForModifedValue)
+        {
+            if (values1 == null || values2 == null)
+            {
+                if (metaDataForModifedValue == null)
+                    return null; // All data has been modified so metadata is cleared.
+                else
+                    return Enumerable.Repeat(metaDataForModifedValue, values2.Length).ToArray();
+            }
+            else
+            {
+                // Create a return metadata array.
+                List<string> metadataValues = new();
+
+                // Detect if values have been changed and updated metadata accordingly.
+                for (int i = 0; i < values2.Length; i++)
+                {
+                    if (i >= values1.Length)
+                        metadataValues.Add(metaDataForModifedValue);  // Extra value has been added to modified.
+                    else if (!MathUtilities.FloatsAreEqual(values1[i], values2[i], 0.001))
+                        metadataValues.Add(metaDataForModifedValue);  // Value has been changed from original.
+                    else
+                    {
+                        // Value hasn't changed. Try and use existing metadata.
+                        if (i < metadata1?.Length)
+                            metadataValues.Add(metadata1[i]);
+                        else
+                            metadataValues.Add(null);
+                    }
+                }
+                // If all metadata is null, return null.
+                if (!MathUtilities.ValuesInArray(metadataValues))
+                    return null;
+
+                return metadataValues.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// This method combines the functionality of MapConcentration and MapConcentrationLog10 so that we don't have 
+        /// a bunch of repeated code they both use
+        /// Do not attach optional parameters to this function, optionals only go on the public facing methods
+        /// </summary>
+        /// <param name="fromValues"></param>
+        /// <param name="fromThickness"></param>
+        /// <param name="toThickness"></param>
+        /// <param name="defaultValueForBelowProfile"></param>
+        /// <param name="allowMissingValues"></param>
+        /// <param name="modelName"></param>
+        /// <param name="convertToLog10"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private static double[] MapConcentrationComplex(double[] fromValues, double[] fromThickness,
+                                                    double[] toThickness,
+                                                    double defaultValueForBelowProfile,
+                                                    bool allowMissingValues,
+                                                    string modelName,
+                                                    bool convertToLog10)
+        {
+            //Check if any of the required arrays are null. Return null if they are
+            if (fromValues == null || fromThickness == null || toThickness == null)
+                return null;
+
+            //Check if the thicknesses already match, if so, do nothing and return the same values
+            if (MathUtilities.AreEqual(fromThickness, toThickness))
+                return fromValues;
+
+            //If we are not allowing missing values and the number of values doesnt match the number of layers
+            //throw an error message
+            if ((!allowMissingValues) && (fromValues.Length != fromThickness.Length))
+            { 
+                string errorMessage = "MapConcentration";
+                if (!string.IsNullOrEmpty(modelName))
+                    errorMessage = $"{modelName}";
+                errorMessage = $"In {errorMessage}, the number of values ({fromValues.Length}) doesn't match the number of thicknesses ({fromThickness.Length}).";
+                throw new Exception(errorMessage);
+            }
+            
+            // Create arrays of values and thicknesses based on input values and if we allow missing values
+            List<double> values = new List<double>(fromValues.Length);
+            List<double> thicknesses = new List<double>(fromValues.Length);
+            for (int i = 0; i < fromValues.Length; i++)
+            {
+                double value = fromValues[i];
+                double thickness = fromThickness[i];
+
+                //if we are allowing missing values, or if the value is not NaN, add this value/thickness to the array
+                //This block means that in the case we don't allow missing values, and the value is NaN, it will be skipped
+                if (allowMissingValues || !double.IsNaN(value))
+                {
+                    values.Add(value);
+                    thicknesses.Add(thickness);
+                }
+            }
+
+            //Add a dummy bottom layer.
+            values.Add(defaultValueForBelowProfile);
+            thicknesses.Add(30000);
+
+            //convert all the values to log 10 if required
+            if (convertToLog10)
+            {
+                for (int i = 0; i < values.Count; i++)
+                {
+                    double value = values[i];
+                    if (double.IsNaN(value))
+                        values[i] = double.NaN;
+                    else if (value <= 0)
+                    {
+                        string errorMessage = "MapConcentration";
+                        if (!string.IsNullOrEmpty(modelName))
+                            errorMessage = $"{modelName}";
+                        errorMessage = $"In {errorMessage}, cannot take log10 of a non-positive value ({value}) at layer {i + 1}.";
+                        throw new Exception(errorMessage);
+                    }
+                    else
+                        values[i] = Math.Log10(value);
+                }
+            }
+            
+            //convert to mass basis
+            double[] massValues = MathUtilities.Multiply(values, thicknesses);
+
+            //map values by mass
+            double[] mappedValues = MapMass(massValues, thicknesses.ToArray(), toThickness, allowMissingValues);
+            if (mappedValues == null)
+                return null;
+
+            // Convert mass back to concentration
+            mappedValues = MathUtilities.Divide(mappedValues, toThickness);
+
+            //Convert back from log10 if that was done
+            if (convertToLog10)
+            {
+                for (int i = 0; i < mappedValues.Length; i++)
+                {
+                    double value = mappedValues[i];
+                    if (double.IsNaN(value))
+                        mappedValues[i] = double.NaN;
+                    else
+                        mappedValues[i] = Math.Pow(10, value);
+                }
+            }
+
+            //return result
+            return mappedValues;
         }
     }
 }

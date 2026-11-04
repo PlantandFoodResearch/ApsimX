@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using ApsimNG.Classes;
 using Gtk;
+using UserInterface.EventArguments;
 using TreeModel = Gtk.ITreeModel;
 
 
@@ -94,7 +95,6 @@ namespace UserInterface.Views
                 this.submitButton = submitButton;
                 submitButton.Pressed += SubmitButtonPressed;
             }
-
         }
 
         private void SubmitButtonPressed(object sender, EventArgs e)
@@ -117,54 +117,84 @@ namespace UserInterface.Views
 
         private void OnTreeHover(object o, QueryTooltipArgs args)
         {
-            if (tree.Model != null)
+            try
             {
-                ListViewArgs newArgs = new ListViewArgs { QueryTooltipArgs = args };
-                tree.ConvertWidgetToTreeCoords(args.X, args.Y, out int tx, out int ty);
-                newArgs.NewX = tx; // TODO: need to store new coordinates for use in ShowTooltip method.
-                newArgs.NewY = ty;
-
-            
-                var pathpos = tree.GetPathAtPos(tx, ty, out TreePath path);
-
-                TreeModel model = tree.Model;
-                var modelIterator = model.GetIter(out TreeIter iter, path);
-                if (modelIterator)
+                if (tree.Model != null)
                 {
-                    if (path.Indices[0] < 0)
-                        newArgs.ListViewRowIndex = 0;
-                    else newArgs.ListViewRowIndex = path.Indices[0];
+                    ListViewArgs newArgs = new ListViewArgs { QueryTooltipArgs = args };
+                    tree.ConvertWidgetToTreeCoords(args.X, args.Y, out int tx, out int ty);
+                    newArgs.NewX = tx; // TODO: need to store new coordinates for use in ShowTooltip method.
+                    newArgs.NewY = ty;
+
+                
+                    var pathpos = tree.GetPathAtPos(tx, ty, out TreePath path);
+                    if (path == null)
+                    {
+                        // This will happen when the user moves the mouse over
+                        // a region of the TreeView object which doesn't have
+                        // any actual widgets (ie below the area with cells).
+                        // Calling gtk_tree_model_get_iter() with a NULL path
+                        // is not a valid (or useful) operation, and will, at
+                        // best, result in a warning message being printed to
+                        // stdout. The best thing we can do in this case is
+                        // nothing.
+                        return;
+                    }
+
+                    TreeModel model = tree.Model;
+                    var modelIterator = model.GetIter(out TreeIter iter, path);
+                    if (modelIterator)
+                    {
+                        if (path.Indices[0] < 0)
+                            newArgs.ListViewRowIndex = 0;
+                        else newArgs.ListViewRowIndex = path.Indices[0];
+                    }
+
+
+                    if (TreeHover != null)
+                        TreeHover.Invoke(o, newArgs);
                 }
-
-
-                if (TreeHover != null)
-                    TreeHover.Invoke(o, newArgs);
+            }
+            catch (Exception error)
+            {
+                ShowError(error);
             }
         }
 
         private void OnTreeDoubleClicked(object o, RowActivatedArgs args)
         {
-            DoubleClicked.Invoke(o, args);
+            try
+            {
+                DoubleClicked?.Invoke(o, args);
+            }
+            catch (Exception error)
+            {
+                ShowError(error);
+            }
         }
 
         private void OnTreeDragBegin(object sender, DragBeginArgs args)
         {
-            if (SelectedIndicies.Length > 0)
+            if (table.Columns.Contains("Description"))
             {
-                ReportDragObject dragObject = new()
+                if (SelectedIndicies.Length > 0)
                 {
-                    Index = SelectedIndicies[0],
-                    Description = table.Rows[SelectedIndicies[0]]["Description"].ToString(),
-                    Code = table.Rows[SelectedIndicies[0]]["Code"].ToString(),
-                    OtherArgs = args
-                };
+                    ReportDragObject dragObject = new()
+                    {
+                        Index = SelectedIndicies[0],
+                        Description = table.Rows[SelectedIndicies[0]]["Description"].ToString(),
+                        Code = table.Rows[SelectedIndicies[0]]["Code"].ToString(),
+                        OtherArgs = args
+                    };
 
-                DragStart.Invoke(sender, dragObject);
+                    DragStart.Invoke(sender, dragObject);
+                }
             }
+
         }
 
         /// <summary>Invoked when the user changes the selection</summary>
-        public event EventHandler Changed;
+        public event EventHandler<EventArgsValue> Changed;
 
         /// <summary>Get or sets the datasource for the view.</summary>
         public DataTable DataSource
@@ -478,14 +508,18 @@ namespace UserInterface.Views
         {
             try
             {
+                TreePath path;
+                tree.GetPathAtPos((int)e.Event.X, (int)e.Event.Y, out path);
+
+                int index = 0;
+                if (path != null && path.Indices != null && path.Indices.Count() > 0)
+                    index = path.Indices[0];
+
                 if (e.Event.Button == 1) // left click
-                    Changed?.Invoke(sender, new EventArgs());
+                    Changed?.Invoke(sender, new EventArgsValue(index));
 
                 else if (e.Event.Button == 3) // right click
                 {
-                    TreePath path;
-                    tree.GetPathAtPos((int)e.Event.X, (int)e.Event.Y, out path);
-
                     // By default, Gtk will un-select the selected rows when a normal (non-shift/ctrl) click is registered.
                     // Setting e.Retval to true will stop the default Gtk ButtonPress event handler from being called after 
                     // we return from this handler, which in turn means that the rows will not be deselected.
@@ -511,13 +545,24 @@ namespace UserInterface.Views
         protected override void Initialise(ViewBase ownerView, GLib.Object gtkControl)
         {
             owner = ownerView;
-            tree = (Gtk.TreeView)gtkControl;
+            if (gtkControl is Gtk.TreeView)
+            {
+                tree = (Gtk.TreeView)gtkControl;
+                mainWidget = tree;
+            }
+            else
+            {
+                tree = new Gtk.TreeView();
+                mainWidget = gtkControl as Gtk.Container;
+                (mainWidget as Gtk.Container).Add(tree);
+            }
+            
             tree.ButtonReleaseEvent += OnTreeClicked;
-            mainWidget = tree;
-            mainWidget.Destroyed += OnMainWidgetDestroyed;
             tree.Selection.Mode = SelectionMode.Multiple;
             tree.RubberBanding = true;
             tree.CanFocus = true;
+
+            mainWidget.Destroyed += OnMainWidgetDestroyed;
         }
 
         /// <summary>the sort column.</summary>
@@ -567,7 +612,7 @@ namespace UserInterface.Views
     public interface IListView
     {
         /// <summary>Invoked when the user changes the selection</summary>
-        event EventHandler Changed;
+        event EventHandler<EventArgsValue> Changed;
 
         /// <summary> Invoked when a row in the ListView is dragged. </summary>
         event EventHandler DragStart;

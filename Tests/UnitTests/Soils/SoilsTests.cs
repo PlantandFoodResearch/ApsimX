@@ -1,21 +1,19 @@
-﻿namespace UnitTests.Soils
+﻿using APSIM.Core;
+using APSIM.Shared.Utilities;
+using Models;
+using Models.Core;
+using Models.Core.Run;
+using Models.Soils;
+using Models.Soils.SoilTemp;
+using Models.Storage;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnitTests.Weather;
+
+namespace UnitTests.Soils
 {
-    using APSIM.Shared.Utilities;
-    using Models;
-    using Models.Core;
-    using Models.Core.ApsimFile;
-    using Models.Core.Run;
-    using Models.Interfaces;
-    using Models.Soils;
-    using Models.Soils.Nutrients;
-    using Models.WaterModel;
-    using NUnit.Framework;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using UnitTests.Surface;
-    using UnitTests.Weather;
 
     [TestFixture]
     public class SoilsTests
@@ -84,17 +82,17 @@
         public void TestSoilWithNullProperties()
         {
             string json = ReflectionUtilities.GetResourceAsString("UnitTests.Resources.NullSample.apsimx");
-            Simulations file = FileFormat.ReadFromString<Simulations>(json, e => throw e, false).NewModel as Simulations;
+            var node = FileFormat.ReadFromString<Simulations>(json, e => throw e, false);
 
             // This simulation needs a weather node, but using a legit
             // met component will just slow down the test.
-            IModel sim = file.FindInScope<Simulation>();
-            Model weather = new MockWeather();
-            sim.Children.Add(weather);
-            weather.Parent = sim;
+            var simNode = node.Walk().First(n => n.Model is Simulation);
+            var oldWeather = node.Walk().First(n => n.Model is Models.Climate.Weather).Model;
+            Model newWeather = new MockWeather();
+            simNode.ReplaceChild(oldWeather, newWeather);
 
             // Run the file.
-            var runner = new Runner(file);
+            var runner = new Runner(node.Model as IModel);
             List<Exception> errors = runner.Run();
             if (errors != null && errors.Count > 0)
                 throw errors[0];
@@ -477,6 +475,96 @@
 
 
         //}
+
+        [Test]
+        public void CheckSoilWritesWarningWhen_MultipleISoilTempModels_ArePresent()
+        {
+            var summary = new Summary();
+
+            var soil = new Soil()
+            {
+                Name = "Soil",
+                Children = new List<IModel>
+                {
+                    new CERESSoilTemperature(),
+                    new SoilTemperature(),
+                    new Physical
+                    {
+                        Depth = [
+                            "0-100",
+                            "100-200",
+                            "200-400",
+                            "400-700",
+                            "700-1000"
+                        ],
+                        
+                    }
+                }
+            };
+
+            var simulation = new Simulation()
+            {
+                Name = "Test",
+                Children = new List<IModel> { summary, soil }
+            };
+
+            Simulations simulations = new Simulations
+            {
+                Children = new List<IModel>
+                {
+                    simulation,
+                    new DataStore()
+                    {
+                        UseInMemoryDB = true
+                    }
+                }
+            };
+
+            Node.Create(simulations);
+            var links = new Links();
+            links.Resolve(simulations, true);
+
+            // Act
+            List<string> warnings = soil.CheckSoilTemperatureModels();
+
+            // Assert
+            Assert.That(warnings, Has.Some.Contains("WARNING: Soils should only use one type of Soil temperature model to avoid unintended behaviour."));
+        }
+
+        /// <summary>Test that InteractionsPerDay property can be set with range constraints.</summary>
+        [Test]
+        public void TestInteractionsPerDayPropertyCanBeSet()
+        {
+            var soilTemp = new SoilTemperature();
+            
+            // Test default value is 8
+            Assert.That(soilTemp.InteractionsPerDay, Is.EqualTo(8));
+
+            soilTemp.InteractionsPerDay = 4;
+            Assert.That(soilTemp.InteractionsPerDay, Is.EqualTo(4));
+
+            soilTemp.InteractionsPerDay = 8;
+            Assert.That(soilTemp.InteractionsPerDay, Is.EqualTo(8));
+            
+            soilTemp.InteractionsPerDay = 12;
+            Assert.That(soilTemp.InteractionsPerDay, Is.EqualTo(12));
+            
+            soilTemp.InteractionsPerDay = 24;
+            Assert.That(soilTemp.InteractionsPerDay, Is.EqualTo(24));
+
+            soilTemp.InteractionsPerDay = 48;
+            Assert.That(soilTemp.InteractionsPerDay, Is.EqualTo(48));
+            
+            // Test that setting a value below the minimum throws an exception
+            Assert.Throws<ArgumentOutOfRangeException>(() => soilTemp.InteractionsPerDay = 2);
+            
+            // Test that setting a value above the maximum throws an exception
+            Assert.Throws<ArgumentOutOfRangeException>(() => soilTemp.InteractionsPerDay = 64);
+            
+            // Verify that the property retains its value after failed assignment attempts
+            soilTemp.InteractionsPerDay = 48;
+            Assert.That(soilTemp.InteractionsPerDay, Is.EqualTo(48));
+        }
 
     }
 }

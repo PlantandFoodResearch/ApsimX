@@ -1,4 +1,6 @@
-﻿using APSIM.Shared.Utilities;
+﻿using APSIM.Core;
+using APSIM.Numerics;
+using APSIM.Shared.Utilities;
 using Models.Core;
 using Models.Functions;
 using System;
@@ -9,15 +11,20 @@ namespace Models.Soils.Nutrients
 {
 
     /// <summary>
-    /// Encapsulates a carbon and nutrient flow between pools.  This flow is characterised in terms of the rate of flow (fraction of the pool per day).  
+    /// Encapsulates a carbon and nutrient flow between pools.  This flow is characterised in terms of the rate of flow (fraction of the pool per day).
     /// Carbon loss as CO2 is expressed in terms of the efficiency of C retension within the soil.
     /// </summary>
     [Serializable]
     [ValidParent(ParentType = typeof(OrganicPool))]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
     [ViewName("UserInterface.Views.PropertyView")]
-    public class OrganicFlow : Model
+    public class OrganicFlow : Model, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
+
         private IOrganicPool[] destinations;
         private double[] carbonFlowToDestination;
         private double[] nitrogenFlowToDestination;
@@ -67,27 +74,30 @@ namespace Models.Soils.Nutrients
         /// <param name="numberLayers">Number of layers.</param>
         public void Initialise(int numberLayers)
         {
-            destinations = new IOrganicPool[DestinationNames.Length];
-
-            for (int i = 0; i < DestinationNames.Length; i++)
-            {
-                IOrganicPool destination = FindInScope<IOrganicPool>(DestinationNames[i]);
-                if (destination == null)
-                    throw new Exception("Cannot find destination pool with name: " + DestinationNames[i]);
-                destinations[i] = destination;
-            }
             mineralisedN = new double[numberLayers];
             mineralisedP = new double[numberLayers];
             catm = new double[numberLayers];
-            carbonFlowToDestination = new double[destinations.Length];
-            nitrogenFlowToDestination = new double[destinations.Length];
-            phosphorusFlowToDestination = new double[destinations.Length];
+            carbonFlowToDestination = new double[DestinationNames.Length];
+            nitrogenFlowToDestination = new double[DestinationNames.Length];
+            phosphorusFlowToDestination = new double[DestinationNames.Length];
             co2EfficiencyValue = co2Efficiency.Value();
         }
 
         /// <summary>Perform daily flow calculations.</summary>
         public void DoFlow()
         {
+            if (destinations == null)
+            {
+                destinations = new IOrganicPool[DestinationNames.Length];
+                for (int i = 0; i < DestinationNames.Length; i++)
+                {
+                    IOrganicPool destination = Structure.Find<IOrganicPool>(DestinationNames[i]);
+                    if (destination == null)
+                        throw new Exception("Cannot find destination pool with name: " + DestinationNames[i]);
+                    destinations[i] = destination;
+                }
+            }
+
             OrganicPool source = Parent as OrganicPool;
 
             int numLayers = source.C.Count;

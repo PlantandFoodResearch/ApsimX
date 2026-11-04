@@ -1,12 +1,12 @@
-﻿using Models.Core;
-using Models.Core.Run;
+﻿using APSIM.Core;
+using Models.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Media;
 using System.Timers;
 using UserInterface.Presenters;
-using Utility;
+using APSIMNG.Utility;
 
 namespace UserInterface.Commands
 {
@@ -36,6 +36,7 @@ namespace UserInterface.Commands
         /// <param name="name">Name of the job to be displayed in the UI..</param>
         /// <param name="runner">Runner which will run the job.</param>
         /// <param name="presenter">The explorer presenter.</param>
+        [Newtonsoft.Json.JsonConstructor]
         public RunCommand(string name, IRunner runner, ExplorerPresenter presenter)
         {
             this.jobName = name;
@@ -77,7 +78,7 @@ namespace UserInterface.Commands
         }
 
         /// <summary>All jobs have completed</summary>
-        private void OnAllJobsCompleted(object sender, Runner.AllJobsCompletedArgs e)
+        private void OnAllJobsCompleted(object sender, IRunner.AllJobsCompletedArgs e)
         {
             IsRunning = false;
             if (timer != null)

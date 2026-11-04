@@ -11,8 +11,6 @@ namespace Models.CLEM.Activities
 {
     /// <summary>Mark specified individual ruminants for sale.</summary>
     /// <summary>This activity is in addition to those identified in RuminantActivityManage</summary>
-    /// <version>1.0</version>
-    /// <updates>1.0 First implementation of this activity using IAT/NABSA processes</updates>
     [Serializable]
     [ViewName("UserInterface.Views.PropertyView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
@@ -24,6 +22,7 @@ namespace Models.CLEM.Activities
     [Version(1, 0, 2, "Allows specification of sale reason for reporting")]
     [Version(1, 0, 1, "")]
     [HelpUri(@"Content/Features/Activities/Ruminant/RuminantMarkForSale.htm")]
+    [MinimumTimeStepPermitted(TimeStepTypes.Daily)]
     public class RuminantActivityMarkForSale: CLEMRuminantActivityBase, IHandlesActivityCompanionModels
     {
         private int numberToDo;
@@ -63,7 +62,7 @@ namespace Models.CLEM.Activities
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
             // get all ui tree herd filters that relate to this activity
-            this.InitialiseHerd(true, true);
+            this.InitialiseHerd(false, true);
             filterGroups = GetCompanionModelsByIdentifier<RuminantGroup>( true, false);
         }
 
@@ -105,7 +104,7 @@ namespace Models.CLEM.Activities
             numberToDo = 0;
             numberToSkip = 0;
             IEnumerable<Ruminant> herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.AllOnFarm).Where(a => OverwriteFlag || a.SaleFlag == HerdChangeReason.None);
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
             numberToDo = uniqueIndividuals?.Count() ?? 0;
 
             // provide updated measure for companion models
@@ -161,14 +160,5 @@ namespace Models.CLEM.Activities
                 SetStatusSuccessOrPartial(number != numberToDo);
             }
         }
-
-        #region descriptive summary
-
-        /// <inheritdoc/>
-        public override string ModelSummary()
-        {
-            return $"\r\n<div class=\"activityentry\">Flag individuals for sale as {CLEMModel.DisplaySummaryValueSnippet(SaleFlagToUse.ToString(), "SaleFlag not set")}</div>";
-        } 
-        #endregion
     }
 }

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using APSIM.Shared.Utilities;
+using APSIM.Numerics;
 using Models.Core;
 using Models.Interfaces;
 
 namespace Models
 {
-
     /// <summary>
     /// A micro climate wrapper around a Zone instance.
     /// </summary>
@@ -48,11 +47,19 @@ namespace Models
         /// <summary>Latitude.</summary>
         private double Latitude;
 
+        /// <summary>The area of the Zone in m2 </summary>
+        /// Only != 1 if TreeRow radiation mode is used as it needs to adjust radiation interception for zone overlaps etc)
+        public double AreaM2 { get; set; } = 1.0;
+
+        /// <summary>The area of the Zone in m2 </summary>
+        /// Only != 1 if TreeRow radiation mode is used Canopy area can exceed zone area because of overlap)
+        public double SimulationAreaM2 { get; set; } = 1.0;
+
         /// <summary>The surface organic matter model.</summary>
-        private ISurfaceOrganicMatter surfaceOM;
+        public ISurfaceOrganicMatter SurfaceOM { get; private set; }
 
         /// <summary>The soil water model.</summary>
-        private ISoilWater soilWater;
+        public ISoilWater SoilWater{ get; private set; }
 
         /// <summary>Models in the simulation that implement ICanopy.</summary>
         private IEnumerable<ICanopy> canopyModels;
@@ -114,17 +121,8 @@ namespace Models
         /// <summary>weights vpd towards vpd at maximum temperature</summary>
         private const double svp_fract = 0.66;
 
-        /// <summary>Temperature below which eeq decreases (oC).</summary>
-        private const double min_crit_temp = 5.0;
-
-        /// <summary>Temperature above which eeq increases (oC).</summary>
-        private const double max_crit_temp = 35.0;
-
-        /// <summary>Albedo at 100% green crop cover (0-1).</summary>
-        private const double max_albedo = 0.23;
-
-        /// <summary>Albedo at 100% residue cover (0-1).</summary>
-        private const double residue_albedo = 0.23;
+        /// <summary>The radiation model used for partitioning light</summary>
+        public string RadiationModel { get; set; } = "BroadAcre";
 
         /// <summary>The Albedo of the combined soil-plant system for this zone</summary>
         public double Albedo;
@@ -139,7 +137,7 @@ namespace Models
         public double sumRs;
 
         /// <summary>The incoming rs</summary>
-        public double IncomingRs;
+        public double IncomingRs { get; set; }
 
         /// <summary>The shortwave radiation reaching the surface</summary>
         public double SurfaceRs;
@@ -165,7 +163,6 @@ namespace Models
         /// <summary>The height difference between canopies required for a new layer to be created (m).</summary>
         public double MinimumHeightDiffForNewLayer { get; set; }
 
-
         /// <summary>Gets or sets the component data.</summary>
         public List<MicroClimateCanopy> Canopies = new List<MicroClimateCanopy>();
 
@@ -178,10 +175,16 @@ namespace Models
             clock = clockModel;
             Zone = zoneModel;
             MinimumHeightDiffForNewLayer = minHeightDiffForNewLayer;
-            canopyModels = Zone.FindAllDescendants<ICanopy>().ToList();
-            modelsThatHaveCanopies = Zone.FindAllDescendants<IHaveCanopy>().ToList();
-            soilWater = Zone.FindInScope<ISoilWater>();
-            surfaceOM = Zone.FindInScope<ISurfaceOrganicMatter>();
+            canopyModels = zoneModel.Node.FindChildren<ICanopy>(relativeTo: Zone, recurse: true).ToList();
+            modelsThatHaveCanopies = zoneModel.Node.FindChildren<IHaveCanopy>(relativeTo: Zone, recurse: true).ToList();
+            SoilWater = zoneModel.Node.Find<ISoilWater>(relativeTo: Zone);
+            SurfaceOM = zoneModel.Node.Find<ISurfaceOrganicMatter>(relativeTo: Zone);
+        }
+
+        /// <summary>Constructor. for blank zone</summary>
+        public MicroClimateZone(Zone zoneModel)
+        {
+            Zone = zoneModel;
         }
 
         /// <summary>The zone model.</summary>
@@ -235,6 +238,12 @@ namespace Models
         [Description("Total canopy cover (0-1)")]
         [Units("0-1")]
         public double CanopyCover { get { return RadiationInterception / Radn; } }
+
+        /// <summary>Gets the Green canopy cover.</summary>
+        [Description("Green canopy cover (0-1)")]
+        [Units("0-1")]
+        public double GreenCanopyCover { get { return RadiationInterceptionOnGreen / Radn; } }
+
 
         /// <summary>Gets the radiation term of PET.</summary>
         [Description("Radiation component of PET")]
@@ -295,6 +304,8 @@ namespace Models
             Latitude = weatherModel.Latitude;
             Wind = weatherModel.Wind;
 
+
+
             Albedo = 0;
             Emissivity = 0;
             NetLongWaveRadiation = 0;
@@ -315,7 +326,7 @@ namespace Models
             // There are two ways to finding canopies in the simulation.
             // 1. Some models ARE canopies e.g. Leaf, SimpleLeaf.
             foreach (ICanopy canopy in canopyModels)
-                if (canopy.Height > 0)
+                if (MathUtilities.IsGreaterThan(canopy.Height, 0))
                     Canopies.Add(new MicroClimateCanopy(canopy));
 
             // 2. Some models HAVE canopies e.g. SurfaceOM.
@@ -335,20 +346,40 @@ namespace Models
         /// <param name="soilAlbedo">Soil albedo.</param>
         public void CalculateEnergyTerms(double soilAlbedo)
         {
+            for (int i = numLayers - 1; i >= 0; i += -1)
+            {
+                for (int j = 0; j <= Canopies.Count - 1; j++)
+                {
+                    Canopies[j].FRs[i] = Math.Min(1.0,MathUtilities.Divide(Canopies[j].Rs[i], Radn, 0.0));
+                }
+            }
+
             sumRs = 0.0;
             Albedo = 0.0;
             Emissivity = 0.0;
 
             for (int i = numLayers - 1; i >= 0; i += -1)
+            {
                 for (int j = 0; j <= Canopies.Count - 1; j++)
                 {
-                    Albedo += MathUtilities.Divide(Canopies[j].Rs[i], Radn, 0.0) * Canopies[j].Canopy.Albedo;
-                    Emissivity += MathUtilities.Divide(Canopies[j].Rs[i], Radn, 0.0) * canopyEmissivity;
+                    Albedo += Canopies[j].FRs[i] * Canopies[j].Canopy.Albedo;
+                    Emissivity += Canopies[j].FRs[i] * canopyEmissivity;
                     sumRs += Canopies[j].Rs[i];
                 }
+            }
 
-            Albedo += (1.0 - MathUtilities.Divide(sumRs, Radn, 0.0)) * soilAlbedo;
-            Emissivity += (1.0 - MathUtilities.Divide(sumRs, Radn, 0.0)) * soilEmissivity;
+            if (RadiationModel != "TreeRow")
+            {
+                Albedo += (1.0 - MathUtilities.Divide(sumRs, Radn, 0.0)) * soilAlbedo;
+                Emissivity += (1.0 - MathUtilities.Divide(sumRs, Radn, 0.0)) * soilEmissivity;
+            }
+            else
+            {
+                Albedo += MathUtilities.Divide(SurfaceRs, Radn, 0.0) * soilAlbedo;
+                Emissivity += MathUtilities.Divide(SurfaceRs, Radn, 0.0) * soilEmissivity;
+            }
+            //if((Albedo <0)||(Albedo>1))
+            //    throw new Exception("Bad Albedo");
         }
 
         /// <summary>
@@ -367,7 +398,7 @@ namespace Models
             // ====================================================
             for (int i = numLayers - 1; i >= 0; i += -1)
                 for (int j = 0; j <= Canopies.Count - 1; j++)
-                    Canopies[j].Rl[i] = MathUtilities.Divide(Canopies[j].Rs[i], Radn, 0.0) * NetLongWaveRadiation;
+                    Canopies[j].Rl[i] = Canopies[j].FRs[i] * NetLongWaveRadiation;
         }
 
         /// <summary>
@@ -383,7 +414,7 @@ namespace Models
             // ====================================================
             for (int i = numLayers - 1; i >= 0; i += -1)
                 for (int j = 0; j <= Canopies.Count - 1; j++)
-                    Canopies[j].Rsoil[i] = MathUtilities.Divide(Canopies[j].Rs[i], Radn, 0.0) * SoilHeatFlux;
+                    Canopies[j].Rsoil[i] = Canopies[j].FRs[i] * SoilHeatFlux;
         }
 
         /// <summary>Calculate the canopy conductance for system compartments</summary>
@@ -443,10 +474,10 @@ namespace Models
                 for (int j = 0; j <= Canopies.Count - 1; j++)
                     Canopies[j].interception[i] = MathUtilities.Divide(Canopies[j].LAI[i], sumLAI, 0.0) * totalInterception;
 
-            if (soilWater != null)
+            if (SoilWater != null)
             {
-                soilWater.PotentialInfiltration = Math.Max(0, Rain - totalInterception);
-                soilWater.PrecipitationInterception = totalInterception;
+                SoilWater.PotentialInfiltration = Math.Max(0, Rain - totalInterception);
+                SoilWater.PrecipitationInterception = totalInterception;
             }
         }
 
@@ -501,18 +532,40 @@ namespace Models
         /// <summary>Send an energy balance event</summary>
         public void SetCanopyEnergyTerms()
         {
+            //calculate the total green/dead for the canopy first, as AgPasture needs to know this
+            double totalGreen = 0;
+            double totalDead = 0;
             for (int j = 0; j <= Canopies.Count - 1; j++)
+            {
+                if (Canopies[j].Canopy != null)
+                {
+                    for (int i = 0; i <= numLayers - 1; i++)
+                    {
+                        totalGreen += CalculateCanpoyEnergy(Canopies[j].Rs[i], SimulationAreaM2, RadnGreenFraction(j));
+                        totalDead += CalculateCanpoyEnergy(Canopies[j].Rs[i], SimulationAreaM2, 1 - RadnGreenFraction(j));
+                    }
+                }
+            }
+
+            for (int j = 0; j <= Canopies.Count - 1; j++)
+            {
                 if (Canopies[j].Canopy != null)
                 {
                     CanopyEnergyBalanceInterceptionlayerType[] lightProfile = new CanopyEnergyBalanceInterceptionlayerType[numLayers];
+                    double totalPETa = 0;
+                    double totalPETr = 0;
                     double totalPotentialEp = 0;
                     double totalInterception = 0.0;
                     for (int i = 0; i <= numLayers - 1; i++)
                     {
                         lightProfile[i] = new CanopyEnergyBalanceInterceptionlayerType();
                         lightProfile[i].thickness = DeltaZ[i];
-                        lightProfile[i].AmountOnGreen = Canopies[j].Rs[i] * RadnGreenFraction(j);
-                        lightProfile[i].AmountOnDead = Canopies[j].Rs[i] * (1 - RadnGreenFraction(j));
+                        lightProfile[i].AmountOnGreen = CalculateCanpoyEnergy(Canopies[j].Rs[i], SimulationAreaM2, RadnGreenFraction(j));
+                        lightProfile[i].AmountOnDead = CalculateCanpoyEnergy(Canopies[j].Rs[i], SimulationAreaM2, 1 - RadnGreenFraction(j));
+                        lightProfile[i].AmountOnGreenTotal = totalGreen;
+                        lightProfile[i].AmountOnDeadTotal = totalDead;
+                        totalPETa += Canopies[j].PETa[i];
+                        totalPETr += Canopies[j].PETr[i];
                         totalPotentialEp += Canopies[j].PET[i];
                         totalInterception += Canopies[j].interception[i];
                     }
@@ -520,24 +573,13 @@ namespace Models
                     Canopies[j].Canopy.WaterDemand = totalPotentialEp;
                     Canopies[j].Canopy.LightProfile = lightProfile;
                 }
+            }
         }
 
-        /// <summary>Calculate the amtospheric potential evaporation rate for each zone</summary>
-        public void CalculateEo()
+        /// <summary>AmountOnGreen and AmountOnDead Calucation for SetCanopyEnergyTerms</summary>
+        private double CalculateCanpoyEnergy(double Rs, double area, double radiation)
         {
-
-            double CoverGreen = 0;
-            for (int j = 0; j <= Canopies.Count - 1; j++)
-                if (Canopies[j].Canopy != null)
-                    CoverGreen += (1 - CoverGreen) * Canopies[j].Canopy.CoverGreen;
-
-            if (soilWater != null && surfaceOM != null)
-                soilWater.Eo = AtmosphericPotentialEvaporationRate(Radn,
-                                                             MaxT,
-                                                             MinT,
-                                                             soilWater.Salb,
-                                                             surfaceOM.Cover,
-                                                             CoverGreen);
+            return Rs * area * radiation;
         }
 
         /// <summary>Break the combined Canopy into layers</summary>
@@ -577,6 +619,7 @@ namespace Models
                     Array.Resize<double>(ref Canopies[j].Ftot, numLayers);
                     Array.Resize<double>(ref Canopies[j].Fgreen, numLayers);
                     Array.Resize<double>(ref Canopies[j].Rs, numLayers);
+                    Array.Resize<double>(ref Canopies[j].FRs, numLayers);
                     Array.Resize<double>(ref Canopies[j].Rl, numLayers);
                     Array.Resize<double>(ref Canopies[j].Rsoil, numLayers);
                     Array.Resize<double>(ref Canopies[j].Gc, numLayers);
@@ -884,52 +927,6 @@ namespace Models
         {
             double Non_dQs_dT = CalcNondQsdT((mint + maxt) / 2.0, airPressure);
             return MathUtilities.Divide(Non_dQs_dT + 1.0, Non_dQs_dT + 1.0 + MathUtilities.Divide(aerodynamicCond, canopyCond, 1e6), 0.0);
-        }
-
-        private double AtmosphericPotentialEvaporationRate(double Radn, double MaxT, double MinT, double Salb, double residue_cover, double _cover_green_sum)
-        {
-            // ******* calculate potential evaporation from soil surface (eos) ******
-
-            // find equilibrium evap rate as a
-            // function of radiation, albedo, and temp.
-            double surface_albedo = Salb + (residue_albedo - Salb) * residue_cover;
-            // set surface_albedo to soil albedo for backward compatibility with soilwat
-            surface_albedo = Salb;
-
-            double albedo = max_albedo - (max_albedo - surface_albedo) * (1.0 - _cover_green_sum);
-            // wt_ave_temp is mean temp, weighted towards max.
-            double wt_ave_temp = 0.6 * MaxT + 0.4 * MinT;
-
-            double eeq = Radn * 23.8846 * (0.000204 - 0.000183 * albedo) * (wt_ave_temp + 29.0);
-            // find potential evapotranspiration (pot_eo)
-            // from equilibrium evap rate
-            return eeq * EeqFac(MaxT, MinT);
-        }
-
-        private double EeqFac(double MaxT, double MinT)
-        {
-            //+  Purpose
-            //                 calculate coefficient for equilibrium evaporation rate
-            if (MaxT > max_crit_temp)
-            {
-                // at very high max temps eo/eeq increases
-                // beyond its normal value of 1.1
-                return (MaxT - max_crit_temp) * 0.05 + 1.1;
-            }
-            else if (MaxT < min_crit_temp)
-            {
-                // at very low max temperatures eo/eeq
-                // decreases below its normal value of 1.1
-                // note that there is a discontinuity at tmax = 5
-                // it would be better at tmax = 6.1, or change the
-                // .18 to .188 or change the 20 to 21.1
-                return 0.01 * Math.Exp(0.18 * (MaxT + 20.0));
-            }
-            else
-            {
-                // temperature is in the normal range, eo/eeq = 1.1
-                return 1.1;
-            }
         }
     }
 }

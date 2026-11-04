@@ -5,18 +5,17 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using APSIM.Core;
 using APSIM.Shared.JobRunning;
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.Office2010.PowerPoint;
-using Models.Core.ApsimFile;
 using Models.PostSimulationTools;
+using Models.PreSimulationTools;
 using Models.Storage;
 
 namespace Models.Core.Run
 {
 
     /// <summary>
-    /// Encapsulates a collection of jobs that are to be run. A job can be a simulation run or 
+    /// Encapsulates a collection of jobs that are to be run. A job can be a simulation run or
     /// a class instance that implements IRunnable e.g. EXCEL input run.
     /// </summary>
     public class SimulationGroup : JobManager, IReportsStatus
@@ -31,7 +30,7 @@ namespace Models.Core.Run
         private bool runSimulations;
 
         /// <summary>Run post simulation tools?</summary>
-        private bool runPostSimulationTools;
+        private bool runPreAndPostSimulationTools;
 
         /// <summary>Run tests?</summary>
         private bool runTests;
@@ -54,20 +53,20 @@ namespace Models.Core.Run
         /// <summary>Contstructor</summary>
         /// <param name="relativeTo">The model to use to search for simulations to run.</param>
         /// <param name="runSimulations">Run simulations?</param>
-        /// <param name="runPostSimulationTools">Run post simulation tools?</param>
+        /// <param name="runPreAndPostSimulationTools">Run post simulation tools?</param>
         /// <param name="runTests">Run tests?</param>
         /// <param name="simulationNamesToRun">Only run these simulations.</param>
         /// <param name="simulationNamePatternMatch">A regular expression used to match simulation names to run.</param>
         public SimulationGroup(IModel relativeTo,
                              bool runSimulations = true,
-                             bool runPostSimulationTools = true,
+                             bool runPreAndPostSimulationTools = true,
                              bool runTests = true,
                              IEnumerable<string> simulationNamesToRun = null,
                              string simulationNamePatternMatch = null)
         {
             this.relativeTo = relativeTo;
             this.runSimulations = runSimulations;
-            this.runPostSimulationTools = runPostSimulationTools;
+            this.runPreAndPostSimulationTools = runPreAndPostSimulationTools;
             this.runTests = runTests;
             this.simulationNamesToRun = simulationNamesToRun;
 
@@ -79,15 +78,16 @@ namespace Models.Core.Run
                     if (this.simulationNamesToRun == null || this.simulationNamesToRun.Count() == 0)
                         throw new Exception("Playlist was used but no simulations or experiments match the contents of the list.");
                 }
-                //need to set the relative back to simulations so the runner can find all the simulations 
+                //need to set the relative back to simulations so the runner can find all the simulations
                 //when it comes time to run.
-                this.relativeTo = relativeTo.FindAncestor<Simulations>();
+                this.relativeTo = relativeTo.Node.FindParent<Simulations>(recurse: true);
             }
-            
+
             if (simulationNamePatternMatch != null)
                 patternMatch = new Regex(simulationNamePatternMatch);
 
-            Initialise();
+            if (relativeTo != null)
+                Initialise();
         }
 
         /// <summary>Contstructor</summary>
@@ -100,7 +100,7 @@ namespace Models.Core.Run
         {
             this.FileName = fileName;
             this.runSimulations = true;
-            this.runPostSimulationTools = true;
+            this.runPreAndPostSimulationTools = true;
             this.runTests = runTests;
 
             if (simulationNamePatternMatch != null)
@@ -122,18 +122,19 @@ namespace Models.Core.Run
         /// I'm not sure that this really belongs here, but since this class
         /// handles the running of post-simulation tools, it kind of has to be here.
         /// </remarks>
-        public string Status {
+        public string Status
+        {
             get
-            { 
+            {
                 if (_status.StartsWith("Waiting for datastore"))
                 {
                     return _status + " - " + storage.Writer.CommandCount().ToString() + " operations remaining";
                 }
-                return _status; 
+                return _status;
             }
-            private set 
-            { 
-                _status = value; 
+            private set
+            {
+                _status = value;
             }
         }
 
@@ -156,7 +157,10 @@ namespace Models.Core.Run
             if (rootModel == null)
                 return new List<string>();
 
-            IEnumerable<ISimulationDescriptionGenerator> allSims = rootModel.FindAllDescendants<ISimulationDescriptionGenerator>();
+            IEnumerable<ISimulationDescriptionGenerator> allSims = rootModel.Node.FindChildren<ISimulationDescriptionGenerator>(recurse: true);
+
+            //remove any sims there are under replacements
+            allSims = allSims.Where(s => Folder.IsUnderReplacementsFolder((s as IModel)) == null);
 
             List<string> dupes = new List<string>();
             foreach (var simType in allSims.GroupBy(s => s.GetType()))
@@ -176,8 +180,15 @@ namespace Models.Core.Run
             if (!initialised)
                 SpinWait.SpinUntil(() => initialised);
 
-            if (storage?.Writer != null)
-                storage.Writer.TablesModified.Clear();
+            foreach (IDataStore datastore in rootModel.Node.FindAll<IDataStore>())
+                if (datastore.Writer != null)
+                    datastore.Writer.TablesModified.Clear();
+
+            if (runPreAndPostSimulationTools)
+            {
+                RunPreSimulationTools();
+                StorageFinishWriting();
+            }
         }
 
         /// <summary>Called once when all jobs have completed running. Should throw on error.</summary>
@@ -186,7 +197,7 @@ namespace Models.Core.Run
             Status = "Waiting for datastore to finish writing";
             StorageFinishWriting();
 
-            if (runPostSimulationTools)
+            if (runPreAndPostSimulationTools)
                 RunPostSimulationTools();
 
             if (runTests)
@@ -201,7 +212,7 @@ namespace Models.Core.Run
         public void StorageFinishWriting()
         {
             storage?.Writer.Stop();
-            storage?.Reader.Refresh();
+            storage?.Refresh();
         }
 
         /// <summary>Initialise the instance.</summary>
@@ -217,7 +228,7 @@ namespace Models.Core.Run
 
                     if (!File.Exists(FileName))
                         throw new Exception("Cannot find file: " + FileName);
-                    Simulations sims = FileFormat.ReadFromFile<Simulations>(FileName, e => throw e, false).NewModel as Simulations;
+                    Simulations sims = FileFormat.ReadFromFile<Simulations>(FileName).Model as Simulations;
                     relativeTo = sims;
                 }
 
@@ -228,14 +239,7 @@ namespace Models.Core.Run
                     bool hasBeenDeserialised = relativeTo.Children.Count > 0 &&
                                                relativeTo.Children[0].Parent == relativeTo;
                     if (!hasBeenDeserialised)
-                    {
-                        // Parent all models.
-                        relativeTo.ParentAllDescendants();
-
-                        // Call OnCreated in all models.
-                        foreach (IModel model in relativeTo.FindAllDescendants().ToList())
-                            model.OnCreated();
-                    }
+                        throw new NotImplementedException();
 
                     // Find the root model.
                     rootModel = relativeTo;
@@ -253,9 +257,9 @@ namespace Models.Core.Run
                         throw new Exception($"Duplicate simulation names found: {string.Join(", ", duplicates)}");
 
                     // Check for duplicate soils
-                    foreach (var zone in rootModel.FindAllDescendants<Zone>().Where(z => z.Enabled))
+                    foreach (var zone in rootModel.Node.FindChildren<Zone>(recurse: true).Where(z => z.Enabled))
                     {
-                        bool duplicateSoils = zone.FindAllChildren<Models.Soils.Soil>().Where(s => s.Enabled).Count() > 1;
+                        bool duplicateSoils = zone.Node.FindChildren<Models.Soils.Soil>().Where(s => s.Enabled).Count() > 1;
                         if (duplicateSoils)
                             throw new Exception($"Duplicate soils found in zone: {zone.FullPath}");
                     }
@@ -265,7 +269,7 @@ namespace Models.Core.Run
                     e.Publish("BeginRun", new object[] { this, new EventArgs() });
 
                     // Find a storage model.
-                    storage = rootModel.FindChild<IDataStore>();
+                    storage = rootModel.Node.FindChild<IDataStore>(recurse: true);
 
                     // Find simulations to run.
                     if (runSimulations)
@@ -287,7 +291,14 @@ namespace Models.Core.Run
                             storage.Writer.Clean(names, false);
                         }
                         foreach (IRunnable job in jobs)
-                            Add(job);
+                        {
+                            if (job is SimulationDescription simDescription)
+                            {
+                                if (simDescription.IsEnabled)
+                                    Add(simDescription);
+                            }
+                            else Add(job);
+                        }
                     }
 
                     if (numJobsToRun == 0)
@@ -320,7 +331,7 @@ namespace Models.Core.Run
                     if (SimulationNameIsMatched(description.Name))
                         yield return description;
             }
-            else if (relativeTo is Folder || relativeTo is Simulations)
+            else if ((relativeTo is Folder && !Folder.IsModelReplacementsFolder(relativeTo)) || relativeTo is Simulations || relativeTo is Virtual)
             {
                 // Get a list of all models we're going to run.
                 foreach (var child in relativeTo.Children)
@@ -342,6 +353,36 @@ namespace Models.Core.Run
                 return simulationNamesToRun == null || simulationNamesToRun.Contains(simulationName);
         }
 
+        /// <summary>Run all pre simulation tools.</summary>
+        private void RunPreSimulationTools()
+        {
+            // Call all pre simulation tools.
+            foreach (IPreSimulationTool tool in FindPreSimulationTools())
+            {
+                if (storage != null)
+                    storage.Refresh();
+                try
+                {
+                    if (tool.Enabled)
+                    {
+                        Status = $"Running pre-simulation tool {tool.Name}";
+                        tool.Run();
+                    }
+                }
+                catch (Exception err)
+                {
+                    AddException(err);
+                }
+            }
+        }
+
+        private IEnumerable<IPreSimulationTool> FindPreSimulationTools()
+        {
+            return relativeTo.Node.FindAll<IPreSimulationTool>()
+                            .Where(t => t.Node.FindParents<IModel>()
+                                         .All(a => !(a is ParallelPostSimulationTool || a is SerialPostSimulationTool)));
+        }
+
         /// <summary>Run all post simulation tools.</summary>
         private void RunPostSimulationTools()
         {
@@ -349,8 +390,7 @@ namespace Models.Core.Run
             object[] args = new object[] { this, new EventArgs() };
             foreach (IPostSimulationTool tool in FindPostSimulationTools())
             {
-                storage?.Writer.WaitForIdle();
-                storage?.Reader.Refresh();
+                storage?.Refresh();
 
                 DateTime startTime = DateTime.Now;
                 Exception exception = null;
@@ -374,27 +414,26 @@ namespace Models.Core.Run
 
         private IEnumerable<IPostSimulationTool> FindPostSimulationTools()
         {
-            return relativeTo.FindAllInScope<IPostSimulationTool>()
-                            .Where(t => t.FindAllAncestors()
+            return relativeTo.Node.FindAll<IPostSimulationTool>()
+                            .Where(t => t.Node.FindParents<IModel>()
                                          .All(a => !(a is ParallelPostSimulationTool || a is SerialPostSimulationTool)));
         }
 
         /// <summary>Run all tests.</summary>
         private void RunTests()
         {
-            storage?.Writer.WaitForIdle();
-            storage?.Reader.Refresh();
+            storage?.Refresh();
 
             List<object> services;
             if (relativeTo is Simulations)
                 services = (relativeTo as Simulations).GetServices();
             else
             {
-                Simulations sims = relativeTo.FindInScope<Simulations>();
+                Simulations sims = relativeTo.Node.Find<Simulations>();
                 if (sims != null)
                     services = sims.GetServices();
                 else if (relativeTo is Simulation)
-                    services = (relativeTo as Simulation).Services;
+                    services = (relativeTo as Simulation).ModelServices;
                 else
                 {
                     services = new List<object>();
@@ -404,13 +443,14 @@ namespace Models.Core.Run
             }
 
             var links = new Links(services);
-            foreach (ITest test in rootModel.FindAllDescendants<ITest>())
+            foreach (ITest test in rootModel.Node.FindChildren<ITest>(recurse: true)
+                                            .Where(t => t.Enabled))
             {
                 DateTime startTime = DateTime.Now;
 
                 links.Resolve(test as IModel, true);
 
-                // If we run into problems, we will want to include the name of the test in the 
+                // If we run into problems, we will want to include the name of the test in the
                 // exception's message. However, tests may be manager scripts, which always have
                 // a name of 'Script'. Therefore, if the test's parent is a Manager, we use the
                 // manager's name instead.
@@ -424,7 +464,7 @@ namespace Models.Core.Run
                 catch (Exception err)
                 {
                     exception = err;
-                    AddException(new Exception("Encountered an error while running test " + testName, err));
+                    AddException(new Exception("Encountered an error while running test " + testName + " (" + FileName + ")", err));
                 }
             }
         }

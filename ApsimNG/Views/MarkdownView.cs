@@ -13,14 +13,14 @@ using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Pango;
 using UserInterface.Extensions;
-using Utility;
+using APSIMNG.Utility;
 using Table = Markdig.Extensions.Tables.Table;
 
 namespace UserInterface.Views
 {
 
     /// <summary>A rich text view capable of rendering markdown-formatted text.</summary>
-    public class MarkdownView : ViewBase, IMarkdownView
+    public class MarkdownView : ViewBase
     {
         /// <summary>
         /// Padding between table columns, in pixels.
@@ -42,6 +42,7 @@ namespace UserInterface.Views
         private MarkdownFindView findView;
         private AccelGroup accelerators = new AccelGroup();
         private Menu popupMenu = new Menu();
+        private bool sizeAllocated = false;
 
         /// <summary>Table of font sizes for ASCII characters. Set on attach and reset on attach whenver font has changed.</summary>
         private static readonly int[] fontCharSizes = new int[128];
@@ -107,23 +108,32 @@ namespace UserInterface.Views
             mainWidget.Margin = 10;
             textView.PopulatePopup += OnPopulatePopupMenu;
             findView = new MarkdownFindView();
+            CreateStyles(textView);
 
             textView.Editable = false;
             textView.WrapMode = Gtk.WrapMode.Word;
             textView.VisibilityNotifyEvent += OnVisibilityNotify;
             textView.MotionNotifyEvent += OnMotionNotify;
             textView.WidgetEventAfter += OnWidgetEventAfter;
-            CreateStyles(textView);
             mainWidget.ShowAll();
+            mainWidget.SizeAllocated += OnSizeAllocated;
             mainWidget.Destroyed += OnDestroyed;
             mainWidget.Realized += OnRealized;
             textView.FocusInEvent += OnGainFocus;
             textView.FocusOutEvent += OnLoseFocus;
 
-            handCursor = new Gdk.Cursor(Gdk.CursorType.Hand2);
-            regularCursor = new Gdk.Cursor(Gdk.CursorType.Xterm);
+            handCursor = new Gdk.Cursor(Gdk.Display.Default, Gdk.CursorType.Hand2);
+            regularCursor = new Gdk.Cursor(Gdk.Display.Default, Gdk.CursorType.Xterm);
 
             textView.KeyPressEvent += OnTextViewKeyPress;
+        }
+
+        public void Refresh()
+        {
+            // Give Gtk time to digest these additions to the tag table
+            // Otherwise we can sometimes get nulls when we access the tags
+            while (GLib.MainContext.Iteration())
+                ;
         }
 
         /// <summary>
@@ -187,6 +197,18 @@ namespace UserInterface.Views
         }
 
         /// <summary>
+        /// Received when the size of the main widget has been allocated.
+        /// For now we care only whether the initial allocation has occurred.
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="args"></param>
+        private void OnSizeAllocated(object o, SizeAllocatedArgs args)
+        {
+            sizeAllocated = true;
+            MainWidget.SizeAllocated -= OnSizeAllocated;
+        }
+
+        /// <summary>
         /// Trap keypress events - show the text search dialog on ctrl + f.
         /// </summary>
         /// <param name="sender">Sender widget.</param>
@@ -243,6 +265,14 @@ namespace UserInterface.Views
             set { textView.Visible = value; }
         }
 
+        /// <summary>
+        /// Returns true if Gtk is done allocating a size for our main widget
+        /// </summary>
+        public bool SizeIsAllocated
+        {
+            get { return sizeAllocated; }
+        }
+
         /// <summary>Gets or sets the markdown text.</summary>
         public string Text
         {
@@ -254,7 +284,9 @@ namespace UserInterface.Views
             {
                 textView.Buffer.Clear();
 
-                if (value != null)
+                // Attempting to process the text blocks when the view is not realized can result in
+                // Gtk Critical Errors.
+                if (value != null && textView.IsRealized)
                 {
                     MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UsePipeTables().UseEmphasisExtras().Build();
                     MarkdownDocument document = Markdown.Parse(value, pipeline);
@@ -285,6 +317,7 @@ namespace UserInterface.Views
             // smaller blocks. Therefore, if we just insert newlines at the bottom of this
             // method (ie every time we insert a block), we will end up with scenarios where
             // we have way too many empty lines.
+            Block prevBlock = null;
             foreach (var block in blocks)
             {
                 if (block is HeadingBlock header)
@@ -301,17 +334,17 @@ namespace UserInterface.Views
                 }
                 else if (block is ListBlock list)
                 {
+                    if (prevBlock is ParagraphBlock) //add special case newline for sublists
+                        textView.Buffer.Insert(ref insertPos, "\n");
+
                     int itemNumber = 1;
                     foreach (Block listBlock in list)
                     {
                         if (list.IsOrdered)
-                        {
                             textView.Buffer.InsertWithTags(ref insertPos, $"{itemNumber}. ", GetTags(textView, "Normal", indent + 1));
-                        }
                         else
-                        {
                             textView.Buffer.InsertWithTags(ref insertPos, "• ", GetTags(textView, "Normal", indent + 1));
-                        }
+
                         ProcessMarkdownBlocks(new[] { listBlock }, ref insertPos, textView, indent + 1, false, tags);
                         if (itemNumber != list.Count)
                             textView.Buffer.Insert(ref insertPos, "\n");
@@ -341,6 +374,8 @@ namespace UserInterface.Views
                 // Don't insert auto newlines after the last block in the document.
                 if (autoNewline && !(block.Parent is MarkdownDocument && block.Parent.LastChild == block))
                     textView.Buffer.Insert(ref insertPos, "\n\n");
+
+                prevBlock = block;
             }
 
             return insertPos;
@@ -578,10 +613,40 @@ namespace UserInterface.Views
             string absolutePath = PathUtilities.GetAbsolutePath(url, ImagePath);
 
             Gtk.Image image = null;
-            if (File.Exists(absolutePath))
+            if (url.StartsWith("data:image/"))
+            {
+                int startPos = url.IndexOf(',');
+                byte[] bytes = Convert.FromBase64String(url.Substring(startPos+1));
+
+                using (MemoryStream stream = new MemoryStream(bytes))
+                {
+                    image = new Gtk.Image(new Pixbuf(stream));
+                }
+            }
+            else if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+            {
+                try{
+                    using (var stream = WebUtilities.AsyncGetStreamTask(uri.AbsoluteUri, "image/*"))
+                    {
+                        using MemoryStream ms = new MemoryStream();
+                        stream.ContinueWith(t => t.Result.CopyTo(ms)).Wait();
+                        byte[] content = ms.ToArray();
+                        string tempImgFileName = Path.Combine(Path.GetTempPath(), Path.GetFileName(uri.AbsolutePath));
+                        File.WriteAllBytes(tempImgFileName, content);
+                        image = new Image(new Pixbuf(tempImgFileName));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowError(ex);
+                }
+            }
+            else if (File.Exists(absolutePath))
+            {
                 // Apparently the native gtk deps we ship with windows releases don't include
                 // gtk_image_new_from_file(). Therefore we avoid that particular constructor.
                 image = new Gtk.Image(new Pixbuf(absolutePath));
+            }
             else
             {
                 string imagePath = "ApsimNG.Resources." + url;
@@ -835,6 +900,7 @@ namespace UserInterface.Views
                 textView.VisibilityNotifyEvent -= OnVisibilityNotify;
                 textView.MotionNotifyEvent -= OnMotionNotify;
                 textView.WidgetEventAfter -= OnWidgetEventAfter;
+                mainWidget.SizeAllocated -= OnSizeAllocated;
                 mainWidget.Destroyed -= OnDestroyed;
                 mainWidget.Realized -= OnRealized;
                 textView.FocusInEvent -= OnGainFocus;
@@ -861,18 +927,5 @@ namespace UserInterface.Views
                 Underline = Pango.Underline.Single;
             }
         }
-    }
-
-    /// <summary>An interface for a rich text widget.</summary>
-    public interface IMarkdownView
-    {
-        /// <summary>Gets or sets the base path that images should be relative to.</summary>
-        string ImagePath { get; set; }
-
-        /// <summary>Gets or sets the markdown text</summary>
-        string Text { get; set; }
-
-        /// <summary>Gets or sets the visibility of the widget.</summary>
-        bool Visible { get; set; }
     }
 }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UserInterface.EventArguments;
-using UserInterface.Interfaces;
-using Models.Core;
+﻿using Models.Core;
 
 namespace UserInterface.Views
 {
@@ -20,12 +14,7 @@ namespace UserInterface.Views
         DropDownView SimulationDropDown { get; }
 
         /// <summary>View which displays the summary data.</summary>
-        IMarkdownView SummaryDisplay { get; }
+        MarkdownView SummaryDisplay { get; }
 
-        /// <summary>Should initial conditions be shown?</summary>
-        CheckBoxView ShowInitialConditions { get; }
-
-        /// <summary>Controls which types of messages the user wants to see.</summary>
-        EnumDropDownView<MessageType> MessagesFilter { get; }
     }
 }

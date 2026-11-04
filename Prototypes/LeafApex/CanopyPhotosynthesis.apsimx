@@ -1,6 +1,6 @@
 {
   "$type": "Models.Core.Simulations, Models",
-  "Version": 165,
+  "Version": 195,
   "Name": "Simulations",
   "ResourceName": null,
   "Children": [
@@ -25,15 +25,18 @@
     {
       "$type": "Models.Core.Folder, Models",
       "ShowInDocs": false,
-      "GraphsPerPage": 6,
       "Name": "Replacements",
       "ResourceName": null,
       "Children": [
         {
           "$type": "Models.PMF.Plant, Models",
+          "Phenology": null,
+          "Arbitrator": null,
+          "structure": null,
+          "Leaf": null,
+          "Root": null,
+          "AboveGround": null,
           "PlantType": "Wheat",
-          "IsEnding": false,
-          "DaysAfterEnding": 0,
           "Name": "Wheat",
           "ResourceName": null,
           "Children": [
@@ -59,7 +62,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "PotentialPartitioningMethods",
                       "ResourceName": null,
                       "Children": [
@@ -102,7 +104,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "AllocationMethods",
                       "ResourceName": null,
                       "Children": [
@@ -146,7 +147,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "PotentialPartitioningMethods",
                       "ResourceName": null,
                       "Children": [
@@ -165,7 +165,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "ActualPartitioningMethods",
                       "ResourceName": null,
                       "Children": [
@@ -192,7 +191,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "AllocationMethods",
                       "ResourceName": null,
                       "Children": [
@@ -250,6 +248,7 @@
             },
             {
               "$type": "Models.PMF.Phen.Phenology, Models",
+              "thermalTime": null,
               "Name": "Phenology",
               "ResourceName": null,
               "Children": [
@@ -264,6 +263,7 @@
                 },
                 {
                   "$type": "Models.Functions.SubDailyInterpolation, Models",
+                  "InterpolationMethod": null,
                   "agregationMethod": 0,
                   "Name": "ThermalTime",
                   "ResourceName": null,
@@ -280,7 +280,6 @@
                         26.0,
                         0.0
                       ],
-                      "XVariableName": null,
                       "Name": "Response",
                       "ResourceName": null,
                       "Children": [],
@@ -334,6 +333,7 @@
                     },
                     {
                       "$type": "Models.Functions.SubDailyInterpolation, Models",
+                      "InterpolationMethod": null,
                       "agregationMethod": 0,
                       "Name": "TempResponseProfile",
                       "ResourceName": null,
@@ -390,7 +390,6 @@
                             0.0,
                             -0.5
                           ],
-                          "XVariableName": null,
                           "Name": "Response",
                           "ResourceName": null,
                           "Children": [],
@@ -734,7 +733,18 @@
                   "IsEmerged": false,
                   "Name": "Germinating",
                   "ResourceName": null,
-                  "Children": [],
+                  "Children": [
+                    {
+                      "$type": "Models.Functions.Constant, Models",
+                      "FixedValue": 0.0,
+                      "Units": null,
+                      "Name": "MinSoilTemperature",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
                   "Enabled": true,
                   "ReadOnly": false
                 },
@@ -1004,7 +1014,6 @@
                                         1.0,
                                         0.0
                                       ],
-                                      "XVariableName": null,
                                       "Name": "XYPairs",
                                       "ResourceName": null,
                                       "Children": [],
@@ -1325,6 +1334,10 @@
             },
             {
               "$type": "Models.PMF.Struct.Structure, Models",
+              "thermalTime": null,
+              "finalLeafNumber": null,
+              "branchingRate": null,
+              "branchMortality": null,
               "CohortInitialisationStage": "Germination",
               "LeafInitialisationStage": "Emergence",
               "Name": "Structure",
@@ -1378,7 +1391,6 @@
                             1.4,
                             1.4
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -1425,7 +1437,6 @@
                             1.0,
                             1.0
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -1502,7 +1513,6 @@
                                     12.0,
                                     20.0
                                   ],
-                                  "XVariableName": null,
                                   "Name": "XYPairs",
                                   "ResourceName": null,
                                   "Children": [],
@@ -1582,7 +1592,6 @@
                                 1.0,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -1628,7 +1637,6 @@
                                 1.0,
                                 0.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -1663,7 +1671,6 @@
                                 0.0,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -1723,7 +1730,6 @@
                                     0.002,
                                     0.0
                                   ],
-                                  "XVariableName": null,
                                   "Name": "XYPairs",
                                   "ResourceName": null,
                                   "Children": [],
@@ -1790,7 +1796,6 @@
                             1100.0,
                             1200.0
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -1825,7 +1830,6 @@
                             0.0,
                             1.0
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -2011,7 +2015,6 @@
                                     1.0,
                                     0.0
                                   ],
-                                  "XVariableName": null,
                                   "Name": "XYPairs",
                                   "ResourceName": null,
                                   "Children": [],
@@ -2105,6 +2108,12 @@
             },
             {
               "$type": "Models.PMF.Organs.ReproductiveOrgan, Models",
+              "SurfaceOrganicMatter": null,
+              "Summary": null,
+              "biomassRemovalModel": null,
+              "DMConversionEfficiency": null,
+              "MaintenanceRespirationFunction": null,
+              "RemobilisationCost": null,
               "GrowthRespiration": 0.0,
               "MaintenanceRespiration": 0.0,
               "DMDemand": null,
@@ -2627,6 +2636,9 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientPoolFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
                   "Name": "DMDemandPriorityFactors",
                   "ResourceName": null,
                   "Children": [
@@ -2666,6 +2678,9 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientPoolFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
                   "Name": "NDemandPriorityFactors",
                   "ResourceName": null,
                   "Children": [
@@ -2709,6 +2724,9 @@
             },
             {
               "$type": "Models.PMF.Organs.Root, Models",
+              "SurfaceOrganicMatter": null,
+              "RootShape": null,
+              "InitialWt": null,
               "DMSupply": null,
               "NSupply": null,
               "DMDemand": null,
@@ -2845,7 +2863,6 @@
                         0.02,
                         0.02
                       ],
-                      "XVariableName": null,
                       "Name": "XYPairs",
                       "ResourceName": null,
                       "Children": [],
@@ -2880,7 +2897,6 @@
                         0.01,
                         0.01
                       ],
-                      "XVariableName": null,
                       "Name": "XYPairs",
                       "ResourceName": null,
                       "Children": [],
@@ -2986,7 +3002,6 @@
                             1.0,
                             0.0
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -3004,6 +3019,7 @@
                       "Children": [
                         {
                           "$type": "Models.Functions.SoilWaterScale, Models",
+                          "LLModel": 1,
                           "Name": "SoilWaterScale",
                           "ResourceName": null,
                           "Children": [],
@@ -3022,7 +3038,6 @@
                             1.0,
                             1.0
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -3053,6 +3068,7 @@
                   "Children": [
                     {
                       "$type": "Models.Functions.SoilWaterScale, Models",
+                      "LLModel": 1,
                       "Name": "SoilWaterScale",
                       "ResourceName": null,
                       "Children": [],
@@ -3069,7 +3085,6 @@
                         0.0,
                         1.0
                       ],
-                      "XVariableName": null,
                       "Name": "XYPairs",
                       "ResourceName": null,
                       "Children": [],
@@ -3186,6 +3201,12 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientDemandFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
+                  "QStructuralPriority": null,
+                  "QMetabolicPriority": null,
+                  "QStoragePriority": null,
                   "Name": "DMDemands",
                   "ResourceName": null,
                   "Children": [
@@ -3247,7 +3268,6 @@
                                             0.5,
                                             0.2
                                           ],
-                                          "XVariableName": null,
                                           "Name": "XYPairs",
                                           "ResourceName": null,
                                           "Children": [],
@@ -3397,6 +3417,12 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientDemandFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
+                  "QStructuralPriority": null,
+                  "QMetabolicPriority": null,
+                  "QStoragePriority": null,
                   "Name": "NDemands",
                   "ResourceName": null,
                   "Children": [
@@ -3544,6 +3570,9 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientPoolFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
                   "Name": "InitialWt",
                   "ResourceName": null,
                   "Children": [
@@ -3597,6 +3626,12 @@
             },
             {
               "$type": "Models.PMF.Organs.Leaf, Models",
+              "SurfaceOrganicMatter": null,
+              "Summary": null,
+              "MetData": null,
+              "Structure": null,
+              "ThermalTime": null,
+              "biomassRemovalModel": null,
               "Leaves": [],
               "CurrentExpandingLeaf": 0.0,
               "StartFractionExpanded": 0.0,
@@ -3628,7 +3663,9 @@
               "Children": [
                 {
                   "$type": "Models.PMF.Organs.LeafCohort, Models",
+                  "Apex": null,
                   "ApexCohort": null,
+                  "Clock": null,
                   "LiveStart": null,
                   "NReallocationFactor": 0.0,
                   "DMReallocationFactor": 0.0,
@@ -3681,7 +3718,9 @@
                 },
                 {
                   "$type": "Models.PMF.Organs.LeafCohort, Models",
+                  "Apex": null,
                   "ApexCohort": null,
+                  "Clock": null,
                   "LiveStart": null,
                   "NReallocationFactor": 0.0,
                   "DMReallocationFactor": 0.0,
@@ -3733,7 +3772,37 @@
                   "ReadOnly": false
                 },
                 {
-                  "$type": "Models.PMF.Organs.Leaf+LeafCohortParameters, Models",
+                  "$type": "Models.PMF.Organs.LeafCohortParameters, Models",
+                  "MaxArea": null,
+                  "GrowthDuration": null,
+                  "LagDuration": null,
+                  "SenescenceDuration": null,
+                  "DetachmentLagDuration": null,
+                  "DetachmentDuration": null,
+                  "SpecificLeafAreaMax": null,
+                  "SpecificLeafAreaMin": null,
+                  "StructuralFraction": null,
+                  "MaximumNConc": null,
+                  "MinimumNConc": null,
+                  "InitialNConc": null,
+                  "NReallocationFactor": null,
+                  "DMReallocationFactor": null,
+                  "NRetranslocationFactor": null,
+                  "ExpansionStress": null,
+                  "CriticalNConc": null,
+                  "DMRetranslocationFactor": null,
+                  "ShadeInducedSenescenceRate": null,
+                  "LagAcceleration": null,
+                  "SenescenceAcceleration": null,
+                  "StorageFraction": null,
+                  "CellDivisionStress": null,
+                  "LeafSizeShapeParameter": null,
+                  "SenessingLeafRelativeSize": null,
+                  "MaintenanceRespirationFunction": null,
+                  "LeafSizeAgeMultiplier": null,
+                  "LagDurationAgeMultiplier": null,
+                  "SenescenceDurationAgeMultiplier": null,
+                  "RemobilisationCost": null,
                   "ExpansionStressValue": 0.0,
                   "CellDivisionStressValue": 0.0,
                   "LagAccelerationValue": 0.0,
@@ -3803,7 +3872,6 @@
                                 0.1,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -3840,7 +3908,6 @@
                                 0.1,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -3886,7 +3953,6 @@
                                 1.0,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -3923,7 +3989,6 @@
                                 1.0,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -3960,7 +4025,6 @@
                                 0.1,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -4016,7 +4080,6 @@
                                 0.5,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -4088,7 +4151,6 @@
                                 0.4,
                                 1.0
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -4259,7 +4321,6 @@
                             0.05,
                             0.02
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -4301,7 +4362,6 @@
                                 0.04,
                                 0.015
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -4336,7 +4396,6 @@
                                 1.0,
                                 0.93
                               ],
-                              "XVariableName": null,
                               "Name": "XYPairs",
                               "ResourceName": null,
                               "Children": [],
@@ -4377,7 +4436,6 @@
                             0.005,
                             0.005
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -4442,7 +4500,6 @@
                                     0.5,
                                     0.0
                                   ],
-                                  "XVariableName": null,
                                   "Name": "XYPairs",
                                   "ResourceName": null,
                                   "Children": [],
@@ -4515,7 +4572,6 @@
                                     0.5,
                                     0.0
                                   ],
-                                  "XVariableName": null,
                                   "Name": "XYPairs",
                                   "ResourceName": null,
                                   "Children": [],
@@ -4558,7 +4614,6 @@
                             18000.0,
                             30000.0
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -4593,7 +4648,6 @@
                             10000.0,
                             18000.0
                           ],
-                          "XVariableName": null,
                           "Name": "XYPairs",
                           "ResourceName": null,
                           "Children": [],
@@ -4705,6 +4759,7 @@
                       "$type": "Models.Functions.ArrayFunction, Models",
                       "Values": "1 1 1",
                       "Units": null,
+                      "Doubles": null,
                       "Name": "LagDurationAgeMultiplier",
                       "ResourceName": null,
                       "Children": [],
@@ -4715,6 +4770,7 @@
                       "$type": "Models.Functions.ArrayFunction, Models",
                       "Values": "1 1 1",
                       "Units": null,
+                      "Doubles": null,
                       "Name": "SenescenceDurationAgeMultiplier",
                       "ResourceName": null,
                       "Children": [],
@@ -4725,6 +4781,7 @@
                       "$type": "Models.Functions.ArrayFunction, Models",
                       "Values": "1 1 1 1 1 1 1 1 1 1 1 1",
                       "Units": null,
+                      "Doubles": null,
                       "Name": "LeafSizeAgeMultiplier",
                       "ResourceName": null,
                       "Children": [],
@@ -4826,6 +4883,10 @@
                 },
                 {
                   "$type": "Models.Functions.SupplyFunctions.CanopyPhotosynthesis, Models",
+                  "Plant": null,
+                  "Canopy": null,
+                  "Weather": null,
+                  "Clock": null,
                   "GrossPhotosynthesis": 0.0,
                   "Name": "Photosynthesis",
                   "ResourceName": null,
@@ -5097,6 +5158,9 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientPoolFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
                   "Name": "DMDemandPriorityFactors",
                   "ResourceName": null,
                   "Children": [
@@ -5136,6 +5200,9 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientPoolFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
                   "Name": "NDemandPriorityFactors",
                   "ResourceName": null,
                   "Children": [
@@ -5172,6 +5239,60 @@
                   ],
                   "Enabled": true,
                   "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.VariableReference, Models",
+                  "VariableName": "[Structure].LeafTipsAppeared",
+                  "Name": "Tips",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.VariableReference, Models",
+                  "VariableName": "[Leaf].ExpandedCohortNo",
+                  "Name": "Ligules",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.VariableReference, Models",
+                  "VariableName": "[Structure].FinalLeafNumber",
+                  "Name": "FinalLeafNumber",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.VariableReference, Models",
+                  "VariableName": "[Structure].TotalStemPopn",
+                  "Name": "StemPopulation",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.VariableReference, Models",
+                  "VariableName": "[Structure].BranchNumber",
+                  "Name": "StemNumberPerPlant",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                },
+                {
+                  "$type": "Models.Functions.VariableReference, Models",
+                  "VariableName": "[Plant].SowingData.Population",
+                  "Name": "MainStemPopulation",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
                 }
               ],
               "Enabled": true,
@@ -5179,6 +5300,13 @@
             },
             {
               "$type": "Models.PMF.Organs.GenericOrgan, Models",
+              "SenescenceRate": null,
+              "NRetranslocationFactor": null,
+              "DMRetranslocationFactor": null,
+              "InitialWt": null,
+              "DMConversionEfficiency": null,
+              "CarbonConcentration": null,
+              "RetranslocateNitrogen": null,
               "StartLive": null,
               "DMSupply": null,
               "NSupply": null,
@@ -5449,6 +5577,12 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientDemandFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
+                  "QStructuralPriority": null,
+                  "QMetabolicPriority": null,
+                  "QStoragePriority": null,
                   "Name": "DMDemands",
                   "ResourceName": null,
                   "Children": [
@@ -5638,6 +5772,12 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientDemandFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
+                  "QStructuralPriority": null,
+                  "QMetabolicPriority": null,
+                  "QStoragePriority": null,
                   "Name": "NDemands",
                   "ResourceName": null,
                   "Children": [
@@ -5784,6 +5924,9 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientPoolFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
                   "Name": "InitialWt",
                   "ResourceName": null,
                   "Children": [
@@ -5846,6 +5989,13 @@
             },
             {
               "$type": "Models.PMF.Organs.GenericOrgan, Models",
+              "SenescenceRate": null,
+              "NRetranslocationFactor": null,
+              "DMRetranslocationFactor": null,
+              "InitialWt": null,
+              "DMConversionEfficiency": null,
+              "CarbonConcentration": null,
+              "RetranslocateNitrogen": null,
               "StartLive": null,
               "DMSupply": null,
               "NSupply": null,
@@ -5885,7 +6035,6 @@
                         0.015,
                         0.012
                       ],
-                      "XVariableName": null,
                       "Name": "XYPairs",
                       "ResourceName": null,
                       "Children": [],
@@ -6204,6 +6353,12 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientDemandFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
+                  "QStructuralPriority": null,
+                  "QMetabolicPriority": null,
+                  "QStoragePriority": null,
                   "Name": "DMDemands",
                   "ResourceName": null,
                   "Children": [
@@ -6440,6 +6595,12 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientDemandFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
+                  "QStructuralPriority": null,
+                  "QMetabolicPriority": null,
+                  "QStoragePriority": null,
                   "Name": "NDemands",
                   "ResourceName": null,
                   "Children": [
@@ -6586,6 +6747,9 @@
                 },
                 {
                   "$type": "Models.PMF.NutrientPoolFunctions, Models",
+                  "Structural": null,
+                  "Metabolic": null,
+                  "Storage": null,
                   "Name": "InitialWt",
                   "ResourceName": null,
                   "Children": [
@@ -6799,14 +6963,12 @@
             {
               "$type": "Models.Core.Folder, Models",
               "ShowInDocs": false,
-              "GraphsPerPage": 6,
               "Name": "Cultivars",
               "ResourceName": null,
               "Children": [
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": false,
-                  "GraphsPerPage": 6,
                   "Name": "New Zealand",
                   "ResourceName": null,
                   "Children": [
@@ -7219,7 +7381,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": false,
-                  "GraphsPerPage": 6,
                   "Name": "Australia",
                   "ResourceName": null,
                   "Children": [
@@ -8694,7 +8855,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": false,
-                  "GraphsPerPage": 6,
                   "Name": "Turkey",
                   "ResourceName": null,
                   "Children": [
@@ -8723,7 +8883,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": false,
-                  "GraphsPerPage": 6,
                   "Name": "China",
                   "ResourceName": null,
                   "Children": [
@@ -8748,7 +8907,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": false,
-                  "GraphsPerPage": 6,
                   "Name": "USA",
                   "ResourceName": null,
                   "Children": [
@@ -8834,7 +8992,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": false,
-                  "GraphsPerPage": 6,
                   "Name": "Europe",
                   "ResourceName": null,
                   "Children": [
@@ -8893,7 +9050,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": false,
-                  "GraphsPerPage": 6,
                   "Name": "Africa",
                   "ResourceName": null,
                   "Children": [
@@ -8920,7 +9076,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": false,
-                  "GraphsPerPage": 6,
                   "Name": "Iran",
                   "ResourceName": null,
                   "Children": [
@@ -8982,17 +9137,16 @@
             "[Wheat].Grain.Wt",
             "[Wheat].Grain.N",
             "[Wheat].Grain.Number",
-            "[Wheat].Grain.Nconc",
+            "[Wheat].Grain.NConc",
             "[Wheat].AboveGround.Wt",
             "[Wheat].AboveGround.N",
             "[Wheat].Grain.Protein",
             "[Wheat].Grain.Size",
             "[Wheat].Structure.HaunStage",
-            "[Wheat].Structure.FinalLeafNumber",
-            "[Wheat].Structure.MainStemPopn",
+            "[Wheat].Leaf.FinalLeafNumber",
+            "[Wheat].Leaf.MainStemPopulation",
             "[Wheat].SowingData.Cultivar",
             "[Wheat].SowingDate.DayOfYear",
-            "[Wheat].Leaf.CohortMaxSize",
             "[Clock].StartDate"
           ],
           "EventNames": [
@@ -9024,27 +9178,24 @@
             "[Wheat].Arbitrator.DM.TotalFixationSupply",
             "[Wheat].Arbitrator.DM.NotAllocated",
             "[Wheat].Ear.N",
-            "[Wheat].Ear.Nconc",
+            "[Wheat].Ear.NConc",
             "[Wheat].Ear.Wt",
             "[Wheat].Grain.N",
             "[Wheat].Grain.NConc",
             "[Wheat].Grain.Number",
             "[Wheat].Grain.Size",
             "[Wheat].Grain.Wt",
-            "[Wheat].Leaf.AppearedCohortNo",
+            "[Wheat].Leaf.Tips",
             "[Wheat].Leaf.CoverDead",
             "[Wheat].Leaf.CoverGreen",
             "[Wheat].Leaf.CoverTotal",
             "[Wheat].Leaf.Dead.N",
             "[Wheat].Leaf.Dead.NConc",
             "[Wheat].Leaf.Dead.Wt",
-            "[Wheat].Leaf.DeadCohortNo",
-            "[Wheat].Leaf.SenescingCohortNo",
-            "[Wheat].Leaf.ExpandedCohortNo",
+            "[Wheat].Leaf.Ligules",
             "[Wheat].Leaf.Fn",
             "[Wheat].Leaf.Fw",
             "[Wheat].Leaf.Height",
-            "[Wheat].Leaf.InitialisedCohortNo",
             "[Wheat].Leaf.LAI",
             "[Wheat].Leaf.Live.N",
             "[Wheat].Leaf.Live.NConc",
@@ -9065,7 +9216,7 @@
             "[Wheat].Root.Depth",
             "[Wheat].Root.N",
             "[Wheat].Root.Wt",
-            "[Wheat].Root.Nconc",
+            "[Wheat].Root.NConc",
             "[Wheat].Root.WaterUptake",
             "[Wheat].Root.WaterTensionFactor",
             "[Wheat].Root.RootFrontVelocity.TemperatureFactor",
@@ -9083,12 +9234,12 @@
             "[Wheat].SowingData.Cultivar",
             "[Wheat].Structure.HaunStage",
             "[Wheat].Structure.HaunStage",
-            "[Wheat].Structure.Height",
-            "[Wheat].Structure.LeafTipsAppeared",
-            "[Wheat].Structure.FinalLeafNumber",
-            "[Wheat].Structure.MainStemPopn",
+            "[Wheat].Leaf.Height",
+            "[Wheat].Leaf.Tips",
+            "[Wheat].Leaf.FinalLeafNumber",
+            "[Wheat].Leaf.MainStemPopulation",
             "[Wheat].Structure.MeanTillerGrowthRate",
-            "[Wheat].Structure.TotalStemPopn",
+            "[Wheat].Leaf.StemPopulation",
             "[Wheat].Total.N",
             "[Wheat].Total.Wt",
             "[SurfaceOrganicMatter].Wt",
@@ -9208,7 +9359,7 @@
             "}",
             "       "
           ],
-          "Parameters": null,
+          "Parameters": [],
           "Name": "Harvesting",
           "ResourceName": null,
           "Children": [],
@@ -9229,7 +9380,7 @@
         {
           "$type": "Models.PostSimulationTools.ExcelInput, Models",
           "FileNames": [
-            "..\\..\\Tests\\Validation\\Wheat\\Observed.xlsx"
+            "..\\..\\Tests\\Validation\\Wheat\\data\\Observed.xlsx"
           ],
           "SheetNames": [
             "Observed",
@@ -9257,7 +9408,7 @@
               "$type": "Models.Tests, Models",
               "AcceptedStats": [
                 {
-                  "$type": "APSIM.Shared.Utilities.MathUtilities+RegrStats, APSIM.Shared",
+                  "$type": "APSIM.Numerics.MathUtilities+RegrStats, APSIM.Numerics",
                   "Name": "Wheat.AboveGround.N",
                   "n": 16,
                   "Slope": 0.9846590735069823,
@@ -9269,10 +9420,11 @@
                   "NSE": 0.8238293169207814,
                   "ME": -1.3876649910281214,
                   "MAE": 2.2071235907026088,
-                  "RSR": 0.40639883782654623
+                  "RSR": 0.40639883782654623,
+                  "RMR": 0.0
                 },
                 {
-                  "$type": "APSIM.Shared.Utilities.MathUtilities+RegrStats, APSIM.Shared",
+                  "$type": "APSIM.Numerics.MathUtilities+RegrStats, APSIM.Numerics",
                   "Name": "Wheat.AboveGround.Wt",
                   "n": 23,
                   "Slope": 0.5671003038629624,
@@ -9284,10 +9436,11 @@
                   "NSE": 0.24742438993454285,
                   "ME": 177.7203112603498,
                   "MAE": 268.5992252377855,
-                  "RSR": 0.8484426506057784
+                  "RSR": 0.8484426506057784,
+                  "RMR": 0.0
                 },
                 {
-                  "$type": "APSIM.Shared.Utilities.MathUtilities+RegrStats, APSIM.Shared",
+                  "$type": "APSIM.Numerics.MathUtilities+RegrStats, APSIM.Numerics",
                   "Name": "Wheat.Grain.Number",
                   "n": 23,
                   "Slope": 0.41817544128489403,
@@ -9299,10 +9452,11 @@
                   "NSE": 0.3483695028282905,
                   "ME": -1519.633859230496,
                   "MAE": 3463.487099337444,
-                  "RSR": 0.7894927082786221
+                  "RSR": 0.7894927082786221,
+                  "RMR": 0.0
                 },
                 {
-                  "$type": "APSIM.Shared.Utilities.MathUtilities+RegrStats, APSIM.Shared",
+                  "$type": "APSIM.Numerics.MathUtilities+RegrStats, APSIM.Numerics",
                   "Name": "Wheat.Grain.Wt",
                   "n": 23,
                   "Slope": 0.600275839123013,
@@ -9314,7 +9468,8 @@
                   "NSE": -0.2463030861177391,
                   "ME": -35.41991569245556,
                   "MAE": 170.57748208000152,
-                  "RSR": 1.0918406456149945
+                  "RSR": 1.0918406456149945,
+                  "RMR": 0.0
                 }
               ],
               "AcceptedStatsName": "Name n Slope Intercept SEslope SEintercept R2 RMSE NSE ME MAE RSR",
@@ -9336,7 +9491,6 @@
     {
       "$type": "Models.Core.Folder, Models",
       "ShowInDocs": true,
-      "GraphsPerPage": 6,
       "Name": "Validation",
       "ResourceName": null,
       "Children": [
@@ -9366,7 +9520,6 @@
         {
           "$type": "Models.Core.Folder, Models",
           "ShowInDocs": true,
-          "GraphsPerPage": 6,
           "Name": "New Zealand",
           "ResourceName": null,
           "Children": [
@@ -9409,7 +9562,7 @@
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -9583,9 +9736,9 @@
                                 200.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
                               "ParticleSizeSand": null,
                               "ParticleSizeSilt": null,
+                              "ParticleSizeClay": null,
                               "Rocks": null,
                               "Texture": null,
                               "BD": [
@@ -9716,7 +9869,7 @@
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -9848,20 +10001,20 @@
                                 200.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
                               "ParticleSizeSand": null,
                               "ParticleSizeSilt": null,
+                              "ParticleSizeClay": null,
                               "Rocks": null,
                               "Texture": null,
                               "BD": [
-                                0.08,
-                                0.12,
-                                0.12,
-                                0.12,
-                                0.15,
-                                0.16,
-                                0.15,
-                                0.08
+                                1.3,
+                                1.3,
+                                1.3,
+                                1.3,
+                                1.3,
+                                1.3,
+                                1.3,
+                                1.3
                               ],
                               "AirDry": [
                                 0.05,
@@ -9904,7 +10057,16 @@
                                 0.44
                               ],
                               "KS": null,
-                              "BDMetadata": null,
+                              "BDMetadata": [
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null
+                              ],
                               "AirDryMetadata": null,
                               "LL15Metadata": null,
                               "DULMetadata": null,
@@ -9981,7 +10143,7 @@
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -10050,9 +10212,9 @@
                                 200.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
                               "ParticleSizeSand": null,
                               "ParticleSizeSilt": null,
+                              "ParticleSizeClay": null,
                               "Rocks": null,
                               "Texture": null,
                               "BD": [
@@ -10183,7 +10345,7 @@
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -10252,9 +10414,9 @@
                                 200.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
                               "ParticleSizeSand": null,
                               "ParticleSizeSilt": null,
+                              "ParticleSizeClay": null,
                               "Rocks": null,
                               "Texture": null,
                               "BD": [
@@ -10385,7 +10547,7 @@
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -10475,9 +10637,9 @@
                                 200.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
                               "ParticleSizeSand": null,
                               "ParticleSizeSilt": null,
+                              "ParticleSizeClay": null,
                               "Rocks": null,
                               "Texture": null,
                               "BD": [
@@ -10608,7 +10770,7 @@
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -10719,9 +10881,9 @@
                                 200.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
                               "ParticleSizeSand": null,
                               "ParticleSizeSilt": null,
+                              "ParticleSizeClay": null,
                               "Rocks": null,
                               "Texture": null,
                               "BD": [
@@ -10852,7 +11014,7 @@
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -10893,9 +11055,9 @@
                                 200.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
                               "ParticleSizeSand": null,
                               "ParticleSizeSilt": null,
+                              "ParticleSizeClay": null,
                               "Rocks": null,
                               "Texture": null,
                               "BD": [
@@ -11048,7 +11210,7 @@
                     {
                       "$type": "Models.Climate.Weather, Models",
                       "ConstantsFile": null,
-                      "FileName": "..\\..\\Tests\\Validation\\Wheat\\lincoln.met",
+                      "FileName": "../../Tests/Validation/Wheat/met/lincoln.met",
                       "ExcelWorkSheetName": null,
                       "Name": "Weather",
                       "ResourceName": null,
@@ -11068,13 +11230,12 @@
                         {
                           "$type": "Models.Core.Folder, Models",
                           "ShowInDocs": true,
-                          "GraphsPerPage": 6,
                           "Name": "Manager folder",
                           "ResourceName": null,
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -11091,7 +11252,7 @@
                             },
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -11234,27 +11395,27 @@
                             },
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
                                   "Date": "1991-06-10T00:00:00",
-                                  "Action": "[Fertiliser].Apply(30, Fertiliser.Types.NO3N, 0);",
-                                  "Line": "1991-06-10 [Fertiliser].Apply(30, Fertiliser.Types.NO3N, 0);"
+                                  "Action": "[Fertiliser].Apply(30, \"NO3N\", 0);",
+                                  "Line": "1991-06-10 [Fertiliser].Apply(30, \"NO3N\", 0);"
                                 },
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
                                   "Date": "1991-08-16T00:00:00",
-                                  "Action": "[Fertiliser].Apply(100, Fertiliser.Types.NO3N,0);",
-                                  "Line": "1991-08-16 [Fertiliser].Apply(100, Fertiliser.Types.NO3N,0);"
+                                  "Action": "[Fertiliser].Apply(100, \"NO3N\",0);",
+                                  "Line": "1991-08-16 [Fertiliser].Apply(100, \"NO3N\",0);"
                                 },
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
                                   "Date": "1991-09-26T00:00:00",
-                                  "Action": "[Fertiliser].Apply(50, Fertiliser.Types.NO3N,0);",
-                                  "Line": "1991-09-26 [Fertiliser].Apply(50, Fertiliser.Types.NO3N,0);"
+                                  "Action": "[Fertiliser].Apply(50, \"NO3N\",0);",
+                                  "Line": "1991-09-26 [Fertiliser].Apply(50, \"NO3N\",0);"
                                 }
                               ],
                               "Name": "FertiliserEvents",
@@ -11310,10 +11471,46 @@
                                 200.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
-                              "ParticleSizeSand": null,
-                              "ParticleSizeSilt": null,
-                              "Rocks": null,
+                              "ParticleSizeSand": [
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0
+                              ],
+                              "ParticleSizeSilt": [
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0
+                              ],
+                              "ParticleSizeClay": [
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0
+                              ],
+                              "Rocks": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                              ],
                               "Texture": null,
                               "BD": [
                                 1.3,
@@ -11372,11 +11569,47 @@
                               "DULMetadata": null,
                               "SATMetadata": null,
                               "KSMetadata": null,
-                              "RocksMetadata": null,
+                              "RocksMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
                               "TextureMetadata": null,
-                              "ParticleSizeSandMetadata": null,
-                              "ParticleSizeSiltMetadata": null,
-                              "ParticleSizeClayMetadata": null,
+                              "ParticleSizeSandMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
+                              "ParticleSizeSiltMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
+                              "ParticleSizeClayMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
                               "Name": "Physical",
                               "ResourceName": null,
                               "Children": [
@@ -11412,9 +11645,36 @@
                                     1.0,
                                     1.0
                                   ],
-                                  "LLMetadata": null,
-                                  "KLMetadata": null,
-                                  "XFMetadata": null,
+                                  "LLMetadata": [
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                                  ],
+                                  "KLMetadata": [
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                                  ],
+                                  "XFMetadata": [
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                                  ],
                                   "Name": "WheatSoil",
                                   "ResourceName": null,
                                   "Children": [],
@@ -11583,9 +11843,28 @@
                               "PHUnits": 0,
                               "EC": null,
                               "ESP": null,
-                              "CEC": null,
+                              "CEC": [
+                                9.1325,
+                                8.9525,
+                                8.885000000000002,
+                                8.705,
+                                8.705,
+                                9.020000000000001,
+                                8.57,
+                                8.57
+                              ],
                               "ECMetadata": null,
                               "CLMetadata": null,
+                              "CECMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
                               "ESPMetadata": null,
                               "PHMetadata": null,
                               "Name": "Chemical",
@@ -11626,14 +11905,6 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Soils.CERESSoilTemperature, Models",
-                              "Name": "Temperature",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
                               "$type": "Models.Soils.Solute, Models",
                               "Thickness": [
                                 100.0,
@@ -11664,6 +11935,7 @@
                               "MaxDepthSoluteAccessible": 0.0,
                               "RunoffEffectivenessAtMovingSolute": 0.0,
                               "MaxEffectiveRunoff": 0.0,
+                              "ConcInSolution": null,
                               "Name": "NO3",
                               "ResourceName": null,
                               "Children": [],
@@ -11701,6 +11973,7 @@
                               "MaxDepthSoluteAccessible": 0.0,
                               "RunoffEffectivenessAtMovingSolute": 0.0,
                               "MaxEffectiveRunoff": 0.0,
+                              "ConcInSolution": null,
                               "Name": "NH4",
                               "ResourceName": null,
                               "Children": [],
@@ -11738,7 +12011,18 @@
                               "MaxDepthSoluteAccessible": 0.0,
                               "RunoffEffectivenessAtMovingSolute": 0.0,
                               "MaxEffectiveRunoff": 0.0,
+                              "ConcInSolution": null,
                               "Name": "Urea",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Soils.SoilTemp.SoilTemperature, Models",
+                              "Thickness": null,
+                              "InitialValues": null,
+                              "Name": "Temperature",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -11783,13 +12067,19 @@
                           "NightInterceptionFraction": 0.0,
                           "ReferenceHeight": 2.0,
                           "Name": "MicroClimate",
-                          "ResourceName": null,
+                          "ResourceName": "MicroClimate",
                           "Children": [],
                           "Enabled": true,
                           "ReadOnly": false
                         },
                         {
                           "$type": "Models.PMF.Plant, Models",
+                          "Phenology": null,
+                          "Arbitrator": null,
+                          "structure": null,
+                          "Leaf": null,
+                          "Root": null,
+                          "AboveGround": null,
                           "Name": "Wheat",
                           "ResourceName": "Wheat",
                           "Children": [],
@@ -11954,7 +12244,7 @@
                             "        [EventSubscribe(\"DoManagement\")]",
                             "        private void OnDoManagement(object sender, EventArgs e)",
                             "        {",
-                            "            if (phenology.CurrentPhase.Name == \"Ripening\")",
+                            "            if (phenology.CurrentPhase.Name == \"GrainRipening\")",
                             "            {",
                             "                Wheat.Harvest();",
                             "                Wheat.EndCrop();",
@@ -11997,6 +12287,7 @@
                       "Position": 0,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -12007,6 +12298,7 @@
                       "Position": 3,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -12085,7 +12377,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": true,
-                  "GraphsPerPage": 6,
                   "Name": "SWCLayers",
                   "ResourceName": null,
                   "Children": [
@@ -12099,6 +12390,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": 0.0,
                           "Maximum": 0.4,
                           "Interval": null
@@ -12109,6 +12401,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -12194,6 +12487,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": 0.0,
                           "Maximum": 0.4,
                           "Interval": null
@@ -12204,6 +12498,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -12289,6 +12584,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": 0.0,
                           "Maximum": 0.4,
                           "Interval": null
@@ -12299,6 +12595,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -12384,6 +12681,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": 0.0,
                           "Maximum": 0.4,
                           "Interval": null
@@ -12394,6 +12692,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -12479,6 +12778,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": 0.0,
                           "Maximum": 0.4,
                           "Interval": null
@@ -12489,6 +12789,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -12574,6 +12875,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": 0.0,
                           "Maximum": 0.4,
                           "Interval": null
@@ -12584,6 +12886,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -12669,6 +12972,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": 0.0,
                           "Maximum": 0.4,
                           "Interval": null
@@ -12679,6 +12983,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -12764,6 +13069,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": 0.0,
                           "Maximum": 0.4,
                           "Interval": null
@@ -12774,6 +13080,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -12863,6 +13170,7 @@
                       "Position": 0,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -12873,6 +13181,7 @@
                       "Position": 3,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -12958,6 +13267,7 @@
                       "Position": 0,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -12968,6 +13278,7 @@
                       "Position": 3,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -13053,6 +13364,7 @@
                       "Position": 0,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -13063,6 +13375,7 @@
                       "Position": 3,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -13091,7 +13404,7 @@
                       "LineThickness": 0,
                       "TableName": "DailyReport",
                       "XFieldName": "Clock.Today",
-                      "YFieldName": "Wheat.Structure.TotalStemPopn",
+                      "YFieldName": "Wheat.Leaf.StemPopulation",
                       "X2FieldName": "",
                       "Y2FieldName": "",
                       "ShowInLegend": true,
@@ -13120,7 +13433,7 @@
                       "LineThickness": 0,
                       "TableName": "Observed",
                       "XFieldName": "Clock.Today",
-                      "YFieldName": "Wheat.Structure.TotalStemPopn",
+                      "YFieldName": "Wheat.Leaf.StemPopulation",
                       "X2FieldName": "",
                       "Y2FieldName": "",
                       "ShowInLegend": true,
@@ -13148,6 +13461,7 @@
                       "Position": 0,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -13158,6 +13472,7 @@
                       "Position": 3,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -13236,7 +13551,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": true,
-                  "GraphsPerPage": 6,
                   "Name": "Nitrogen",
                   "ResourceName": null,
                   "Children": [
@@ -13250,6 +13564,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13260,6 +13575,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13356,6 +13672,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13366,6 +13683,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13451,6 +13769,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13461,6 +13780,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13546,6 +13866,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13556,6 +13877,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13641,6 +13963,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13651,6 +13974,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13736,6 +14060,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13746,6 +14071,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13831,6 +14157,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13841,6 +14168,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13923,7 +14251,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": true,
-                  "GraphsPerPage": 6,
                   "Name": "Biomass",
                   "ResourceName": null,
                   "Children": [
@@ -13937,6 +14264,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -13947,6 +14275,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -14032,6 +14361,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -14042,6 +14372,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -14127,6 +14458,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -14137,6 +14469,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -14222,6 +14555,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -14232,6 +14566,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -14321,6 +14656,7 @@
                       "Position": 0,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -14331,6 +14667,7 @@
                       "Position": 3,
                       "Inverted": false,
                       "CrossesAtZero": false,
+                      "LabelOnOneLine": false,
                       "Minimum": null,
                       "Maximum": null,
                       "Interval": null
@@ -14388,7 +14725,7 @@
                       "LineThickness": 0,
                       "TableName": "DailyReport",
                       "XFieldName": "Clock.Today",
-                      "YFieldName": "Wheat.Structure.MainStemPopn",
+                      "YFieldName": "Wheat.Leaf.MainStemPopulation",
                       "X2FieldName": "",
                       "Y2FieldName": "",
                       "ShowInLegend": false,
@@ -14454,7 +14791,7 @@
                               "Children": [
                                 {
                                   "$type": "Models.Operations, Models",
-                                  "Operation": [
+                                  "OperationsList": [
                                     {
                                       "$type": "Models.Operation, Models",
                                       "Enabled": true,
@@ -14486,7 +14823,7 @@
                               "Children": [
                                 {
                                   "$type": "Models.Operations, Models",
-                                  "Operation": [
+                                  "OperationsList": [
                                     {
                                       "$type": "Models.Operation, Models",
                                       "Enabled": true,
@@ -14517,7 +14854,7 @@
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": null,
+                              "OperationsList": null,
                               "Name": "Nil",
                               "ResourceName": null,
                               "Children": [],
@@ -14526,7 +14863,7 @@
                             },
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": [
+                              "OperationsList": [
                                 {
                                   "$type": "Models.Operation, Models",
                                   "Enabled": true,
@@ -14662,7 +14999,7 @@
                     {
                       "$type": "Models.Climate.Weather, Models",
                       "ConstantsFile": null,
-                      "FileName": "..\\..\\Tests\\Validation\\Wheat\\lincoln.met",
+                      "FileName": "../../Tests/Validation/Wheat/met/lincoln.met",
                       "ExcelWorkSheetName": null,
                       "Name": "Weather",
                       "ResourceName": null,
@@ -14682,13 +15019,12 @@
                         {
                           "$type": "Models.Core.Folder, Models",
                           "ShowInDocs": true,
-                          "GraphsPerPage": 6,
                           "Name": "Manager folder",
                           "ResourceName": null,
                           "Children": [
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": null,
+                              "OperationsList": null,
                               "Name": "Operations",
                               "ResourceName": null,
                               "Children": [],
@@ -14697,7 +15033,7 @@
                             },
                             {
                               "$type": "Models.Operations, Models",
-                              "Operation": null,
+                              "OperationsList": null,
                               "Name": "IrrigationEvents",
                               "ResourceName": null,
                               "Children": [],
@@ -14745,13 +15081,13 @@
                                 "        private void OnDoManagement(object sender, EventArgs e)",
                                 "        {",
                                 "            if (DateUtilities.WithinDates(FertDate1, Clock.Today, FertDate1))",
-                                "                Fertiliser.Apply(Amount: Amount1 * SDSwitch, Type: Fertiliser.Types.NO3N);",
+                                "                Fertiliser.Apply(amount: Amount1 * SDSwitch, type: \"NO3N\");",
                                 "            if (DateUtilities.WithinDates(FertDate2, Clock.Today, FertDate2))",
-                                "                Fertiliser.Apply(Amount: Amount2, Type: Fertiliser.Types.NO3N);",
+                                "                Fertiliser.Apply(amount: Amount2, type: \"NO3N\");",
                                 "            if (DateUtilities.WithinDates(FertDate3, Clock.Today, FertDate3))",
-                                "                Fertiliser.Apply(Amount: Amount3, Type: Fertiliser.Types.NO3N);",
+                                "                Fertiliser.Apply(amount: Amount3, type: \"NO3N\");",
                                 "            if (DateUtilities.WithinDates(FertDate4, Clock.Today, FertDate4))",
-                                "                Fertiliser.Apply(Amount: Amount4 * SDSwitch, Type: Fertiliser.Types.NO3N);",
+                                "                Fertiliser.Apply(amount: Amount4 * SDSwitch, type: \"NO3N\");",
                                 "        }",
                                 "    }",
                                 "}"
@@ -14847,10 +15183,46 @@
                                 100.0,
                                 200.0
                               ],
-                              "ParticleSizeClay": null,
-                              "ParticleSizeSand": null,
-                              "ParticleSizeSilt": null,
-                              "Rocks": null,
+                              "ParticleSizeSand": [
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0,
+                                5.0
+                              ],
+                              "ParticleSizeSilt": [
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0,
+                                65.0
+                              ],
+                              "ParticleSizeClay": [
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0,
+                                30.0
+                              ],
+                              "Rocks": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                              ],
                               "Texture": null,
                               "BD": [
                                 1.3,
@@ -14909,11 +15281,47 @@
                               "DULMetadata": null,
                               "SATMetadata": null,
                               "KSMetadata": null,
-                              "RocksMetadata": null,
+                              "RocksMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
                               "TextureMetadata": null,
-                              "ParticleSizeSandMetadata": null,
-                              "ParticleSizeSiltMetadata": null,
-                              "ParticleSizeClayMetadata": null,
+                              "ParticleSizeSandMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
+                              "ParticleSizeSiltMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
+                              "ParticleSizeClayMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
                               "Name": "Physical",
                               "ResourceName": null,
                               "Children": [
@@ -14949,9 +15357,36 @@
                                     1.0,
                                     1.0
                                   ],
-                                  "LLMetadata": null,
-                                  "KLMetadata": null,
-                                  "XFMetadata": null,
+                                  "LLMetadata": [
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                                  ],
+                                  "KLMetadata": [
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                                  ],
+                                  "XFMetadata": [
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                                  ],
                                   "Name": "WheatSoil",
                                   "ResourceName": null,
                                   "Children": [],
@@ -15120,9 +15555,28 @@
                               "PHUnits": 0,
                               "EC": null,
                               "ESP": null,
-                              "CEC": null,
+                              "CEC": [
+                                13.745000000000001,
+                                13.07,
+                                11.945,
+                                10.662500000000001,
+                                9.4025,
+                                9.4025,
+                                9.4025,
+                                9.4025
+                              ],
                               "ECMetadata": null,
                               "CLMetadata": null,
+                              "CECMetadata": [
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated",
+                                "Calculated"
+                              ],
                               "ESPMetadata": null,
                               "PHMetadata": null,
                               "Name": "Chemical",
@@ -15163,14 +15617,6 @@
                               "ReadOnly": false
                             },
                             {
-                              "$type": "Models.Soils.CERESSoilTemperature, Models",
-                              "Name": "Temperature",
-                              "ResourceName": null,
-                              "Children": [],
-                              "Enabled": true,
-                              "ReadOnly": false
-                            },
-                            {
                               "$type": "Models.Soils.Solute, Models",
                               "Thickness": [
                                 100.0,
@@ -15201,6 +15647,7 @@
                               "MaxDepthSoluteAccessible": 0.0,
                               "RunoffEffectivenessAtMovingSolute": 0.0,
                               "MaxEffectiveRunoff": 0.0,
+                              "ConcInSolution": null,
                               "Name": "NO3",
                               "ResourceName": null,
                               "Children": [],
@@ -15238,6 +15685,7 @@
                               "MaxDepthSoluteAccessible": 0.0,
                               "RunoffEffectivenessAtMovingSolute": 0.0,
                               "MaxEffectiveRunoff": 0.0,
+                              "ConcInSolution": null,
                               "Name": "NH4",
                               "ResourceName": null,
                               "Children": [],
@@ -15275,7 +15723,18 @@
                               "MaxDepthSoluteAccessible": 0.0,
                               "RunoffEffectivenessAtMovingSolute": 0.0,
                               "MaxEffectiveRunoff": 0.0,
+                              "ConcInSolution": null,
                               "Name": "Urea",
+                              "ResourceName": null,
+                              "Children": [],
+                              "Enabled": true,
+                              "ReadOnly": false
+                            },
+                            {
+                              "$type": "Models.Soils.SoilTemp.SoilTemperature, Models",
+                              "Thickness": null,
+                              "InitialValues": null,
+                              "Name": "Temperature",
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
@@ -15320,13 +15779,19 @@
                           "NightInterceptionFraction": 0.0,
                           "ReferenceHeight": 2.0,
                           "Name": "MicroClimate",
-                          "ResourceName": null,
+                          "ResourceName": "MicroClimate",
                           "Children": [],
                           "Enabled": true,
                           "ReadOnly": false
                         },
                         {
                           "$type": "Models.PMF.Plant, Models",
+                          "Phenology": null,
+                          "Arbitrator": null,
+                          "structure": null,
+                          "Leaf": null,
+                          "Root": null,
+                          "AboveGround": null,
                           "Name": "Wheat",
                           "ResourceName": "Wheat",
                           "Children": [],
@@ -15388,7 +15853,7 @@
                             "        [EventSubscribe(\"DoManagement\")]",
                             "        private void OnDoManagement(object sender, EventArgs e)",
                             "        {",
-                            "            if (phenology.CurrentPhase.Name == \"Ripening\")",
+                            "            if (phenology.CurrentPhase.Name == \"GrainRipening\")",
                             "            {",
                             "                Wheat.Harvest();",
                             "                Wheat.EndCrop();",
@@ -15398,7 +15863,7 @@
                             "}",
                             "       "
                           ],
-                          "Parameters": null,
+                          "Parameters": [],
                           "Name": "Harvesting",
                           "ResourceName": null,
                           "Children": [],
@@ -15456,7 +15921,6 @@
                 {
                   "$type": "Models.Core.Folder, Models",
                   "ShowInDocs": true,
-                  "GraphsPerPage": 6,
                   "Name": "Graphs",
                   "ResourceName": null,
                   "Children": [
@@ -15470,6 +15934,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15480,6 +15945,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15488,7 +15954,7 @@
                       "LegendPosition": 0,
                       "LegendOrientation": 0,
                       "AnnotationLocation": 0,
-                      "DisabledSeries": null,
+                      "DisabledSeries": [],
                       "LegendOutsideGraph": false,
                       "Name": "AboveGroundNMay",
                       "ResourceName": null,
@@ -15565,6 +16031,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15575,6 +16042,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15660,6 +16128,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15670,6 +16139,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15755,6 +16225,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15765,6 +16236,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15850,6 +16322,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15860,6 +16333,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15945,6 +16419,7 @@
                           "Position": 0,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -15955,6 +16430,7 @@
                           "Position": 3,
                           "Inverted": false,
                           "CrossesAtZero": false,
+                          "LabelOnOneLine": false,
                           "Minimum": null,
                           "Maximum": null,
                           "Interval": null
@@ -16033,7 +16509,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "OrganBiomass",
                       "ResourceName": null,
                       "Children": [
@@ -16047,6 +16522,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16057,6 +16533,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16065,7 +16542,7 @@
                           "LegendPosition": 0,
                           "LegendOrientation": 0,
                           "AnnotationLocation": 0,
-                          "DisabledSeries": null,
+                          "DisabledSeries": [],
                           "LegendOutsideGraph": false,
                           "Name": "EarWtMay",
                           "ResourceName": null,
@@ -16142,6 +16619,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16152,6 +16630,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16160,7 +16639,7 @@
                           "LegendPosition": 0,
                           "LegendOrientation": 0,
                           "AnnotationLocation": 0,
-                          "DisabledSeries": null,
+                          "DisabledSeries": [],
                           "LegendOutsideGraph": false,
                           "Name": "EarWtAug",
                           "ResourceName": null,
@@ -16237,6 +16716,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16247,6 +16727,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16255,7 +16736,7 @@
                           "LegendPosition": 0,
                           "LegendOrientation": 0,
                           "AnnotationLocation": 0,
-                          "DisabledSeries": null,
+                          "DisabledSeries": [],
                           "LegendOutsideGraph": false,
                           "Name": "LeafWtMay",
                           "ResourceName": null,
@@ -16332,6 +16813,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16342,6 +16824,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16350,7 +16833,7 @@
                           "LegendPosition": 0,
                           "LegendOrientation": 0,
                           "AnnotationLocation": 0,
-                          "DisabledSeries": null,
+                          "DisabledSeries": [],
                           "LegendOutsideGraph": false,
                           "Name": "LeafWtAug",
                           "ResourceName": null,
@@ -16427,6 +16910,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16437,6 +16921,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16445,7 +16930,7 @@
                           "LegendPosition": 0,
                           "LegendOrientation": 0,
                           "AnnotationLocation": 0,
-                          "DisabledSeries": null,
+                          "DisabledSeries": [],
                           "LegendOutsideGraph": false,
                           "Name": "StemWtMay",
                           "ResourceName": null,
@@ -16533,6 +17018,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16543,6 +17029,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16551,7 +17038,7 @@
                           "LegendPosition": 0,
                           "LegendOrientation": 0,
                           "AnnotationLocation": 0,
-                          "DisabledSeries": null,
+                          "DisabledSeries": [],
                           "LegendOutsideGraph": false,
                           "Name": "StemWtAug",
                           "ResourceName": null,
@@ -16625,7 +17112,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "OrganN",
                       "ResourceName": null,
                       "Children": [
@@ -16639,6 +17125,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16649,6 +17136,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16734,6 +17222,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16744,6 +17233,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16829,6 +17319,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16839,6 +17330,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16924,6 +17416,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -16934,6 +17427,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17019,6 +17513,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17029,6 +17524,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17114,6 +17610,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17124,6 +17621,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17206,7 +17704,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "OrganNconc",
                       "ResourceName": null,
                       "Children": [
@@ -17220,6 +17717,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17230,6 +17728,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17315,6 +17814,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17325,6 +17825,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17410,6 +17911,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17420,6 +17922,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17505,6 +18008,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17515,6 +18019,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17600,6 +18105,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17610,6 +18116,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17695,6 +18202,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17705,6 +18213,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17787,7 +18296,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "Canopy",
                       "ResourceName": null,
                       "Children": [
@@ -17801,6 +18309,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17811,6 +18320,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17907,6 +18417,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -17917,6 +18428,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18013,6 +18525,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18023,6 +18536,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18051,7 +18565,7 @@
                               "LineThickness": 0,
                               "TableName": "DailyReport",
                               "XFieldName": "Clock.Today",
-                              "YFieldName": "Wheat.Structure.TotalStemPopn",
+                              "YFieldName": "Wheat.Leaf.StemPopulation",
                               "X2FieldName": "",
                               "Y2FieldName": "",
                               "ShowInLegend": false,
@@ -18091,7 +18605,7 @@
                               "LineThickness": 0,
                               "TableName": "Observed",
                               "XFieldName": "Clock.Today",
-                              "YFieldName": "Wheat.Structure.TotalStemPopn",
+                              "YFieldName": "Wheat.Leaf.StemPopulation",
                               "X2FieldName": "",
                               "Y2FieldName": "",
                               "ShowInLegend": false,
@@ -18119,6 +18633,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18129,6 +18644,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18157,7 +18673,7 @@
                               "LineThickness": 0,
                               "TableName": "DailyReport",
                               "XFieldName": "Clock.Today",
-                              "YFieldName": "Wheat.Structure.TotalStemPopn",
+                              "YFieldName": "Wheat.Leaf.StemPopulation",
                               "X2FieldName": "",
                               "Y2FieldName": "",
                               "ShowInLegend": false,
@@ -18186,7 +18702,7 @@
                               "LineThickness": 0,
                               "TableName": "Observed",
                               "XFieldName": "Clock.Today",
-                              "YFieldName": "Wheat.Structure.TotalStemPopn",
+                              "YFieldName": "Wheat.Leaf.StemPopulation",
                               "X2FieldName": "",
                               "Y2FieldName": "",
                               "ShowInLegend": false,
@@ -18214,6 +18730,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18224,6 +18741,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18320,6 +18838,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18330,6 +18849,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18415,6 +18935,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18425,6 +18946,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18482,7 +19004,7 @@
                               "LineThickness": 0,
                               "TableName": "Observed",
                               "XFieldName": "Clock.Today",
-                              "YFieldName": "Wheat.Structure.LeafTipsAppeared",
+                              "YFieldName": "Wheat.Leaf.Tips",
                               "X2FieldName": "",
                               "Y2FieldName": "",
                               "ShowInLegend": true,
@@ -18510,6 +19032,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18520,6 +19043,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18548,7 +19072,7 @@
                               "LineThickness": 0,
                               "TableName": "DailyReport",
                               "XFieldName": "Clock.Today",
-                              "YFieldName": "Wheat.Leaf.AppearedCohortNo",
+                              "YFieldName": "Wheat.Leaf.Tips",
                               "X2FieldName": "",
                               "Y2FieldName": "",
                               "ShowInLegend": false,
@@ -18588,7 +19112,7 @@
                               "LineThickness": 1,
                               "TableName": "DailyReport",
                               "XFieldName": "Clock.Today",
-                              "YFieldName": "Wheat.Leaf.ExpandedCohortNo",
+                              "YFieldName": "Wheat.Leaf.Ligules",
                               "X2FieldName": "",
                               "Y2FieldName": "",
                               "ShowInLegend": false,
@@ -18613,7 +19137,6 @@
                     {
                       "$type": "Models.Core.Folder, Models",
                       "ShowInDocs": true,
-                      "GraphsPerPage": 6,
                       "Name": "SWCLayers",
                       "ResourceName": null,
                       "Children": [
@@ -18627,6 +19150,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": 0.0,
                               "Maximum": 0.4,
                               "Interval": null
@@ -18637,6 +19161,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18722,6 +19247,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": 0.0,
                               "Maximum": 0.4,
                               "Interval": null
@@ -18732,6 +19258,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18817,6 +19344,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": 0.0,
                               "Maximum": 0.4,
                               "Interval": null
@@ -18827,6 +19355,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -18912,6 +19441,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": 0.0,
                               "Maximum": 0.4,
                               "Interval": null
@@ -18922,6 +19452,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -19007,6 +19538,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": 0.0,
                               "Maximum": 0.4,
                               "Interval": null
@@ -19017,6 +19549,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -19102,6 +19635,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": 0.0,
                               "Maximum": 0.4,
                               "Interval": null
@@ -19112,6 +19646,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -19197,6 +19732,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": 0.0,
                               "Maximum": 0.4,
                               "Interval": null
@@ -19207,6 +19743,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -19263,6 +19800,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": 0.0,
                               "Maximum": 0.4,
                               "Interval": null
@@ -19273,6 +19811,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -19329,6 +19868,7 @@
                               "Position": 0,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -19339,6 +19879,7 @@
                               "Position": 3,
                               "Inverted": false,
                               "CrossesAtZero": false,
+                              "LabelOnOneLine": false,
                               "Minimum": null,
                               "Maximum": null,
                               "Interval": null
@@ -19418,6 +19959,7 @@
                   "Position": 3,
                   "Inverted": false,
                   "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
                   "Minimum": null,
                   "Maximum": null,
                   "Interval": null
@@ -19428,6 +19970,7 @@
                   "Position": 0,
                   "Inverted": false,
                   "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
                   "Minimum": null,
                   "Maximum": null,
                   "Interval": null
@@ -19436,7 +19979,7 @@
               "LegendPosition": 3,
               "LegendOrientation": 0,
               "AnnotationLocation": 0,
-              "DisabledSeries": null,
+              "DisabledSeries": [],
               "LegendOutsideGraph": false,
               "Name": "Harvest Yield",
               "ResourceName": null,
@@ -19496,6 +20039,7 @@
                   "Position": 3,
                   "Inverted": false,
                   "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
                   "Minimum": null,
                   "Maximum": null,
                   "Interval": null
@@ -19506,6 +20050,7 @@
                   "Position": 0,
                   "Inverted": false,
                   "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
                   "Minimum": null,
                   "Maximum": null,
                   "Interval": null
@@ -19514,7 +20059,7 @@
               "LegendPosition": 3,
               "LegendOrientation": 0,
               "AnnotationLocation": 0,
-              "DisabledSeries": null,
+              "DisabledSeries": [],
               "LegendOutsideGraph": false,
               "Name": "Harvest Biomass",
               "ResourceName": null,
@@ -19574,6 +20119,7 @@
                   "Position": 3,
                   "Inverted": false,
                   "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
                   "Minimum": null,
                   "Maximum": null,
                   "Interval": null
@@ -19584,6 +20130,7 @@
                   "Position": 0,
                   "Inverted": false,
                   "CrossesAtZero": false,
+                  "LabelOnOneLine": false,
                   "Minimum": null,
                   "Maximum": null,
                   "Interval": null
@@ -19592,7 +20139,7 @@
               "LegendPosition": 3,
               "LegendOrientation": 0,
               "AnnotationLocation": 0,
-              "DisabledSeries": null,
+              "DisabledSeries": [],
               "LegendOutsideGraph": false,
               "Name": "GrainNumber",
               "ResourceName": null,

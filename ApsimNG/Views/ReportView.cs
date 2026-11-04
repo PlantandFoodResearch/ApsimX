@@ -3,7 +3,7 @@ using System.Drawing;
 using GLib;
 using Gtk;
 using UserInterface.Interfaces;
-using Utility;
+using APSIMNG.Utility;
 
 namespace UserInterface.Views
 {
@@ -15,20 +15,20 @@ namespace UserInterface.Views
     {
 
         private Notebook notebook1 = null;
-        private HPaned reportVariablesVPaned = null;
-        private HPaned reportFrequencyVPaned = null;
+        private Paned reportVariablesVPaned = null;
+        private Paned reportFrequencyVPaned = null;
         private Box variablesBox = null;
         private Box frequencyBox = null;
         private Box commonVariablesBox = null;
         private Box commonFrequencyBox = null;
-        private Alignment alignment1 = null;
+        private Box dataBox = null;
 
         private IEditorView variableEditor;
         private IEditorView frequencyEditor;
         private IListView commonReportVariableList;
         private IListView commonReportFrequencyVariableList;
         private ViewBase dataStoreView1;
-        private VPaned panel;
+        private Paned panel;
         private EditView groupByEdit;
         private Button submitButton;
 
@@ -42,17 +42,17 @@ namespace UserInterface.Views
         {
             Builder builder = BuilderFromResource("ApsimNG.Resources.Glade.ReportView.glade");
             notebook1 = (Notebook)builder.GetObject("notebook1");
-            reportVariablesVPaned = (HPaned)builder.GetObject("reportVariablesBox");
-            reportFrequencyVPaned = (HPaned)builder.GetObject("reportFrequencyBox");
+            reportVariablesVPaned = (Paned)builder.GetObject("reportVariablesBox");
+            reportFrequencyVPaned = (Paned)builder.GetObject("reportFrequencyBox");
             variablesBox = (Box)builder.GetObject("variablesBox");
             frequencyBox = (Box)builder.GetObject("frequencyBox");
             commonVariablesBox = (Box)builder.GetObject("commonVariablesBox");
             commonFrequencyBox = (Box)builder.GetObject("commonFrequencyBox");
-            alignment1 = (Alignment)builder.GetObject("alignment1");
+            dataBox = (Box)builder.GetObject("dataBox");
             submitButton = (Button)builder.GetObject("submitBtn");
 
 
-            panel = (VPaned)builder.GetObject("vpaned1");
+            panel = (Paned)builder.GetObject("vpaned1");
             panel.Events |= Gdk.EventMask.PropertyChangeMask;
 
             groupByEdit = new EditView(owner,
@@ -63,7 +63,6 @@ namespace UserInterface.Views
 
             reportVariablesVPaned.AddNotification(OnVariablesPanePropertyNotified);
             reportFrequencyVPaned.AddNotification(OnFrequencyPanePropertyNotified);
-            panel.AddNotification(OnPanelPositionPropertyNotified);
 
             variableEditor = new EditorView(this);
             variableEditor.StyleChanged += OnStyleChanged;
@@ -81,8 +80,8 @@ namespace UserInterface.Views
             commonReportFrequencyVariableList.DoubleClicked += OnCommonReportFrequencyVariableListDoubleClicked;
             commonFrequencyBox.PackStart((commonReportFrequencyVariableList as ViewBase).MainWidget, true, true, 0);
 
-            Rectangle bounds = GtkUtilities.GetBorderOfRightHandView(owner as ExplorerView);
-            double? horizontalSplitter = Configuration.Settings.ReportSplitterPosition;
+            Rectangle bounds = GtkUtilities.GetBorderOfRightHandView(owner);
+            double? horizontalSplitter = Configuration.Settings.ReportSplitterPosition / 100.0;
             int horizontalPos = (int)Math.Round(bounds.Width * 0.7);
             if (horizontalSplitter != null)
                 if (horizontalSplitter > 0.1 && horizontalSplitter < 0.9)
@@ -90,15 +89,15 @@ namespace UserInterface.Views
             reportVariablesVPaned.Position = horizontalPos;
             reportFrequencyVPaned.Position = horizontalPos;
 
-            double? verticalSplitter = Configuration.Settings.ReportSplitterVerticalPosition;
+            double? verticalSplitter = Configuration.Settings.ReportSplitterVerticalPosition / 100.0;
             int verticalPos = (int)Math.Round(bounds.Height * 0.7);
             if (verticalSplitter != null)
                 if (verticalSplitter > 0.1 && verticalSplitter < 0.9)
-                    verticalPos = (int)(bounds.Width * verticalSplitter);
+                    verticalPos = (int)(bounds.Height * verticalSplitter);
             panel.Position = verticalPos;
 
             dataStoreView1 = new ViewBase(this, "ApsimNG.Resources.Glade.DataStoreView.glade");
-            alignment1.Add(dataStoreView1.MainWidget);
+            dataBox.Add(dataStoreView1.MainWidget);
             mainWidget.Destroyed += _mainWidget_Destroyed;
 
         }
@@ -133,12 +132,12 @@ namespace UserInterface.Views
             this.reportVariablesVPaned.Position = reportFrequencyVPaned.Position;
             if (args.Property == "position")
             {
-                Rectangle bounds = GtkUtilities.GetBorderOfRightHandView(owner as ExplorerView);
+                Rectangle bounds = GtkUtilities.GetBorderOfRightHandView(owner);
                 double percentage = (double)reportVariablesVPaned.Position / (double)bounds.Width;
-                Configuration.Settings.ReportSplitterPosition = percentage;
+                Configuration.Settings.ReportSplitterPosition = (int)(percentage * 100);
                 Configuration.Settings.Save();
             }
-                
+
         }
 
         /// <summary> Updates The position of either common variable listView.</summary>
@@ -149,25 +148,9 @@ namespace UserInterface.Views
             this.reportFrequencyVPaned.Position = reportVariablesVPaned.Position;
             if (args.Property == "position")
             {
-                Rectangle bounds = GtkUtilities.GetBorderOfRightHandView(owner as ExplorerView);
+                Rectangle bounds = GtkUtilities.GetBorderOfRightHandView(owner);
                 double percentage = (double)reportFrequencyVPaned.Position / (double)bounds.Width;
-                Configuration.Settings.ReportSplitterPosition = percentage;
-                Configuration.Settings.Save();
-            }
-        }
-
-        /// <summary>
-        /// Called whenever a property of vpaned1 is modified.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnPanelPositionPropertyNotified(object sender, NotifyArgs args)
-        {
-            if (args.Property == "position")
-            {
-                Rectangle bounds = GtkUtilities.GetBorderOfRightHandView(owner as ExplorerView);
-                double percentage = (double)panel.Position / (double)bounds.Height;
-                Configuration.Settings.ReportSplitterVerticalPosition = percentage;
+                Configuration.Settings.ReportSplitterPosition = (int)(percentage * 100);
                 Configuration.Settings.Save();
             }
         }

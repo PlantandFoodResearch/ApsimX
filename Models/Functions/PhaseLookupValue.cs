@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using APSIM.Shared.Documentation;
+using APSIM.Core;
 using Models.Core;
 using Models.PMF.Phen;
 
@@ -47,7 +47,7 @@ namespace Models.Functions
         public double Value(int arrayIndex = -1)
         {
             if (ChildFunctions == null)
-                ChildFunctions = FindAllChildren<IFunction>().ToList();
+                ChildFunctions = Node.FindChildren<IFunction>().ToList();
 
             if (Start == "")
                 throw new Exception("Phase start name not set:" + Name);
@@ -73,21 +73,10 @@ namespace Models.Functions
             }
         }
 
-
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
+        [EventSubscribe("StartOfSimulation")]
+        private void OnStartOfSimulation(object sender, EventArgs e)
         {
-            // Write memos.
-            foreach (var tag in DocumentChildren<Memo>())
-                yield return tag;
-
-            yield return new Paragraph($"{Name} has a value between {Start} and {End} calculated as:");
-
-            // Write memos.
-            foreach (var tag in DocumentChildren<IModel>())
-                yield return tag;
+            FunctionUtilities.ValidateFunctionChildren(Node);
         }
 
         /// <summary>Called when [simulation commencing].</summary>

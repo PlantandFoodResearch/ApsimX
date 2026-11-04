@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using APSIM.Shared.Utilities;
 using Models.Core;
 
-namespace Utility
+namespace APSIMNG.Utility
 {
 
     /// <summary>Stores user settings and other information which is persistent between restarts of the GUI.</summary>
@@ -15,6 +16,8 @@ namespace Utility
 
         /// <summary>The configuration file</summary>
         private string configurationFile = null;
+
+        public bool ThemeRestartRequired = false;
 
         /// <summary>The location for the form</summary>
         public Point MainFormLocation { get; set; }
@@ -68,9 +71,17 @@ namespace Utility
         [Tooltip("Should the file be automatically saved to disk before running simulations?")]
         public bool AutoSave { get; set; } = true;
 
-        /// <summary>Iff true, the GUI will not play a sound when simulations finish running.</summary>
+        /// <summary>If true, the GUI will not play a sound when simulations finish running.</summary>
         [Input("Mute all sound effects")]
         public bool Muted { get; set; } = true;
+
+        /// <summary>
+        /// If true, clicking on an .apsimx file in Explorer will open that file in a new tab of the
+        /// current ApsimNG instance rather than staring a new instance of the GUI.
+        /// </summary>
+        [Input("Open files in new tabs")]
+        [Tooltip("Should double-clicking an .apsimx file open it in a new tab rather than a new instance of the user interface? (Requires restart)")]
+        public bool UseExistingInstance { get; set; } = true;
 
         /// <summary>
         /// In theory, if there are any commands in the command history,
@@ -81,6 +92,14 @@ namespace Utility
         [Input("Use faster file closing algorithm")]
         [Tooltip("This will mostly eliminate the pause when closing a file, but it may cause apsim to fail to prompt to save the file in some cases.")]
         public bool UseFastFileClose { get; set; }
+
+        [Input("Enable graph debugging output")]
+        [Tooltip("Outputs messages in the status bar if data is missing, is outside axis bounds or is NaN. Useful for debugging Observed/Predicted graphs.")]
+        public bool EnableGraphDebuggingMessages { get; set; } = false;
+
+        [Input("Graph Size")]
+        [Tooltip("The picture resolution of graph when copied to the clipboard. Width by Height.")]
+        public string GraphSize { get; set; } = "800x600";
 
         /// <summary>Return the name of the summary file JPG.</summary>
         public string SummaryPngFileName
@@ -182,6 +201,28 @@ namespace Utility
             return MruList.Find(f => f.FileName == fileName);
         }
 
+        public (int, int) GetGraphSize()
+        {
+            try 
+            {
+                string input = GraphSize.Trim();
+                string[] parts = input.Split("x", StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 1)
+                    parts = input.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 1)
+                    parts = input.Split("/", StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 1)
+                    parts = input.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                int width = int.Parse(parts[0]);
+                int height = int.Parse(parts[1]);
+                return (width, height);
+            }
+            catch
+            {
+                return (800, 600);
+            }
+        }
+
         /// <summary>Add a filename to the list.</summary>
         /// <param name="file">File metadata.</param>
         public void AddMruFile(ApsimFileMetadata file)
@@ -190,7 +231,7 @@ namespace Utility
             {
                 if (MruList.Count > 0)
                 {
-                    int index = MruList.FindIndex(f => f.FileName == file.FileName);
+                    int index = MruList.FindIndex(f => f.FileName.Equals(file.FileName, ProcessUtilities.CurrentOS.IsUnix ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase));
                     if (index < 0)
                     {
                         // First time that filename has been added 
@@ -283,7 +324,14 @@ namespace Utility
         /// <summary>Finalizes an instance of the <see cref="Configuration"/> class.</summary>
         ~Configuration()
         {
-            Save();
+            try
+            {
+                Save();
+            }
+            catch
+            {
+                // An uncaught exception could crash APSIM from the GC thread.
+            }
         }
 
         /// <summary>Gets the configuration settings.</summary>
@@ -363,6 +411,7 @@ namespace Utility
         {
 
             EditorStyleName = DarkTheme ? "Adwaita-dark" : "Adwaita";
+            ThemeRestartRequired = !ThemeRestartRequired;
 
         }
     }

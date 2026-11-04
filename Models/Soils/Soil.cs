@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using APSIM.Shared.Utilities;
+using APSIM.Core;
+using APSIM.Numerics;
 using Models.Core;
 using Models.Interfaces;
-using Models.Soils.Nutrients;
+using Models.WaterModel;
 
 namespace Models.Soils
 {
@@ -21,8 +24,12 @@ namespace Models.Soils
     [ValidParent(ParentType = typeof(Zone))]
     [ValidParent(ParentType = typeof(Zones.CircularZone))]
     [ValidParent(ParentType = typeof(Zones.RectangularZone))]
-    public class Soil : Model
+    public class Soil : Model, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { get; set; }
+
         [Link]
         private ISummary summary = null;
 
@@ -125,31 +132,6 @@ namespace Models.Soils
             Check(summary);
         }
 
-        /// <summary>Gets the soil ready for running in a simulation.</summary>
-        public void Standardise()
-        {
-            var physical = FindChild<IPhysical>();
-            var chemical = FindChild<Chemical>();
-            var layerStructure = FindChild<LayerStructure>();
-            var organic = FindChild<Organic>();
-            var water = FindChild<Water>();
-            var waterBalance = FindInScope<ISoilWater>();
-
-            // Determine the target layer structure.
-            var targetThickness = physical.Thickness;
-            if (layerStructure != null)
-                targetThickness = layerStructure.Thickness;
-
-            physical.Standardise(targetThickness);
-            chemical?.Standardise(targetThickness);
-            organic.Standardise(targetThickness);
-            water.Standardise(targetThickness);
-            waterBalance.Standardise(targetThickness);
-
-            foreach (var solute in FindAllChildren<Solute>())
-                solute.Standardise(targetThickness);
-        }
-
         /// <summary>
         /// Checks validity of soil parameters. Throws if soil is invalid.
         /// Standardises the soil before performing tests.
@@ -157,10 +139,10 @@ namespace Models.Soils
         /// <param name="summary">A summary instance to write warning messages to.</param>
         public void CheckWithStandardisation(ISummary summary)
         {
-            var soil = Apsim.Clone(this) as Soil;
-            soil.Standardise();
+            var soil = Node.Clone().Model as Soil;
+            soil.Sanitise();
 
-            Check(summary);
+            soil.Check(summary);
         }
 
         /// <summary>
@@ -170,20 +152,23 @@ namespace Models.Soils
         /// <param name="summary">A summary instance to write warning messages to.</param>
         public void Check(ISummary summary)
         {
-            var weirdo = FindChild<WEIRDO>();
-            var water = FindChild<Water>();
-            var organic = FindChild<Organic>();
-            var chemical = FindChild<Chemical>();
-            var physical = FindChild<IPhysical>();
+            var weirdo = Structure.FindChild<WEIRDO>();
+            var water = Structure.FindChild<Water>();
+            var organic = Structure.FindChild<Organic>();
+            var chemical = Structure.FindChild<Chemical>();
+            var physical = Structure.FindChild<IPhysical>();
+            var waterBalance = Structure.FindChild<WaterBalance>();
             const double min_sw = 0.0;
+            const double min_bd = 0.1;
             const double specific_bd = 2.65; // (g/cc)
+            List<string> warning = new List<string>();
             StringBuilder message = new StringBuilder();
 
             //Weirdo is an experimental soil water model that does not have the same soil water parameters
             //so don't do any of these tests if Weirdo is plugged into this simulation.
             if (weirdo == null)
             {
-                var crops = FindAllDescendants<SoilCrop>();
+                var crops = Structure.FindChildren<SoilCrop>(recurse: true);
                 foreach (var soilCrop in crops)
                 {
                     if (soilCrop != null)
@@ -202,13 +187,13 @@ namespace Models.Soils
 
                                 if (KL[layer] == MathUtilities.MissingValue || double.IsNaN(KL[layer]))
                                     message.AppendLine($"{soilCrop.Name} KL value missing in layer {layerNumber}");
-                                else if (MathUtilities.GreaterThan(KL[layer], 1, 3))
-                                    message.AppendLine($"{soilCrop.Name} KL value of {KL[layer].ToString("f3")} in layer {layerNumber} is greater than 1");
+                                else if (MathUtilities.GreaterThan(KL[layer], 1, 3) || MathUtilities.LessThan(KL[layer], 0, 3))
+                                    message.AppendLine($"{soilCrop.Name} KL value of {KL[layer].ToString("f3")} in layer {layerNumber} is not between 0 and 1");
 
                                 if (XF[layer] == MathUtilities.MissingValue || double.IsNaN(XF[layer]))
                                     message.AppendLine($"{soilCrop.Name} XF value missing in layer {layerNumber}");
-                                else if (MathUtilities.GreaterThan(XF[layer], 1, 3))
-                                    message.AppendLine($"{soilCrop.Name} XF value of {XF[layer].ToString("f3")} in layer {layerNumber} is greater than 1");
+                                else if (MathUtilities.GreaterThan(XF[layer], 1, 3) || MathUtilities.LessThan(XF[layer], 0, 3))
+                                    message.AppendLine($"{soilCrop.Name} XF value of {XF[layer].ToString("f3")} in layer {layerNumber} is not between 0 and 1");
 
                                 if (LL[layer] == MathUtilities.MissingValue || double.IsNaN(LL[layer]))
                                     message.AppendLine($"{soilCrop.Name} LL value missing in layer {layerNumber}");
@@ -217,6 +202,10 @@ namespace Models.Soils
                                 else if (MathUtilities.GreaterThan(LL[layer], physical.DUL[layer], 3))
                                     message.AppendLine($"{soilCrop.Name} LL of {LL[layer].ToString("f3")} in layer {layerNumber} is above drained upper limit of {physical.DUL[layer].ToString("f3")}");
                             }
+
+                            if (MathUtilities.IsLessThanOrEqual(XF.Sum(), 0))
+                                message.AppendLine($"{soilCrop.Name} sum(XF) of {XF.Sum().ToString("f3")} must be > 0");
+
                         }
                     }
                 }
@@ -226,6 +215,11 @@ namespace Models.Soils
                 {
                     double max_sw = MathUtilities.Round(1.0 - physical.BD[layer] / specific_bd, 3);
                     int layerNumber = layer + 1;
+
+                    if (MathUtilities.GreaterThan(physical.ParticleSizeClay[layer] + physical.ParticleSizeSilt[layer] + physical.ParticleSizeSand[layer] - 100, 0, 1))
+                        warning.Add($"Clay, silt and sand percentages in layer {layerNumber} add up to more than 100%");
+                    else if (MathUtilities.LessThan(physical.ParticleSizeClay[layer] + physical.ParticleSizeSilt[layer] + physical.ParticleSizeSand[layer] - 100, 0, 1))
+                        warning.Add($"Clay, silt and sand percentages in layer {layerNumber} add up to less than 100%");
 
                     if (physical.AirDry[layer] == MathUtilities.MissingValue || double.IsNaN(physical.AirDry[layer]))
                         message.AppendLine($"Air dry value missing in layer {layerNumber}");
@@ -255,10 +249,27 @@ namespace Models.Soils
                     if (physical.BD[layer] == MathUtilities.MissingValue || double.IsNaN(physical.BD[layer]))
                         message.AppendLine($"BD value missing in layer {layerNumber}");
                     else if (MathUtilities.GreaterThan(physical.BD[layer], specific_bd, 3))
-                        message.AppendLine($"BD value of {physical.BD[layer].ToString("f3")} in layer {layerNumber} is greater than the theoretical maximum of 2.65");
+                        message.AppendLine($"BD value of {physical.BD[layer].ToString("f3")} in layer {layerNumber} is greater than the theoretical maximum of {specific_bd}");
+                    else if (MathUtilities.LessThan(physical.BD[layer], min_bd, 3))
+                    {
+                        //If rocks percentage is above 75%, skip lower bulk density threshold check
+                        if (MathUtilities.LessThan(physical.Rocks[layer], 0.75, 3))
+                            message.AppendLine($"BD value of {physical.BD[layer].ToString("f3")} in layer {layerNumber} is below acceptable value of {min_bd.ToString("f3")} and Rocks are less than 75%");
+                    }
+
+                    if (physical.KS != null)
+                    {
+                        // If there is a zero that isn't at the bottom of the profile then throw.
+                        // Allow a zero at the bottom so that lysimeters can be simulated.
+                        if (physical.KS[layer] == MathUtilities.MissingValue ||
+                                                double.IsNaN(physical.KS[layer]) ||
+                                                MathUtilities.LessThan(physical.KS[layer], 0, 3) ||
+                                                (layer < physical.Thickness.Length - 1 && MathUtilities.FloatsAreEqual(physical.KS[layer], 0)))
+                            message.AppendLine($"KS in layer {layerNumber} must be > 0");
+                    }
                 }
 
-                if (organic.Carbon.Length == 0)
+                if (organic == null || organic.Carbon == null || organic.Carbon.Length == 0)
                     message.AppendLine("Cannot find OC values in soil");
                 else
                     for (int layer = 0; layer != physical.Thickness.Length; layer++)
@@ -270,7 +281,7 @@ namespace Models.Soils
                             summary.WriteMessage(null, $"OC value of {organic.Carbon[layer].ToString("f3")} in layer {layerNumber} is less than 0.01", MessageType.Warning);
                     }
 
-                if (!MathUtilities.ValuesInArray(water.InitialValues))
+                if (!MathUtilities.ValuesInArray(water?.InitialValues))
                     message.AppendLine("No starting soil water values found.");
                 else
                     for (int layer = 0; layer != physical.Thickness.Length; layer++)
@@ -285,27 +296,70 @@ namespace Models.Soils
                             message.AppendLine($"Soil water of {water.InitialValues[layer].ToString("f3")} in layer {layerNumber} is below air-dry value of {physical.AirDry[layer].ToString("f3")}");
                     }
 
-                for (int layer = 0; layer != physical.Thickness.Length; layer++)
+                if (chemical == null || chemical.PH == null || chemical.PH.Length == 0)
+                    message.AppendLine("Cannot find PH values in soil");
+                else
                 {
-                    int layerNumber = layer + 1;
-                    if (chemical.PH[layer] == MathUtilities.MissingValue || double.IsNaN(chemical.PH[layer]))
-                        message.AppendLine($"PH value missing in layer {layerNumber}");
-                    else if (MathUtilities.LessThan(chemical.PH[layer], 3.5, 3))
-                        message.AppendLine($"PH value of {chemical.PH[layer].ToString("f3")} in layer {layerNumber} is less than 3.5");
-                    else if (MathUtilities.GreaterThan(chemical.PH[layer], 11, 3))
-                        message.AppendLine($"PH value of {chemical.PH[layer].ToString("f3")} in layer {layerNumber} is greater than 11");
+                    for (int layer = 0; layer != physical.Thickness.Length; layer++)
+                    {
+                        int layerNumber = layer + 1;
+                        if (chemical.PH[layer] == MathUtilities.MissingValue || double.IsNaN(chemical.PH[layer]))
+                            message.AppendLine($"PH value missing in layer {layerNumber}");
+                        else if (MathUtilities.LessThan(chemical.PH[layer], 3.5, 3))
+                            message.AppendLine($"PH value of {chemical.PH[layer].ToString("f3")} in layer {layerNumber} is less than 3.5");
+                        else if (MathUtilities.GreaterThan(chemical.PH[layer], 11, 3))
+                            message.AppendLine($"PH value of {chemical.PH[layer].ToString("f3")} in layer {layerNumber} is greater than 11");
+                    }
                 }
 
-                var no3 = FindChild<Solute>("NO3");
-                if (!MathUtilities.ValuesInArray(no3.InitialValues))
+                var no3 = Structure.FindChild<Solute>("NO3");
+                if (no3 == null || !MathUtilities.ValuesInArray(no3.InitialValues))
                     message.AppendLine("No starting NO3 values found.");
-                var nh4 = FindChild<Solute>("NH4");
-                if (!MathUtilities.ValuesInArray(nh4.InitialValues))
+                var nh4 = Structure.FindChild<Solute>("NH4");
+                if (nh4 == null || !MathUtilities.ValuesInArray(nh4.InitialValues))
                     message.AppendLine("No starting NH4 values found.");
+
+                if (MathUtilities.ValuesInArray(waterBalance?.SWCON))
+                {
+                    for (int layer = 0; layer != physical.Thickness.Length; layer++)
+                    {
+                        int layerNumber = layer + 1;
+                        if (MathUtilities.GreaterThan(waterBalance.SWCON[layer], 1, 3) || MathUtilities.LessThan(waterBalance.SWCON[layer], 0, 3))
+                            message.AppendLine($"SWCON value of {waterBalance.SWCON[layer].ToString("f3")} in layer {layerNumber} is not between 0 and 1");
+                    }
+                }
+            }
+
+            // Get warnings related to soil temperature models.
+            List<string> soilTempWarnings = CheckSoilTemperatureModels();
+            warning.AddRange(soilTempWarnings);
+
+            if (summary != null && warning.Count > 0)
+            {
+                foreach(string line in warning)
+                    summary.WriteMessage((IModel)physical, line, MessageType.Warning);
             }
 
             if (message.Length > 0)
                 throw new Exception(message.ToString());
         }
+
+        /// <summary>
+        /// Checks for multiple ISoilTemperature children.
+        /// </summary>
+        /// <exception cref="Exception"/>
+        public List<string> CheckSoilTemperatureModels()
+        {
+            List<string> warnings = new();
+            List<ISoilTemperature> soilTemperatures = Children.OfType<ISoilTemperature>().ToList();
+            if (soilTemperatures.Count(soilTemp => (soilTemp as INodeModel).Enabled) > 1)
+            {
+                warnings.Add(
+                $"WARNING: Soils should only use one type of Soil temperature" +
+                $" model to avoid unintended behaviour. More than one model found in {FullPath}");
+            }
+            return warnings;
+        }
+
     }
 }

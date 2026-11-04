@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using APSIM.Core;
 using Newtonsoft.Json;
 
 namespace Models.Core
@@ -13,17 +14,17 @@ namespace Models.Core
     [ViewName("UserInterface.Views.EditorView")]
     [PresenterName("UserInterface.Presenters.EditorPresenter")]
     [ValidParent(ParentType = typeof(IPlant))]
-    public class ModelOverrides : Model, ILineEditor
+    public class ModelOverrides : Model, ICodeEditor
     {
         /// <summary>The collection of undo overrides that undo the overrides.</summary>
-        private IEnumerable<Overrides.Override> undos;
+        private IEnumerable<IModelCommand> commands;
 
         /// <summary>The collection of property overrides./// </summary>
         public string[] Overrides { get; set; }
 
         /// <summary>The lines to return to the editor./// </summary>
         [JsonIgnore]
-        public IEnumerable<string> Lines { get { return Overrides; } set { Overrides = value.ToArray(); } }
+        public IEnumerable<string> Code { get { return Overrides; } set { Overrides = value.ToArray(); } }
 
 
         /// <summary>
@@ -33,7 +34,11 @@ namespace Models.Core
         [EventSubscribe("StartOfSimulation")]
         private void OnStartOfSimulation(object sender, EventArgs e)
         {
-            undos = Core.Overrides.Apply(Parent, Core.Overrides.ParseStrings(Overrides));
+            if (Code == null)
+                return;
+
+            commands = CommandLanguage.StringToCommands(Code, relativeTo: Parent as INodeModel, relativeToDirectory: null);
+            CommandProcessor.Run(commands, relativeTo: Parent as INodeModel, runner: null);
         }
 
         /// <summary>
@@ -43,10 +48,11 @@ namespace Models.Core
         [EventSubscribe("Completed")]
         private void OnSimulationCompleted(object sender, EventArgs e)
         {
-            if (undos != null)
+            if (commands != null)
             {
-                Core.Overrides.Apply(Parent, undos);
-                undos = null;
+                foreach (SetPropertyCommand command in commands.Reverse())
+                    command.Undo();
+                commands = null;
             }
         }
     }

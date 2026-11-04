@@ -1,4 +1,5 @@
-﻿using Models.CLEM.Activities;
+﻿using APSIM.Core;
+using Models.CLEM.Activities;
 using Models.Core;
 using Models.Core.Attributes;
 using System;
@@ -29,14 +30,6 @@ namespace Models.CLEM.Limiters
         [ArrayItemCount(12)]
         [Units("kg/day")]
         public double[] WeightLimitPerDay { get; set; }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public ActivityCarryLimiter()
-        {
-            ModelSummaryStyle = HTMLSummaryStyle.Filter;
-        }
 
         /// <summary>
         /// Get the amount of cut and carry available.
@@ -70,63 +63,20 @@ namespace Models.CLEM.Limiters
         /// Method to locate a ActivityCutAndCarryLimiter from a specified model
         /// </summary>
         /// <param name="model">Model looking for limiter</param>
+        /// <param name="structure">Structure instance</param>
         /// <returns></returns>
-        public static ActivityCarryLimiter Locate(IModel model)
+        public static ActivityCarryLimiter Locate(IModel model, IStructure structure)
         {
             // search children
-            ActivityCarryLimiter limiterFound = model.FindAllChildren<ActivityCarryLimiter>().Cast<ActivityCarryLimiter>().FirstOrDefault();
+            ActivityCarryLimiter limiterFound = structure.FindChildren<ActivityCarryLimiter>(relativeTo: model as INodeModel).Cast<ActivityCarryLimiter>().FirstOrDefault();
             if (limiterFound == null)
             {
                 if (model.Parent.GetType().IsSubclassOf(typeof(CLEMActivityBase)) || model.Parent.GetType() == typeof(ActivitiesHolder))
                 {
-                    limiterFound = ActivityCarryLimiter.Locate(model.Parent);
+                    limiterFound = ActivityCarryLimiter.Locate(model.Parent, structure);
                 }
             }
             return limiterFound;
         }
-
-        #region descriptive summary
-
-        /// <inheritdoc/>
-        public override string ModelSummary()
-        {
-            using (StringWriter htmlWriter = new StringWriter())
-            {
-                htmlWriter.Write("<div class=\"filtername\">");
-                if (!this.Name.Contains(this.GetType().Name.Split('.').Last()))
-                    htmlWriter.Write(this.Name);
-
-                htmlWriter.Write($"</div>");
-                htmlWriter.Write("\r\n<div class=\"filterborder clearfix\">");
-                htmlWriter.Write("\r\n<div class=\"filter\">");
-                htmlWriter.Write($"Limit cut and carry activities to ");
-                if (!(WeightLimitPerDay is null) && WeightLimitPerDay.Count() >= 1)
-                {
-                    htmlWriter.Write("<span class=\"setvalueextra\">");
-                    htmlWriter.Write(WeightLimitPerDay.ToString());
-                }
-                else
-                    htmlWriter.Write("<span class=\"errorlink\">Not Set");
-
-                htmlWriter.Write("</span> dry kg/day ");
-                htmlWriter.Write("</div>");
-                htmlWriter.Write("\r\n</div>");
-                return htmlWriter.ToString();
-            }
-        }
-
-        /// <inheritdoc/>
-        public override string ModelSummaryClosingTags()
-        {
-            return "";
-        }
-
-        /// <inheritdoc/>
-        public override string ModelSummaryOpeningTags()
-        {
-            return "";
-        }
-        #endregion
-
     }
 }

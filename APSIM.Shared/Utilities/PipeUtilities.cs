@@ -23,7 +23,7 @@
             MemoryStream result = new MemoryStream();
             using (Stream cryptoStream = new CryptoStream(result, new ToBase64Transform(), CryptoStreamMode.Write, leaveOpen: true))
             {
-                using (Stream serialised = ReflectionUtilities.BinarySerialise(obj))
+                using (Stream serialised = ReflectionUtilities.JsonSerialiseToStream(obj))
                 {
                     serialised.Seek(0, SeekOrigin.Begin);
                     serialised.CopyTo(cryptoStream);
@@ -41,7 +41,7 @@
         {
             // Decode from base64, then deserialise the result.
             using (Stream cryptoStream = new CryptoStream(stream, new FromBase64Transform(), CryptoStreamMode.Read, leaveOpen: true))
-                return ReflectionUtilities.BinaryDeserialise(cryptoStream);
+                return ReflectionUtilities.JsonDeserialise(cryptoStream);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@
         {
             // Read number of bytes.
             var intBuffer = new byte[4];
-            pipeReader.Read(intBuffer, 0, 4);
+            pipeReader.ReadExactly(intBuffer, 0, 4);
             var numBytes = BitConverter.ToInt32(intBuffer, 0);
 
             if (numBytes > 0)
@@ -123,7 +123,7 @@
         {
             // Read number of bytes.
             var intBuffer = new byte[4];
-            pipeReader.Read(intBuffer, 0, 4);
+            pipeReader.ReadExactly(intBuffer, 0, 4);
             var numBytes = BitConverter.ToInt32(intBuffer, 0);
 
             if (numBytes > 0)
@@ -189,7 +189,7 @@
         public static int GetIntFromPipe(Stream pipeReader)
         {
             byte[] intBuffer = new byte[4];
-            pipeReader.Read(intBuffer, 0, 4);
+            pipeReader.ReadExactly(intBuffer, 0, 4);
             return DecodeInt(intBuffer);
         }
 
@@ -221,7 +221,7 @@
         public static double GetDoubleFromPipe(Stream pipeReader)
         {
             byte[] doubleBuffer = new byte[8];
-            pipeReader.Read(doubleBuffer, 0, 8);
+            pipeReader.ReadExactly(doubleBuffer, 0, 8);
             return DecodeDouble(doubleBuffer);
         }
 

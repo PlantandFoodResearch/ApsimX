@@ -1,4 +1,5 @@
-﻿using Models.CLEM.Interfaces;
+﻿using APSIM.Core;
+using Models.CLEM.Interfaces;
 using Models.Core;
 using Models.Core.Attributes;
 using Models.Core.Run;
@@ -21,8 +22,13 @@ namespace Models.CLEM.Reporting
     [ValidParent(ParentType = typeof(Report))]
     [Description("Generates a pivot table from a Report")]
     [Version(1, 0, 0, "")]
-    public class ReportPivot : Model, ICLEMUI, IValidatableObject, IPostSimulationTool
+    [MinimumTimeStepPermitted(TimeStepTypes.Daily)]
+    public class ReportPivot : Model, ICLEMUI, IValidatableObject, IPostSimulationTool, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
         [Link]
         private IDataStore datastore = null;
 
@@ -107,11 +113,13 @@ namespace Models.CLEM.Reporting
         public string[] GetColumnPivotOptions(bool value)
         {
             // Find the data from the parent report
-            var storage = FindInScope<IDataStore>();
+            var storage = Structure.Find<IDataStore>();
             var report = storage.Reader.GetData(Parent.Name);
 
             if (report is null)
+            {
                 return new string[] { "No available data" };
+            }
 
             // Find the columns that meet our criteria
             var columns = report.Columns.Cast<DataColumn>();
@@ -128,17 +136,21 @@ namespace Models.CLEM.Reporting
         /// <param name="col">The column being tested</param>
         /// <returns>
         /// <see langword="true"/> if the column contains data values,
-        /// <see langword="false"/> otherwise 
+        /// <see langword="false"/> otherwise
         /// </returns>
         private bool HasDataValues(DataColumn col)
         {
             // Assume no value types are represented in string form
             if (col.DataType.Name == "String")
+            {
                 return false;
+            }
 
             // We are looking for data values, not IDs
             if (col.ColumnName.EndsWith("ID"))
+            {
                 return false;
+            }
 
             // DateTime is handled separately from other value types
             return col.DataType != typeof(DateTime);
@@ -149,11 +161,9 @@ namespace Models.CLEM.Reporting
         /// </summary>
         public DataTable GenerateTable()
         {
-            var storage = FindInScope<IDataStore>() ?? datastore;
+            var storage = Structure.Find<IDataStore>() ?? datastore;
             string viewSQL = storage.GetViewSQL(Name);
-            if (viewSQL != "")
-                return storage.Reader.GetData(Name);
-            return new DataTable();
+            return viewSQL != "" ? storage.Reader.GetData(Name) : new DataTable();
         }
 
         private void CreateView()
@@ -162,19 +172,26 @@ namespace Models.CLEM.Reporting
                 throw new ApsimXException(this, $"Invalid name: {Name}\nNames cannot contain spaces.");
 
             // Find the data
-            var storage = FindInScope<IDataStore>() ?? datastore;
+            var storage = Structure.Find<IDataStore>() ?? datastore;
             var report = storage.Reader.GetData(Parent.Name);
 
             if (report is null)
-                storage.Reader.Refresh();
+            {
+                storage.Refresh();
+            }
 
             report = storage.Reader.GetData(Parent.Name);
 
             // Check sensibility
             if (report is null || Row is null || Column is null || Value is null || Aggregator is null)
+            {
                 return;
+            }
+
             if (report.Columns.Count == 0)
+            {
                 return;
+            }
 
             // Set up date handling
             bool isDate = report.Columns[Column].DataType == typeof(DateTime);
@@ -195,7 +212,9 @@ namespace Models.CLEM.Reporting
             // Set up the rows in the pivot
             var rows = $"[{Row}]";
             if (report.Columns[Row].DataType == typeof(DateTime))
+            {
                 rows = Time == "Day" ? $"[{Row}]" : $"datetime(strftime('{sql_format}', [{Row}]))";
+            }
 
             // Construct the SQL statement
             var builder = new StringBuilder();
@@ -216,20 +235,13 @@ namespace Models.CLEM.Reporting
 
         #region validation
 
-        /// <summary>
-        /// Validate model
-        /// </summary>
-        /// <param name="validationContext"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var results = new List<ValidationResult>();
-            if (FindAllInScope<ReportPivot>().Where(a => a.Name == Name).Skip(1).Any())
+            if (Structure.FindAll<ReportPivot>().Where(a => a.Name == Name).Skip(1).Any())
             {
-                string[] memberNames = new string[] { "Duplicate report name" };
-                results.Add(new ValidationResult("This report cannot have the same name as another [PivotReport] as the component name is used as the View name in the database", memberNames));
+                yield return new ValidationResult("This report cannot have the same name as another [PivotReport] as the component name is used as the View name in the database", new string[] { "Duplicate report name" });
             }
-            return results;
         }
 
         /// <inheritdoc/>

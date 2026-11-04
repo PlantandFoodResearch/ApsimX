@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using APSIM.Core;
 using APSIM.Shared.JobRunning;
 using Models.Storage;
-using static Models.Core.Overrides;
 
 namespace Models.Core.Run
 {
@@ -24,10 +24,7 @@ namespace Models.Core.Run
 
         /// <summary>A list of all replacements to apply to simulation to run.</summary>
         [NonSerialized]
-        private List<Override> replacementsToApply = new List<Override>();
-
-        /// <summary>Do we clone the simulation before running?</summary>
-        private bool doClone;
+        private readonly List<IModelCommand> replacementsToApply = new();
 
         /// <summary>
         /// The actual simulation object to run
@@ -46,12 +43,16 @@ namespace Models.Core.Run
         }
 
         /// <summary>
+        /// Is the baseSimulation enabled?
+        /// </summary>
+        public bool IsEnabled => baseSimulation.Enabled;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="sim">The simulation to run.</param>
         /// <param name="name">The name of the simulation.</param>
-        /// <param name="clone">Clone the simulation passed in before running?</param>
-        public SimulationDescription(Simulation sim, string name = null, bool clone = true)
+        public SimulationDescription(Simulation sim, string name = null)
         {
             baseSimulation = sim;
             if (sim != null)
@@ -66,22 +67,20 @@ namespace Models.Core.Run
                 Name = baseSimulation.Name;
             else
                 Name = name;
-            doClone = clone;
         }
 
         /// <summary>name</summary>
         public string Name { get; }
 
         /// <summary>Gets / sets the list of descriptors for this simulaton.</summary>
-        public List<Descriptor> Descriptors { get; set; } = new List<Descriptor>();
+        public List<SimulationDescriptor> Descriptors { get; set; } = new List<SimulationDescriptor>();
 
         /// <summary>Gets or sets the DataStore for this simulaton.</summary>
         public IDataStore Storage
         {
             get
             {
-                var scope = new ScopingRules();
-                return scope.FindAll(baseSimulation).First(model => model is IDataStore) as IDataStore;
+                return baseSimulation.Node.WalkScoped().First(model => model is IDataStore) as IDataStore;
             }
         }
 
@@ -92,7 +91,7 @@ namespace Models.Core.Run
         /// Add an override to replace an existing value
         /// </summary>
         /// <param name="change">The override to addd.</param>
-        public void AddOverride(Override change)
+        public void AddOverride(IModelCommand change)
         {
             replacementsToApply.Add(change);
         }
@@ -111,9 +110,9 @@ namespace Models.Core.Run
         /// </summary>
         /// <param name="cancelToken"></param>
         /// <param name="changes"></param>
-        public void Run(CancellationTokenSource cancelToken, IEnumerable<Override> changes)
+        public void Run(CancellationTokenSource cancelToken, IEnumerable<IModelCommand> changes)
         {
-            Overrides.Apply(SimulationToRun, changes);
+            CommandProcessor.Run(changes, SimulationToRun, runner: null);
             Run(cancelToken);
         }
 
@@ -149,41 +148,32 @@ namespace Models.Core.Run
                 int nSleeps = 0;
                 while (baseSimulation.IsInitialising && nSleeps++ < 1000)
                     Thread.Sleep(10);
-                if (baseSimulation.IsInitialising)
+                if (baseSimulation.Node.IsInitialising)
                     throw new Exception("Simulation initialisation does not appear to be complete.");
 
                 AddReplacements();
 
-                Simulation newSimulation;
-                if (doClone)
-                {
-                    newSimulation = Apsim.Clone(baseSimulation) as Simulation;
+                Node newNode = baseSimulation.Node.Clone();
 
-                    // After a binary clone, we need to force all managers to
-                    // recompile their scripts. This is to work around an issue
-                    // where scripts will change during deserialization. See issue
-                    // #4463 and the TestMultipleChildren test inside ReportTests.
-                    foreach (Manager script in newSimulation.FindAllDescendants<Manager>())
-                        script.OnCreated();
-                }
-                else
-                    newSimulation = baseSimulation;
+                //remove readonly from any node so that it can be run correctly.
+                foreach(Node node in newNode.Walk())
+                    node.Model.ReadOnly = false;
 
                 if (string.IsNullOrWhiteSpace(Name))
-                    newSimulation.Name = baseSimulation.Name;
+                    newNode.Rename(baseSimulation.Name);
                 else
-                    newSimulation.Name = Name;
+                    newNode.Rename(Name);   // this causes a problem with experiments. The node name becomes different from the model name
 
+                Simulation newSimulation = newNode.Model as Simulation;
                 newSimulation.Parent = null;
-                newSimulation.ParentAllDescendants();
-                Overrides.Apply(newSimulation, replacementsToApply);
+                CommandProcessor.Run(replacementsToApply, newSimulation, runner: null);
 
                 // Give the simulation the descriptors.
                 if (newSimulation.Descriptors == null || Descriptors.Count > 0)
                     newSimulation.Descriptors = Descriptors;
-                newSimulation.Services = GetServices();
+                newSimulation.ModelServices = GetServices();
 
-                newSimulation.ClearCaches();
+                newSimulation.Node.ClearLocator();
                 return newSimulation;
             }
             catch (Exception err)
@@ -207,7 +197,7 @@ namespace Models.Core.Run
             }
             else
             {
-                IModel storage = topLevelModel.FindInScope<DataStore>();
+                IModel storage = topLevelModel.Node.Find<DataStore>();
                 services.Add(storage);
             }
 
@@ -218,7 +208,7 @@ namespace Models.Core.Run
         /// Return true if this simulation has a descriptor.
         /// </summary>
         /// <param name="descriptor">The descriptor to search for.</param>
-        public bool HasDescriptor(Descriptor descriptor)
+        public bool HasDescriptor(SimulationDescriptor descriptor)
         {
             return Descriptors.Find(d => d.Name == descriptor.Name && d.Value == descriptor.Value) != null;
         }
@@ -228,41 +218,27 @@ namespace Models.Core.Run
         {
             if (topLevelModel != null)
             {
-                IModel replacements = topLevelModel.FindChild<Folder>("Replacements");
+                IModel replacements = Folder.FindReplacementsFolder(topLevelModel);
                 if (replacements != null && replacements.Enabled)
                 {
-                    foreach (IModel replacement in replacements.Children.Where(m => m.Enabled))
-                        replacementsToApply.Insert(0, new Override(replacement.Name, replacement, Override.MatchTypeEnum.Name));
+                    foreach (INodeModel child in replacements.Children)
+                    {
+                        if (child.Enabled && !(child is IText))
+                        {
+                            ModelReference reference = new ModelReference(child);
+                            ReplaceCommand command = new ReplaceCommand(reference, child.Name, multiple: true, ReplaceCommand.MatchType.Name);
+                            replacementsToApply.Insert(0, command);
+                        }
+                    }                        
                 }
             }
         }
-
-        /// <summary>Encapsulates a descriptor for a simulation.</summary>
-        [Serializable]
-        public class Descriptor
-        {
-            /// <summary>The name of the descriptor.</summary>
-            public string Name { get; set; }
-
-            /// <summary>The value of the descriptor.</summary>
-            public string Value { get; set; }
-
-            /// <summary>Constructor</summary>
-            /// <param name="name">Name of the descriptor.</param>
-            /// <param name="value">Value of the descriptor.</param>
-            public Descriptor(string name, string value)
-            {
-                Name = name;
-                Value = value;
-            }
-        }
-
 
         /// <summary>Compare two list of descriptors for equality.</summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns>true if the are the same.</returns>
-        public static bool Equals(List<SimulationDescription.Descriptor> x, List<SimulationDescription.Descriptor> y)
+        public static bool Equals(List<SimulationDescriptor> x, List<SimulationDescriptor> y)
         {
             if (x.Count != y.Count)
                 return false;

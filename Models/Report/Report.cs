@@ -4,9 +4,12 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using APSIM.Core;
 using APSIM.Shared.Utilities;
+using Models.AgPasture;
 using Models.CLEM;
 using Models.Core;
+using Models.Factorial;
 using Models.Storage;
 using Newtonsoft.Json;
 
@@ -24,11 +27,12 @@ namespace Models
     [ValidParent(ParentType = typeof(Zones.RectangularZone))]
     [ValidParent(ParentType = typeof(Simulation))]
     [ValidParent(ParentType = typeof(CLEMFolder))]
-    public class Report : Model
+    public class Report : Model, IStructureDependency, IVariableSupplier
     {
-        /// <summary>Link to script compiler.</summary>
-        [Link]
-        ScriptCompiler compiler = null;
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { protected get; set; }
+
 
         /// <summary>The columns to write to the data store.</summary>
         [JsonIgnore]
@@ -45,6 +49,10 @@ namespace Models
         /// <summary>Link to a clock model.</summary>
         [Link]
         private IClock clock = null;
+
+        /// <summary>Link to a clock model.</summary>
+        [Link]
+        private ISummary summary = null;
 
         /// <summary>Link to a storage service.</summary>
         [Link]
@@ -83,7 +91,20 @@ namespace Models
         /// <summary>Group by variable name.</summary>
         public string GroupByVariableName { get; set; }
 
-
+        /// <summary>
+        /// Get the value of a variable.
+        /// </summary>
+        /// <param name="name">Name of the variable.</param>
+        /// <param name="value">The value of the variable.</param>
+        /// <returns>True if found, false otherwise.</returns>
+        public bool Get(string name, out object value)
+        {
+            value = null;
+            var col = Columns?.Find(c => c.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+            if (col != null)
+                value = col.GetValue(0);
+            return col != null;
+        }
 
         /// <summary>
         /// Connect event handlers.
@@ -102,7 +123,7 @@ namespace Models
         /// <param name="sender">Sender object..</param>
         /// <param name="args">Event data.</param>
         [EventSubscribe("SubscribeToEvents")]
-        private void OnConnectToEvents(object sender, EventArgs args)
+        private void OnSubscribeToEvents(object sender, EventArgs args)
         {
             SubscribeToEvents();
         }
@@ -115,18 +136,71 @@ namespace Models
             // Cleanup event names.
             EventNames = TidyUpEventNames();
 
+            if (EventNames.FirstOrDefault(e => e.Contains("StartOfSimulation")) != null)
+                summary.WriteMessage(this, "Report on StartOfFirstDay instead of StartOfSimulation. At StartOfSimulation, models may not be fully initialised.", MessageType.Warning);
+
             // Tidy up variable/event names.
             VariableNames = TidyUpVariableNames();
 
             // Locate reporting variables.
             FindVariableMembers();
 
+            //check for ambigous references in reporting variables
+            foreach(IReportColumn column in Columns)
+            {
+                if (column is ReportColumn col)
+                {
+                    List<VariableComposite> allMatchingModels = new List<VariableComposite>();
+                    try
+                    {
+                        allMatchingModels = Node.GetAllObjects(col.VariableName).ToList();
+                    }
+                    catch
+                    {
+                        allMatchingModels.Clear();
+                    }
+
+                    List<IVariable> allMatchingModelsExcludingUnderFactors = new List<IVariable>();
+                    bool skipTest = false;
+                    foreach(VariableComposite variable in allMatchingModels)
+                    {
+                        foreach(IVariable modelVariable in variable.AllModels)
+                        {
+                            INodeModel model = modelVariable.Value as INodeModel;
+                            //Edge case. Names are often inserted as factors (simulation, zone etc), and if two things 
+                            // share the same name, we don't care which is reported
+                            if (variable.Name == "Name" && (model is Zone || model is Simulation))
+                                skipTest = true;
+
+                            //SimpleGrazing can create more ones at runtime which just straight breaks this test
+                            //If simple graing can be rewritten to avoid putting those zones into scope, this should be 
+                            //removed.
+                            SimpleGrazing grazing = model.Node.FindInScope<SimpleGrazing>();
+                            if (grazing != null)
+                                if (grazing.PseudoPatches == false && model.Node.FindParent<Zone>(recurse:true) != null)
+                                    skipTest = true;
+                            
+                            //Remove any matches that are under a factorial, as these are replacing, not duplicates.
+                            if (model.Node.FindParent<Factors>(recurse:true) == null)
+                                allMatchingModelsExcludingUnderFactors.Add(modelVariable);                                
+                        }
+                    }
+                    if (!skipTest && allMatchingModelsExcludingUnderFactors.Count() > 1)
+                    {
+                        string error = $"Reporting variable '{col.VariableName}' in Report '{FullPath}' is ambigious and could refer to multiple models. Either rename one of the models you are trying to report, or give a longer path to differentiate between models with the same name/type.\nDuplicates are: \n";
+                        foreach(IVariable variable in allMatchingModelsExcludingUnderFactors)
+                            error += $"{(variable.Value as INodeModel).FullPath}\n";
+                        throw new Exception(error);
+                    }
+                }
+            }
+
             // Parse the report frequency lines
             foreach (string line in EventNames)
             {
                 if (!DateReportFrequency.TryParse(line, this, events) &&
                     !EventReportFrequency.TryParse(line, this, events) &&
-                    !ExpressionReportFrequency.TryParse(line, this, events, compiler))
+                    !ExpressionReportFrequency.TryParse(line, Node, events))
                     throw new Exception($"Invalid report frequency found: {line}");
             }
         }
@@ -160,7 +234,7 @@ namespace Models
         private string[] TidyUpVariableNames()
         {
             List<string> variableNames = new List<string>();
-            IModel zone = FindAncestor<Zone>();
+            IModel zone = Structure.FindParent<Zone>(recurse: true);
             if (zone == null)
                 zone = simulation;
             variableNames.Add($"[{zone.Name}].Name as Zone");
@@ -236,7 +310,7 @@ namespace Models
                     }
                 }
                 if (invalidVariables != null && invalidVariables.Count > 0)
-                    throw new Exception($"Error in report {Name}: Invalid report variables found:\n{string.Join("\n", invalidVariables)}");
+                    throw new Exception($"Error in report {Name} located at {FullPath}: Invalid report variables found:\n{string.Join("\n", invalidVariables)}");
 
                 // Add row to our table that will be written to the db file
                 dataToWriteToDb.Rows.Add(valuesToWrite);
@@ -320,7 +394,7 @@ namespace Models
                 try
                 {
                     if (!string.IsNullOrEmpty(fullVariableName))
-                        Columns.Add(new ReportColumn(fullVariableName, clock, Locator, events, GroupByVariableName, from, to));
+                        Columns.Add(new ReportColumn(fullVariableName, clock, Structure, events, GroupByVariableName, from, to));
                 }
                 catch (Exception err)
                 {
@@ -358,50 +432,6 @@ namespace Models
                 foreach (var descriptor in simulation.Descriptors)
                     if (descriptor.Name != "Zone" && descriptor.Name != "SimulationName")
                         this.Columns.Add(new ReportColumnConstantValue(descriptor.Name, descriptor.Value));
-                StoreFactorsInDataStore();
-            }
-        }
-
-        /// <summary>Store descriptors in DataStore.</summary>
-        private void StoreFactorsInDataStore()
-        {
-            if (storage != null && simulation != null && simulation.Descriptors != null)
-            {
-                var table = new DataTable("_Factors");
-                table.Columns.Add("ExperimentName", typeof(string));
-                table.Columns.Add("SimulationName", typeof(string));
-                table.Columns.Add("FolderName", typeof(string));
-                table.Columns.Add("FactorName", typeof(string));
-                table.Columns.Add("FactorValue", typeof(string));
-
-                var experimentDescriptor = simulation.Descriptors.Find(d => d.Name == "Experiment");
-                var simulationDescriptor = simulation.Descriptors.Find(d => d.Name == "SimulationName");
-                var folderDescriptor = simulation.Descriptors.Find(d => d.Name == "FolderName");
-
-                foreach (var descriptor in simulation.Descriptors)
-                {
-                    if (descriptor.Name != "Experiment" &&
-                        descriptor.Name != "SimulationName" &&
-                        descriptor.Name != "FolderName" &&
-                        descriptor.Name != "Zone")
-                    {
-                        var row = table.NewRow();
-                        if (experimentDescriptor != null)
-                            row[0] = experimentDescriptor.Value;
-                        if (simulationDescriptor != null)
-                            row[1] = simulationDescriptor.Value;
-                        if (folderDescriptor != null)
-                            row[2] = folderDescriptor.Value;
-                        row[3] = descriptor.Name;
-                        row[4] = descriptor.Value;
-                        table.Rows.Add(row);
-                    }
-                }
-
-                // Report tables are automatically cleaned before the simulation is run,
-                // as an optimisation specifically designed for this call to WriteTable().
-                // Therefore, we do not need to delete existing data here.
-                storage.Writer.WriteTable(table, false);
             }
         }
     }

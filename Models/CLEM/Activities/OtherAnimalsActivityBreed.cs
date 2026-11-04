@@ -5,6 +5,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Newtonsoft.Json;
 using Models.Core.Attributes;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using Models.CLEM.Interfaces;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Models.CLEM.Activities
 {
@@ -19,15 +23,18 @@ namespace Models.CLEM.Activities
     [Description("Manages the breeding of a specified type of other animal")]
     [Version(1, 0, 1, "")]
     [HelpUri(@"Content/Features/Activities/OtherAnimals/OtherAnimalsActivityBreed.htm")]
-    public class OtherAnimalsActivityBreed : CLEMActivityBase
+    public class OtherAnimalsActivityBreed : CLEMActivityBase, IHandlesActivityCompanionModels
     {
+        private int maleBreeders = 0;
+        private int breeders = 0;
+
         /// <summary>
         /// name of other animal type
         /// </summary>
         [Description("Other animal type")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "Name of other animal type required")]
         [Core.Display(Type = DisplayType.DropDown, Values = "GetResourcesAvailableByName", ValuesArgs = new object[] { new object[] { typeof(OtherAnimals) } })]
-        public string AnimalType { get; set; }
+        public string AnimalTypeName { get; set; }
 
         /// <summary>
         /// Offspring per female breeder
@@ -37,18 +44,11 @@ namespace Models.CLEM.Activities
         public double OffspringPerBreeder { get; set; }
 
         /// <summary>
-        /// Cost per female breeder
-        /// </summary>
-        [Description("Cost per female breeder")]
-        [Required, GreaterThanEqualValue(0)]
-        public int CostPerBreeder { get; set; }
-
-        /// <summary>
         /// Breeding female age
         /// </summary>
-        [Description("Breeding age (months)")]
-        [Required, GreaterThanEqualValue(1)]
-        public int BreedingAge { get; set; }
+        [Description("Breeding age")]
+        [Units("years, months, days")]
+        public AgeSpecifier BreedingAge { get; set; } = new int[] { 18, 0 };
 
         /// <summary>
         /// Use local males for breeding
@@ -60,6 +60,7 @@ namespace Models.CLEM.Activities
         /// <summary>
         /// The Other animal type this group points to
         /// </summary>
+        [JsonIgnore]
         public OtherAnimalsType SelectedOtherAnimalsType;
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace Models.CLEM.Activities
         /// </summary>
         public OtherAnimalsActivityBreed()
         {
-            this.SetDefaults();
+            AllocationStyle = ResourceAllocationStyle.Manual;
         }
 
         /// <summary>An event handler to allow us to initialise ourselves.</summary>
@@ -82,45 +83,163 @@ namespace Models.CLEM.Activities
         [EventSubscribe("CLEMInitialiseActivity")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            // get other animal type model
-            SelectedOtherAnimalsType = Resources.FindResourceType<OtherAnimals, OtherAnimalsType>(this, AnimalType, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore);
+            SelectedOtherAnimalsType = Resources.FindResourceType<OtherAnimals, OtherAnimalsType>(this, AnimalTypeName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.Ignore);
         }
 
-        /// <summary>An event handler to perform herd breeding </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <inheritdoc/>
+        public override LabelsForCompanionModels DefineCompanionModelLabels(string type)
+        {
+            switch (type)
+            {
+                case "LabourRequirement":
+                case "ActivityFee":
+                    return new LabelsForCompanionModels(
+                        identifiers: new List<string>() {
+                            "Number to breed"
+                        },
+                        measures: new List<string>() {
+                            "fixed",
+                            "per head"
+                        }
+                        );
+                default:
+                    return new LabelsForCompanionModels();
+            }
+        }
+
+
+        /// <inheritdoc/>
+        public override void PrepareForTimestep()
+        {
+            IEnumerable<OtherAnimalsTypeCohort> cohorts = SelectedOtherAnimalsType.GetCohorts(null, false).ToList();
+            maleBreeders = cohorts.Where(a => a.AgeDetails.InDays >= this.BreedingAge.InDays && a.Sex == Sex.Male).Sum(b => b.Number);
+            breeders = 0;
+            if (!UseLocalMales | maleBreeders > 0)
+            {
+                breeders = cohorts.Where(a => a.AgeDetails.InDays >= this.BreedingAge.InDays && a.Sex == Sex.Female).Sum(b => b.Number);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override List<ResourceRequest> RequestResourcesForTimestep(double argument = 0)
+        {
+            Status = ActivityStatus.NotNeeded;
+            foreach (var valueToSupply in valuesForCompanionModels)
+            {
+                switch (valueToSupply.Key.type)
+                {
+                    case "OtherAnimalsGroup":
+                        valuesForCompanionModels[valueToSupply.Key] = breeders;
+                        break;
+                    case "LabourRequirement":
+                    case "ActivityFee":
+                        switch (valueToSupply.Key.identifier)
+                        {
+                            case "Number to buy":
+                                switch (valueToSupply.Key.unit)
+                                {
+                                    case "fixed":
+                                        valuesForCompanionModels[valueToSupply.Key] = 1;
+                                        break;
+                                    case "per head":
+                                        valuesForCompanionModels[valueToSupply.Key] = breeders;
+                                        break;
+                                    default:
+                                        throw new NotImplementedException(UnknownUnitsErrorText(this, valueToSupply.Key));
+                                }
+                                break;
+                            default:
+                                throw new NotImplementedException(UnknownCompanionModelErrorText(this, valueToSupply.Key));
+                        }
+                        break;
+                    default:
+                        throw new NotImplementedException(UnknownCompanionModelErrorText(this, valueToSupply.Key));
+                }
+            }
+            return null;
+        }
+
+        /// <inheritdoc/>
+        protected override void AdjustResourcesForTimestep()
+        {
+            IEnumerable<ResourceRequest> shortfalls = MinimumShortfallProportion();
+            if (shortfalls.Any())
+            {
+                // get greatest shortfall by proportion
+                var buyShort = shortfalls.OrderBy(a => a.Provided / a.Required).FirstOrDefault();
+                int reduce = Convert.ToInt32(breeders * buyShort.Provided / buyShort.Required);
+                breeders -= reduce;
+                this.Status = ActivityStatus.Partial;
+            }
+        }
+
+        /// <inheritdoc/>
         [EventSubscribe("CLEMAnimalBreeding")]
         private void OnCLEMAnimalBreeding(object sender, EventArgs e)
         {
-            if(this.TimingOK)
+            if (TimingOK)
             {
-                double malebreeders = SelectedOtherAnimalsType.Cohorts.Where(a => a.Age >= this.BreedingAge && a.Sex == Sex.Male).Sum(b => b.Number);
-                if (!UseLocalMales || malebreeders > 0)
+                ManageActivityResourcesAndTasks();
+
+                if (breeders > 0)
                 {
-                    // get number of females
-                    double breeders = SelectedOtherAnimalsType.Cohorts.Where(a => a.Age >= this.BreedingAge && a.Sex == Sex.Female).Sum(b => b.Number);
-                    // create new cohorts (male and female)
-                    if (breeders > 0)
+                    double newBySex = breeders * this.OffspringPerBreeder / 2.0;
+                    int singleSex = 0;
+
+                    // apply stochasticity to determine proportional numbers to integers
+                    if (newBySex - Math.Truncate(newBySex) > RandomNumberGenerator.Generator.Next())
                     {
-                        double newbysex = breeders * this.OffspringPerBreeder / 2.0;
+                        singleSex = Convert.ToInt32(Math.Ceiling(newBySex));
+                    }
+                    else
+                    {
+                        singleSex = Convert.ToInt32(Math.Floor(newBySex));
+                    }
+
+                    double newWeight = SelectedOtherAnimalsType.AgeWeightRelationship?.SolveY(0.0) ?? 0.0;
+                    if (singleSex > 1)
+                    {
                         OtherAnimalsTypeCohort newmales = new OtherAnimalsTypeCohort()
                         {
-                            Age = 0,
-                            Weight = 0,
+                            AgeDetails = new(0),
+                            Weight = newWeight,
                             Sex = Sex.Male,
-                            Number = newbysex,
+                            Number = singleSex,
+                            AdjustedNumber = singleSex,
                             SaleFlag = HerdChangeReason.Born
                         };
-                        SelectedOtherAnimalsType.Add(newmales, this, SelectedOtherAnimalsType.NameWithParent, "Births");
-                        OtherAnimalsTypeCohort newfemales = new OtherAnimalsTypeCohort()
+                        SelectedOtherAnimalsType.AddToResource(newmales, this, null, "Births");
+                        if (Status != ActivityStatus.Partial)
                         {
-                            Age = 0,
-                            Weight = 0,
+                            Status = ActivityStatus.Success;
+                        }
+                    }
+
+                    if (newBySex - Math.Truncate(newBySex) > RandomNumberGenerator.Generator.NextDouble())
+                    {
+                        singleSex = Convert.ToInt32(Math.Ceiling(newBySex));
+                    }
+                    else
+                    {
+                        singleSex = Convert.ToInt32(Math.Floor(newBySex));
+                    }
+
+                    if (singleSex > 1)
+                    {
+                        OtherAnimalsTypeCohort newFemales = new OtherAnimalsTypeCohort()
+                        {
+                            AgeDetails = new(0),
+                            Weight = newWeight,
                             Sex = Sex.Female,
-                            Number = newbysex,
+                            Number = singleSex,
+                            AdjustedNumber = singleSex,
                             SaleFlag = HerdChangeReason.Born
                         };
-                        SelectedOtherAnimalsType.Add(newfemales, this, SelectedOtherAnimalsType.NameWithParent, "Births");
+                        SelectedOtherAnimalsType.AddToResource(newFemales, this, null, "Births");
+                        if (Status != ActivityStatus.Partial)
+                        {
+                            Status = ActivityStatus.Success;
+                        }
                     }
                 }
             }

@@ -1,11 +1,13 @@
-﻿namespace UnitTests.Core
+﻿using APSIM.Core;
+using Models;
+using Models.Core;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace UnitTests.Core
 {
-    using Models;
-    using Models.Core;
-    using NUnit.Framework;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
 
     /// <summary>This is a test class for the RunnableSimulationList class</summary>
     [TestFixture]
@@ -28,16 +30,44 @@
                         EndDate = new DateTime(1980, 1, 2)
                     },
                     new MockSummary(),
-  
+
                 }
             };
+            Node.Create(simulation);
 
             // Run simulation
             simulation.Prepare();
             simulation.Run();
 
             // Check that clock ticked.
-            Assert.AreEqual((simulation.Children[0] as Clock).Today, new DateTime(1980, 01, 02));
+            Assert.That((simulation.Children[0] as Clock).Today, Is.EqualTo(new DateTime(1980, 01, 02)));
+        }
+
+        /// <summary>An invalid date range throws the expected exception.</summary>
+        [Test]
+        public void InvalidClockDateRangeThrowsExpectedException()
+        {
+            var simulation = new Simulation()
+            {
+                Name = "Sim",
+                FileName = Path.GetTempFileName(),
+                Children = new List<IModel>()
+                {
+                    new Clock()
+                    {
+                        StartDate = new DateTime(1980, 1, 2),
+                        EndDate = new DateTime(1980, 1, 1)
+                    },
+                    new MockSummary()
+                }
+            };
+            Node.Create(simulation);
+
+            simulation.Prepare();
+            var exception = Assert.Throws<SimulationException>(() => simulation.Run());
+            Assert.That(exception.InnerException.Message, Is.EqualTo(
+                $"Invalid date configuration: The end date {new DateTime(1980, 1, 1)} is before the start date {new DateTime(1980, 1, 2)}. " +
+                "Modify your dates in the Clock model to continue."));
         }
 
         /// <summary>Ensures a simulation with exceptions throws.</summary>
@@ -60,13 +90,15 @@
                     new MockModelThatThrows()
                 }
             };
+            Node.Create(simulation);
 
             // Run simulation making sure it throws.
             simulation.Prepare();
             Assert.Throws<SimulationException>(() => simulation.Run());
 
             // Make sure the error was sent to summary.
-            Assert.IsTrue(MockSummary.messages[0].Contains("Intentional exception"));
+            var summary = simulation.Node.FindChild<MockSummary>(recurse: true);
+            Assert.That(summary.messages[0].Contains("Intentional exception"), Is.True);
         }
 
         /// <summary>Ensures a disable model does NOT participate in the simulation run.</summary>
@@ -92,18 +124,23 @@
                     }
                 }
             };
+            Node.Create(simulation);
 
             // Run simulation making sure it throws.
             simulation.Prepare();
             simulation.Run();
 
             // Check that clock ticked.
-            Assert.AreEqual(new DateTime(1980, 01, 02), (simulation.Children[0] as Clock).Today);
+            Assert.That((simulation.Children[0] as Clock).Today, Is.EqualTo(new DateTime(1980, 01, 02)));
         }
 
         [Serializable]
-        class ModelThatDeletesAModel : Model
+        class ModelThatDeletesAModel : Model, IStructureDependency
         {
+            /// <summary>Structure instance supplied by APSIM.core.</summary>
+            [field: NonSerialized]
+            public IStructure Structure { private get; set; }
+
             private string modelNameToRemove;
 
             public ModelThatDeletesAModel(string modelNameToDelete)
@@ -113,7 +150,7 @@
 
             public override void OnPreLink()
             {
-                IModel modelToRemove = FindInScope(modelNameToRemove);
+                IModel modelToRemove = Structure.Find<IModel>(modelNameToRemove);
                 modelToRemove.Parent.Children.Remove(modelToRemove);
             }
         }
@@ -138,11 +175,12 @@
                         new ModelThatDeletesAModel("MockModelThatThrows")
                     }
             };
+            Node.Create(simulation);
 
             simulation.Run();
 
             // Should get to here and NOT throw in the call to Run above.
-            Assert.IsTrue(true);
+            Assert.That(true);
         }
     }
 }

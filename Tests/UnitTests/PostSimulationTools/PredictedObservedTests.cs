@@ -1,20 +1,14 @@
-﻿namespace UnitTests
+﻿using APSIM.Shared.Utilities;
+using Models.PostSimulationTools;
+using Models.Storage;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+
+namespace UnitTests
 {
-    using APSIM.Shared.Utilities;
-    using Models;
-    using Models.Core;
-    using Models.Core.ApsimFile;
-    using Models.PostSimulationTools;
-    using Models.Soils;
-    using Models.Soils.Nutrients;
-    using Models.Storage;
-    using Models.Surface;
-    using NUnit.Framework;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Reflection;
-    using UnitTests.Soils;
 
     public class PredictedObservedTests
     {
@@ -36,14 +30,14 @@
         [SetUp]
         public void Initialise()
         {
-            if (ProcessUtilities.CurrentOS.IsWindows)
-            {
-                string sqliteSourceFileName = FindSqlite3DLL();
-                Directory.SetCurrentDirectory(Path.GetDirectoryName(sqliteSourceFileName));
-            }
-
             database = new SQLite();
             database.OpenDatabase(":memory:", readOnly: false);
+        }
+
+        [TearDown]
+        public void Cleanup()
+        {
+            database?.CloseDatabase();
         }
 
         [Test]
@@ -90,21 +84,21 @@
             Utilities.InjectLink(PO, "dataStore", dataStore);
             PO.Run();
             dataStore.Writer.Stop();
-            dataStore.Reader.Refresh();
+            dataStore.Refresh();
             var data = dataStore.Reader.GetData("PredictedObserved");
 
-            Assert.IsTrue(
+            Assert.That(
                 Utilities.CreateTable(new string[] { "CheckpointName", "CheckpointID", "SimulationName", "SimulationID",                     "Col1", "Observed.Col2", "Predicted.Col2", "Pred-Obs.Col2" },
-                   new List<object[]> { new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 01),            100.0,             1.0,          -99.0},    
-                                        new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 02),            200.0,             2.0,         -198.0},    
-                                        new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 03),            300.0,             3.0,         -297.0},    
-                                        new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 04),            400.0,             4.0,         -396.0},    
-                                        new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 01),            210.0,            21.0,         -189.0},    
-                                        new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 02),            220.0,            22.0,         -198.0},    
-                                        new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 03),            230.0,            23.0,         -207.0},    
-                                        new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 04),            240.0,            24.0,         -216.0},    
+                   new List<object[]> { new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 01),            100.0,             1.0,          -99.0},
+                                        new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 02),            200.0,             2.0,         -198.0},
+                                        new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 03),            300.0,             3.0,         -297.0},
+                                        new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 04),            400.0,             4.0,         -396.0},
+                                        new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 01),            210.0,            21.0,         -189.0},
+                                        new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 02),            220.0,            22.0,         -198.0},
+                                        new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 03),            230.0,            23.0,         -207.0},
+                                        new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 04),            240.0,            24.0,         -216.0},
                    })
-               .IsSame(data));
+               .IsSame(data), Is.True);
         }
 
         [Test]
@@ -150,10 +144,10 @@
             Utilities.InjectLink(PO, "dataStore", dataStore);
             PO.Run();
             dataStore.Writer.Stop();
-            dataStore.Reader.Refresh();
+            dataStore.Refresh();
             var data = dataStore.Reader.GetData("PredictedObserved");
 
-            Assert.IsTrue(
+            Assert.That(
                 Utilities.CreateTable(new string[] { "CheckpointName", "CheckpointID", "SimulationName", "SimulationID",                     "Col1",  "Observed.Col2", "Predicted.Col2", "Pred-Obs.Col2" },
                    new List<object[]> { new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 01),              0.0,              1.0,            1.0},
                                         new object[] {      "Current",              1,           "Sim1",              1, new DateTime(2017, 01, 02),              1.0,              2.0,            1.0},
@@ -164,7 +158,7 @@
                                         new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 07),              6.0,              7.0,            1.0},
                                         new object[] {      "Current",              1,           "Sim2",              2, new DateTime(2017, 01, 08),              7.0,              8.0,            1.0},
                    })
-               .IsSame(data));
+               .IsSame(data), Is.True);
         }
 
         /// <summary>Create a table that we can test</summary>
@@ -176,7 +170,7 @@
             database.CreateTable("_Checkpoints", columnNames, columnTypes);
             List<object[]> rows = new List<object[]>
             {
-                new object[] { 1, "Current", string.Empty, string.Empty }
+                new object[] { 1, "Current", string.Empty, string.Empty, 0 }
             };
             database.InsertRows("_Checkpoints", columnNames, rows);
 

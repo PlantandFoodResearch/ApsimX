@@ -4,8 +4,11 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using APSIM.Core;
+using APSIM.Numerics;
 using APSIM.Shared.Utilities;
 using Models.Core;
+using Newtonsoft.Json;
 
 namespace Models
 {
@@ -15,6 +18,10 @@ namespace Models
     [Serializable]
     public class Operation
     {
+        private DateTime? ActionDate { get; set; }
+
+        private bool HasYear => ActionDate?.Year != DateTime.MinValue.Year;
+
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -24,7 +31,7 @@ namespace Models
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public Operation(bool enabled, string date, string action, string line)
         {
@@ -40,7 +47,27 @@ namespace Models
         public bool Enabled { get; set; }
 
         /// <summary>Gets or sets the date.</summary>
-        public string Date { get; set; }
+        public string Date
+        {
+            get
+            {
+                if (ActionDate is DateTime dt)
+                {
+                    if (HasYear)
+                        return DateUtilities.GetDateAsString(dt);
+                    else
+                        return DateUtilities.GetDateAsDayMonthString(dt);
+                }
+                return null;
+            }
+            set
+            {
+                if (value == null)
+                    ActionDate = null;
+                else
+                    ActionDate = DateUtilities.GetDate(value, DateTime.MinValue.Year);
+            }
+        }
 
         /// <summary>Gets or sets the action.</summary>
         /// <value>The action.</value>
@@ -62,6 +89,23 @@ namespace Models
         }
 
         /// <summary>
+        /// Check whether or not this operation should trigger on the given date.
+        /// </summary>
+        /// <param name="date">The date to check.</param>
+        /// <returns>True if the op should be performed at this time.</returns>
+        public bool TriggersOnDate(DateTime date)
+        {
+            if (ActionDate is DateTime dt)
+            {
+                if (HasYear)
+                    return date == dt;
+                else
+                    return date.Month == dt.Month && date.Day == dt.Day;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Parses a string into an Operation
         /// Format: // 2000-01-01 [NodeName].Function(1000)
         /// </summary>
@@ -74,10 +118,17 @@ namespace Models
                 if (line == null)
                     return null;
 
-                if (line.Length == 0)
-                    return null;
-
                 string lineTrimmed = line.Trim();
+
+                if (lineTrimmed.Length == 0) //if line is empty, treat as comment
+                {
+                    Operation operation = new Operation();
+                    operation.Line = "";
+                    operation.Enabled = false;
+                    operation.Date = null;
+                    operation.Action = null;
+                    return operation;
+                }
 
                 Regex parser = new Regex(@"\s*(\S*)\s+(.+)$");
                 Regex commentParser = new Regex(@"^(\/\/)");
@@ -132,14 +183,87 @@ namespace Models
     [ValidParent(ParentType = typeof(Simulation))]
     [ValidParent(ParentType = typeof(Factorial.CompositeFactor))]
     [ValidParent(ParentType = typeof(Factorial.Factor))]
-    public class Operations : Model
+    public class Operations : Model, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
         /// <summary>The clock</summary>
         [Link] IClock Clock = null;
 
         /// <summary>Gets or sets the schedule.</summary>
         /// <value>The schedule.</value>
-        public List<Operation> Operation { get; set; }
+        public List<Operation> OperationsList { get; set; }
+
+
+        /// <summary>
+        /// Invoked at start of simulation.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        [EventSubscribe("StartOfSimulation")]
+        private void OnStartOfSimulation(object sender, EventArgs e)
+        {
+            //check that all operation lines parse correctly
+            if (this.Enabled && this.OperationsList != null)
+                foreach(Operation op in OperationsList)
+                    if (Operation.ParseOperationString(op.Line) == null)
+                        throw new Exception($"{this.FullPath}: Unable to parse operation '{op.Line}'");
+        }
+
+        /// <summary>Gets or sets the schedule.</summary>
+        /// <value>The schedule.</value>
+        [JsonIgnore]
+        public string OperationsAsString {
+            get {
+                string output = "";
+                if (OperationsList != null)
+                {
+                    foreach (Operation operation in OperationsList)
+                    {
+                        if (operation.Action != null)
+                        {
+                            string dateStr = null;
+                            if (!string.IsNullOrEmpty(operation.Date))
+                                dateStr = DateUtilities.ValidateDateString(operation.Date);
+                            string commentChar = operation.Enabled ? string.Empty : "// ";
+                            output += commentChar + dateStr + " " + operation.Action;
+                        }
+                        else
+                        {
+                            output += operation.Line;
+                        }
+                        output += Environment.NewLine;
+                    }
+                }
+                return output;
+            }
+            set {
+                List<string> lines = value.Split('\n').ToList();
+                OperationsList = new List<Operation>();
+                foreach (string line in lines)
+                {
+                    if (line.Length > 0)
+                    {
+                        string lineTrimmed = line;
+                        lineTrimmed = lineTrimmed.Replace("\n", string.Empty);
+                        lineTrimmed = lineTrimmed.Replace("\r", string.Empty);
+                        lineTrimmed = lineTrimmed.Trim();
+
+                        Operation operation = Operation.ParseOperationString(lineTrimmed);
+                        if (operation != null)
+                        {
+                            OperationsList.Add(operation);
+                        }
+                        else
+                        {
+                            OperationsList.Add(new Operation(false, null, null, lineTrimmed));
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>Simulation is commencing.</summary>
         /// <param name="sender">The sender.</param>
@@ -156,17 +280,15 @@ namespace Models
         [EventSubscribe("DoManagement")]
         private void OnDoManagement(object sender, EventArgs e)
         {
-            if (Operation == null)
-                Operation = new List<Operation>();
+            if (OperationsList == null)
+                OperationsList = new List<Operation>();
 
-            DateTime operationDate;
-            foreach (Operation operation in Operation.Where(o => o.Enabled))
+            foreach (Operation operation in OperationsList.Where(o => o.Enabled))
             {
                 if (operation.Date == null || operation.Action == null)
                     throw new Exception($"Error: Operation line '{operation.Line}' cannot be parsed.");
 
-                operationDate = DateUtilities.GetDate(operation.Date, Clock.Today.Year);
-                if (operationDate == Clock.Today)
+                if (operation.TriggersOnDate(Clock.Today))
                 {
                     string st = operation.Action;
 
@@ -180,7 +302,11 @@ namespace Models
                         string variableName = st;
                         string value = StringUtilities.SplitOffAfterDelimiter(ref variableName, "=").Trim();
                         variableName = variableName.Trim();
-                        this.FindByPath(variableName).Value = value;
+                        var ivariable = Structure.GetObject(variableName);
+                        if (ivariable.Writable)
+                            ivariable.Value = value;
+                        else
+                            throw new Exception($"{variableName} is not writable to by Operations.");
                     }
                     else if (st.Trim() != string.Empty)
                     {
@@ -193,7 +319,7 @@ namespace Models
                         string modelName = st.Substring(0, posPeriod);
                         string methodName = st.Substring(posPeriod + 1).Replace(";", "").Trim();
 
-                        Model model = this.FindByPath(modelName)?.Value as Model;
+                        Model model = Structure.GetObject(modelName)?.Value as Model;
                         if (model == null)
                             throw new ApsimXException(this, "Cannot find model: " + modelName);
 
@@ -203,30 +329,44 @@ namespace Models
                             throw new ApsimXException(this, "Cannot find method: " + methodName + " in model: " + modelName);
 
                         object[] parameterValues = null;
-                        foreach (MethodInfo method in methods)
-                        {
-                            if (method.Name.Equals(methodName, StringComparison.CurrentCultureIgnoreCase))
-                            {
-                                parameterValues = GetArgumentsForMethod(arguments, method);
+                        List<MethodInfo> matchingMethods = methods.
+                            Where(methodInfo => methodInfo.Name.Equals(methodName, StringComparison.CurrentCultureIgnoreCase)).
+                            ToList();
 
-                                // invoke method.
-                                if (parameterValues != null)
+                        if (matchingMethods.Count < 1)
+                            if (parameterValues == null)
+                                throw new ApsimXException(this, "Cannot find method: " + methodName + " in model: " + modelName);
+
+                        for(int i = 0; i < matchingMethods.Count; i++)
+                        {
+                            MethodInfo method = matchingMethods[i];
+                            parameterValues = GetArgumentsForMethod(arguments, method);
+                                
+                            // check if there are more methods to check.
+                            bool hasMore = i < matchingMethods.Count - 1;
+                            if (hasMore && parameterValues == null)
+                                continue;
+
+                            // invoke method.
+                            if (parameterValues != null)
+                            {
+                                try
                                 {
-                                    try
-                                    {
-                                        method.Invoke(model, parameterValues);
-                                    }
-                                    catch (Exception err)
-                                    {
-                                        throw err.InnerException;
-                                    }
-                                    break;
+                                    method.Invoke(model, parameterValues);
                                 }
+                                catch (Exception err)
+                                {
+                                    throw err.InnerException;
+                                }
+                                break;
+                            }
+                            else if (parameterValues == null)
+                            {
+                                throw new ApsimXException(this, 
+                                    "There is an issue with the arguments provided a method in the operation location at \'" + this.FullPath + 
+                                    "\'. The method with argument issue(s) is : " + modelName + "." + methodName + "().\nIf you are using named arguments, please ensure the argument names are correct.");
                             }
                         }
-
-                        if (parameterValues == null)
-                            throw new ApsimXException(this, "Cannot find method: " + methodName + " in model: " + modelName);
                     }
                 }
             }
@@ -291,6 +431,18 @@ namespace Models
                         value = value.Substring(posLastPeriod + 1);
                     parameterValues[argumentIndex] = Enum.Parse(parameters[argumentIndex].ParameterType, value);
                 }
+                else if (parameters[argumentIndex].ParameterType.IsArray)
+                {
+                    string[] tokens = value.Split(' ');
+                    var elementType = parameters[argumentIndex].ParameterType.GetElementType();
+                    if (elementType == typeof(double))
+                        parameterValues[argumentIndex] = MathUtilities.StringsToDoubles(tokens);
+                    else if (elementType == typeof(int))
+                        parameterValues[argumentIndex] = MathUtilities.StringsToIntegers(tokens);
+                    else if (elementType == typeof(string))
+                        parameterValues[argumentIndex] = tokens;
+                }
+
             }
 
             //if there were missing named arguments in the method call then use the default values for them.

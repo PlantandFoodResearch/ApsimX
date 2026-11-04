@@ -5,6 +5,9 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using APSIM.Core;
+using APSIM.Numerics;
+using APSIM.Shared.Documentation.Extensions;
 using APSIM.Shared.Graphing;
 using APSIM.Shared.Utilities;
 using Models.Core;
@@ -22,8 +25,12 @@ namespace Models
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
     [ValidParent(ParentType = typeof(Series))]
     [ValidParent(ParentType = typeof(Graph))]
-    public class Regression : Model, ICachableGraphable
+    public class Regression : Model, ICachableGraphable, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
         /// <summary>The stats from the regression</summary>
         private List<MathUtilities.RegrStats> stats = new List<MathUtilities.RegrStats>();
 
@@ -59,14 +66,14 @@ namespace Models
                                                                   List<SimulationDescription> simDescriptions,
                                                                   List<string> simulationsFilter = null)
         {
-            Series seriesAncestor = FindAncestor<Series>();
+            Series seriesAncestor = Structure.FindParent<Series>(recurse: true);
             IEnumerable<SeriesDefinition> definitions;
             if (seriesAncestor == null)
             {
-                Graph graph = FindAncestor<Graph>();
+                Graph graph = Structure.FindParent<Graph>(recurse: true);
                 if (graph == null)
                     throw new Exception("Regression model must be a descendant of a series");
-                definitions = graph.FindAllChildren<Series>().SelectMany(s => s.CreateSeriesDefinitions(storage, simDescriptions, simulationsFilter));
+                definitions = Structure.FindChildren<Series>(relativeTo: graph).SelectMany(s => s.CreateSeriesDefinitions(storage, simDescriptions, simulationsFilter));
             }
             else
                 definitions = seriesAncestor.CreateSeriesDefinitions(storage, simDescriptions, simulationsFilter);
@@ -85,6 +92,10 @@ namespace Models
 
             int checkpointNumber = 0;
             List<SeriesDefinition> regressionLines = new List<SeriesDefinition>();
+
+            if (!Enabled)
+                return regressionLines;
+
             foreach (var checkpointName in storage.CheckpointNames)
             {
                 if (checkpointName != "Current" && !storage.GetCheckpointShowOnGraphs(checkpointName)) // smh
@@ -116,27 +127,27 @@ namespace Models
                         // todo - should this also filter on checkpoint name?
                         foreach (SeriesDefinition definition in definitions)
                         {
-                            if (definition.X is double[] && definition.Y is double[])
+                            if (HasDefinitionAxesGotNaN(definition.X, definition.Y))
                             {
-                                SeriesDefinition regressionSeries = PutRegressionLineOnGraph(definition.X, definition.Y, definition.Colour, null);
-                                if (regressionSeries != null)
-                                {
-                                    regressionLines.Add(regressionSeries);
-                                    equationColours.Add(definition.Colour);
-                                }
+                                List<List<double>> cleanXAndYLists = CreateCleanDefinitionAxisLists(definition);
+                                if (cleanXAndYLists[0].Count() > 1 && cleanXAndYLists[1].Count() > 1)
+                                    CreateRegressionsSeriesAndLines(regressionLines, cleanXAndYLists[0], cleanXAndYLists[1], definition.Colour, definition.Title);
                             }
+                            else
+                                if (definition.X is double[] && definition.Y is double[])
+                                CreateRegressionsSeriesAndLines(regressionLines, definition.X, definition.Y, definition.Colour, definition.Title);
                         }
                     }
                     else
                     {
-                        var regresionLineName = "Regression line";
+                        var regressionLineName = "Regression line";
                         if (checkpointName != "Current")
-                            regresionLineName = "Regression line (" + checkpointName + ")";
+                            regressionLineName = "Regression line (" + checkpointName + ")";
 
                         // Display a single regression line for all data.
                         if (x.Count > 0 && y.Count == x.Count)
                         {
-                            SeriesDefinition regressionSeries = PutRegressionLineOnGraph(x, y, ColourUtilities.ChooseColour(checkpointNumber), regresionLineName);
+                            SeriesDefinition regressionSeries = PutRegressionLineOnGraph(x, y, ColourUtilities.ChooseColour(checkpointNumber), regressionLineName);
                             if (regressionSeries != null)
                             {
                                 regressionLines.Add(regressionSeries);
@@ -176,8 +187,8 @@ namespace Models
         /// <summary>Puts the regression line and 1:1 line on graph.</summary>
         /// <param name="x">The x data.</param>
         /// <param name="y">The y data.</param>
-        /// <param name="colour">The colour of the regresion line.</param>
-        /// <param name="title">The title to put in the legen.</param>
+        /// <param name="colour">The colour of the regression line.</param>
+        /// <param name="title">The title to put in the legend.</param>
         private SeriesDefinition PutRegressionLineOnGraph(IEnumerable x, IEnumerable y, Color colour, string title)
         {
             MathUtilities.RegrStats stat = MathUtilities.CalcRegressionStats(title, y, x);
@@ -188,6 +199,9 @@ namespace Models
                 double maximumX = MathUtilities.Max(x);
                 double minimumY = MathUtilities.Min(y);
                 double maximumY = MathUtilities.Max(y);
+
+                //AddPaddingToRegressionLines(ref minimumX, ref maximumX);
+
                 double lowestAxisScale = Math.Min(minimumX, minimumY);
                 double largestAxisScale = Math.Max(maximumX, maximumY);
 
@@ -198,6 +212,7 @@ namespace Models
                 return regressionDefinition;
             }
             throw new Exception($"Unable to generate regression line for series {title} - there is no data");
+
         }
 
         /// <summary>Puts the 1:1 line on graph.</summary>
@@ -226,9 +241,9 @@ namespace Models
                     // Add an equation annotation.
                     TextAnnotation equation = new TextAnnotation();
                     StringBuilder text = new StringBuilder();
-                    text.AppendLine($"y = {stats[i].Slope:F2}x + {stats[i].Intercept:F2}, r\u00B2 = {stats[i].R2:F2}, n = {stats[i].n:F0}");
-                    text.AppendLine($"NSE = {stats[i].NSE:F2}, ME = {stats[i].ME:F2}, MAE = {stats[i].MAE:F2}");
-                    text.AppendLine($"RSR = {stats[i].RSR:F2}, RMSD = {stats[i].RMSE:F2}");
+                    text.AppendLine($"y={stats[i].Slope:F2}x{(stats[i].Intercept >= 0 ? "+" : "")}{stats[i].Intercept:F2}, r\u00B2={stats[i].R2:F2}, n={stats[i].n:F0}");
+                    text.AppendLine($"RMSE={stats[i].RMSE:F2}, MAE={stats[i].MAE:F2}, ME={stats[i].ME:F2}");
+                    text.AppendLine($"NSE={stats[i].NSE:F2}, RSR={stats[i].RSR:F2}, RMR={stats[i].RMR:F2}");
                     equation.Name = $"Regression{i}";
                     equation.text = text.ToString();
                     equation.colour = equationColours[i];
@@ -242,6 +257,83 @@ namespace Models
                     yield return equation;
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns true if NaN is found in either axis IEnumerable. Also returns true if either list is null.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+
+        /// <returns></returns>
+        private bool HasDefinitionAxesGotNaN(IEnumerable x, IEnumerable y)
+        {
+            bool nanFoundInAxes = false;
+            if (x == null)
+                nanFoundInAxes = true;
+            if (y == null)
+                nanFoundInAxes = true;
+            if (x != null)
+                foreach (double xValue in x)
+                    if (double.IsNaN(xValue))
+                        nanFoundInAxes = true;
+            if (y != null)
+                foreach (double yValue in y)
+                    if (double.IsNaN(yValue))
+                        nanFoundInAxes = true;
+            return nanFoundInAxes;
+        }
+
+        /// <summary>
+        /// Returns a List of List type double. Each List double will be a List of all values without NaNs.
+        /// </summary>
+        /// <param name="definition"></param>
+        /// <returns></returns>
+        private List<List<double>> CreateCleanDefinitionAxisLists(SeriesDefinition definition)
+        {
+            List<double> cleanDefinitionXList = new();
+            List<double> cleanDefinitionYList = new();
+            if (definition.X != null)
+            {
+                for (int i = 0; i < definition.X.Count(); i++)
+                {
+                    bool isEitherAxisNaN = false;
+                    if (double.IsNaN(((double[])definition.X)[i]))
+                        isEitherAxisNaN = true;
+                    if (double.IsNaN(((double[])definition.Y)[i]))
+                        isEitherAxisNaN = true;
+                    if (!isEitherAxisNaN)
+                    {
+                        cleanDefinitionXList.Add(((double[])definition.X)[i]);
+                        cleanDefinitionYList.Add(((double[])definition.Y)[i]);
+                    }
+                }
+            }
+            return new List<List<double>> { cleanDefinitionXList, cleanDefinitionYList };
+        }
+
+
+        private void CreateRegressionsSeriesAndLines(List<SeriesDefinition> regressionLines, IEnumerable xAxisList, IEnumerable yAxisList, Color seriesDefinitionColor, string regressionLineName)
+        {
+            SeriesDefinition regressionSeries = PutRegressionLineOnGraph(xAxisList, yAxisList, seriesDefinitionColor, regressionLineName);
+            if (regressionSeries != null)
+            {
+                regressionLines.Add(regressionSeries);
+                equationColours.Add(seriesDefinitionColor);
+            }
+        }
+
+        /// <summary>
+        /// Adds padding to regression lines.
+        /// </summary>
+        /// <param name="minimumX"></param>
+        /// <param name="maximumX"></param>
+        private void AddPaddingToRegressionLines(ref double minimumX, ref double maximumX)
+        {
+            // Add padding to end of line so that it goes through final point for readability
+            double padding = Math.Abs(maximumX - minimumX) * 0.1;
+            minimumX -= padding;
+            maximumX += padding;
         }
     }
 }

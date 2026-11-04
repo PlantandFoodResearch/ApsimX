@@ -1,4 +1,5 @@
 ﻿using System;
+using APSIM.Core;
 using Models.Core;
 using Models.Soils.Nutrients;
 
@@ -32,17 +33,29 @@ namespace Models.Functions
         IOrganicPool FOMLignin = null;
 
 
-        [Link(Type = LinkType.Child)]
-        CERESDenitrificationTemperatureFactor CERESTF = null;
+        [Link(Type = LinkType.Child, ByName = true)]
+        IFunction CERESDenitrificationTemperatureFactor = null;
 
-        [Link(Type = LinkType.Child)]
-        CERESDenitrificationWaterFactor CERESWF = null;
+        [Link(Type = LinkType.Child, ByName = true)]
+        IFunction CERESDenitrificationWaterFactor = null;
 
         /// <summary>
         /// Rate modifier on the CERES denitrification model. Default = 0.0006.
         /// </summary>
         [Description("Denitrification rate modifier")]
         public double DenitrificationRateModifier { get; set; } = 0.0006;
+
+        /// <summary>
+        /// Slope on the total carbon to carbon factor in denitrification.
+        /// </summary>
+        [Description("Denitrification carbon slope factor")]
+        public double DenitrificationCarbonSlopeFactor { get; set; } = 0.0031;
+
+        /// <summary>
+        /// Offset on the total carbon to carbon factor in denitrification.
+        /// </summary>
+        [Description("Denitrification carbon offset factor")]
+        public double DenitrificationCarbonOffsetFactor { get; set; } = 24.5;
 
         /// <summary>
         /// Kludge
@@ -64,10 +77,16 @@ namespace Models.Functions
                 ActiveC = Humic.C[arrayIndex] + 0.0 + FOMCarbohydrate.C[arrayIndex] + FOMCellulose.C[arrayIndex] + FOMLignin.C[arrayIndex];
 
             double ActiveCppm = ActiveC / (soilPhysical.BD[arrayIndex] * soilPhysical.Thickness[arrayIndex] / 100);
-            double CarbonModifier = 0.0031 * ActiveCppm + 24.5;
+
+            double CarbonModifier = (DenitrificationCarbonSlopeFactor * ActiveCppm) + DenitrificationCarbonOffsetFactor;
             double PotentialRate = DenitrificationRateModifier * CarbonModifier;
 
-            return PotentialRate * CERESTF.Value(arrayIndex) * CERESWF.Value(arrayIndex);
+            double result = PotentialRate * CERESDenitrificationTemperatureFactor.Value(arrayIndex) * CERESDenitrificationWaterFactor.Value(arrayIndex);
+
+            if (result < 0 || result > 1)
+                throw new Exception($"CERESDenitrificationModel should return a value between 0 and 1, but was calculated to be {result} instead.");
+
+            return result;
         }
 
         /// <summary>

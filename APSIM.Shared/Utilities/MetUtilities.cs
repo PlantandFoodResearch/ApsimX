@@ -3,6 +3,7 @@
     using System;
     using System.Data;
     using System.Globalization;
+    using APSIM.Numerics;
 
     /// <summary>
     /// A collection of weather utility functions
@@ -249,16 +250,14 @@
             double LATr = 0;
             double HSmax = 0;
 
+            DEC = 23.45 * System.Math.Sin(2.0 * System.Math.PI / 365.25 * (day - 79.25));
+            DECr = DEC * 2.0 * System.Math.PI / 360.0;
+            LATr = lat * 2.0 * System.Math.PI / 360.0;
             HSmax = System.Math.Acos(-System.Math.Tan(LATr) * System.Math.Tan(DECr));
             // half daylength
 
-            if ((HS <= HSmax))
+            if (HS <= HSmax)
             {
-                DEC = 23.45 * System.Math.Sin(2.0 * System.Math.PI / 365.25 * (day - 79.25));
-
-                DECr = DEC * 2.0 * System.Math.PI / 360.0;
-                LATr = lat * 2.0 * System.Math.PI / 360.0;
-
                 functionReturnValue = 1360.0 * (System.Math.Sin(LATr) * System.Math.Sin(DECr) + System.Math.Cos(LATr) * System.Math.Cos(DECr) * System.Math.Cos(HS));
                 functionReturnValue = functionReturnValue / 1000000.0;
                 // Convert to MJ
@@ -545,13 +544,13 @@
             return functionReturnValue;
 
         }
-         
+
         /// <summary>
         /// This routine calculates the distance between two points (given the
-        /// latitude/longitude of those points). 
+        /// latitude/longitude of those points).
         /// </summary>
         /// <remarks>
-        /// South latitudes are negative, east longitudes are positive 
+        /// South latitudes are negative, east longitudes are positive
         /// </remarks>
         /// <param name="lat1">First latitude.</param>
         /// <param name="lon1">First longitude.</param>

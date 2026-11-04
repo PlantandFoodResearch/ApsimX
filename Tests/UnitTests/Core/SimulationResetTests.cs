@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+using APSIM.Core;
 using APSIM.Shared.Utilities;
 using Models;
 using Models.Core;
-using Models.Core.ApsimFile;
-using Models.PMF;
 using Models.Soils;
 using Models.Storage;
 using NUnit.Framework;
-using UnitTests.Storage;
 
 namespace UnitTests.Core
 {
@@ -47,64 +43,68 @@ namespace UnitTests.Core
         }
 
         [Parallelizable]
-        //[TestCase("AgPasture.apsimx")]
-        //[TestCase("Barley.apsimx")]
-        //[TestCase("Chicory.apsimx")]
-        //[TestCase("Eucalyptus.apsimx")]
-        //[TestCase("FodderBeet.apsimx")]
-        //[TestCase("Maize.apsimx")]
-        //[TestCase("Oats.apsimx")]
+        [TestCase("AgPasture.apsimx")]
+        [TestCase("Barley.apsimx")]
+        [TestCase("Chicory.apsimx")]
+        [TestCase("Eucalyptus.apsimx")]
+        [TestCase("FodderBeet.apsimx")]
+        [TestCase("Maize.apsimx")]
+        [TestCase("Oats.apsimx")]
         [TestCase("OilPalm.apsimx")]
-        //[TestCase("PlantainForage.apsimx")]
-        //[TestCase("Potato.apsimx")]
-        //[TestCase("RedClover.apsimx")]
-        //[TestCase("Rotation.apsimx")]
-        //[TestCase("SCRUM.apsimx")]
-        //[TestCase("SimpleGrazing.apsimx")]
-        //[TestCase("Soybean.apsimx")]
-        //[TestCase("Stock.apsimx")]
-        //[TestCase("Sugarcane.apsimx")]
-        //[TestCase("Wheat.apsimx")]
-        //[TestCase("WhiteClover.apsimx")]
+        [TestCase("PlantainForage.apsimx")]
+        [TestCase("Potato.apsimx")]
+        [TestCase("RedClover.apsimx")]
+        [TestCase("Rotation.apsimx")]
+        [TestCase("SCRUM.apsimx")]
+        [TestCase("SimpleGrazing.apsimx")]
+        [TestCase("Soybean.apsimx")]
+        [TestCase("Stock.apsimx")]
+        [TestCase("Sugarcane.apsimx")]
+        [TestCase("Wheat.apsimx")]
+        [TestCase("WhiteClover.apsimx")]
         public void TestSimulation(string fileName)
         {
             Simulation sim = CreateSimulation(Path.Combine("%root%", "Examples", fileName));
             Logger logger = new Logger();
-            logger.Parent = sim;
-            sim.Children.Add(logger);
+            sim.Node.AddChild(logger);
             sim.Prepare();
 
-            // 2. Run simulation.
+            // Run full simulation.
             sim.Run();
 
-            // 3. Compare simulation state now vs before running
+            // Get JSON of total state at end of run (including privates)
             string pre = logger.Json;
 
-            // Run a second time.
+            // Run a second time, but only run the first day, then skip to end
             logger.ExitAfterLogging = true;
             sim.Run();
 
+            //Get state of sim as JSON again, this should match
             string post = logger.Json;
 
-            // Easiest way to debug this test is to uncomment these two lines
+            // Easiest way to debug this test is to uncomment these four lines
             // and open the two json files in a diff tool.
-            // File.WriteAllText(Path.Combine(Path.GetTempPath(), $"pre-{Guid.NewGuid().ToString()}.json"), pre);
-            // File.WriteAllText(Path.Combine(Path.GetTempPath(), $"post-{Guid.NewGuid().ToString()}.json"), post);
+            /*
+            string path = Path.GetTempPath();
+            string name = Guid.NewGuid().ToString();
+            File.WriteAllText(Path.Combine(path, $"{name}-pre.json"), pre);
+            File.WriteAllText(Path.Combine(path, $"{name}-post.json"), post);
+            */
 
-            Assert.AreEqual(pre, post, $"{Path.GetFileName(sim.FileName)} simulation failed to zero all variables");
+            Assert.That(post, Is.EqualTo(pre), $"{Path.GetFileName(sim.FileName)} simulation failed to zero all variables");
         }
 
         private static Simulation CreateSimulation(string path)
         {
             path = PathUtilities.GetAbsolutePath(path, null);
-            Simulations sims = FileFormat.ReadFromFile<Simulations>(path, e => throw e, false).NewModel as Simulations;
-            foreach (Soil soil in sims.FindAllDescendants<Soil>())
-                soil.Standardise();
-            DataStore storage = sims.FindDescendant<DataStore>();
+            Simulations sims = FileFormat.ReadFromFile<Simulations>(path).Model as Simulations;
+            foreach (Soil soil in sims.Node.FindChildren<Soil>(recurse: true))
+                soil.Sanitise();
+            DataStore storage = sims.Node.FindChild<DataStore>(recurse: true);
             storage.UseInMemoryDB = true;
-            IClock clock = sims.FindDescendant<Clock>();
+            IClock clock = sims.Node.FindChild<Clock>(recurse: true);
             clock.EndDate = clock.StartDate.AddYears(1);
-            return sims.FindDescendant<Simulation>();
+            return sims.Node.FindChild<Simulation>(recurse: true);
         }
     }
 }

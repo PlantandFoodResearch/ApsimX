@@ -1,22 +1,22 @@
-﻿using System;
+﻿using APSIM.Core;
+using APSIM.Shared.Utilities;
+using Models.Core;
+using Models.Core.Apsim710File;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using APSIM.Shared.Utilities;
-using UserInterface.Interfaces;
-using Models.Core;
-using UserInterface.Views;
 using System.Linq;
+using System.Reflection;
 using UserInterface.EventArguments;
-using Utility;
-using Models.Core.ApsimFile;
-using Models.Core.Apsim710File;
+using UserInterface.Interfaces;
+using UserInterface.Views;
+using APSIMNG.Utility;
 
 namespace UserInterface.Presenters
 {
 
     /// <summary>
-    /// This presenter class provides the functionality behind a TabbedExplorerView 
+    /// This presenter class provides the functionality behind a TabbedExplorerView
     /// which is a tab control where each tabs represent an .apsimx file. Each tab
     /// then has an ExplorerPresenter and ExplorerView created when the tab is
     /// created.
@@ -52,11 +52,11 @@ namespace UserInterface.Presenters
             this.view = view as IMainView;
             this.view.OnError += OnError;
             // Set the main window location and size.
-            this.view.WindowLocation = Utility.Configuration.Settings.MainFormLocation;
-            this.view.WindowSize = Utility.Configuration.Settings.MainFormSize;
+            this.view.WindowLocation = Configuration.Settings.MainFormLocation;
+            this.view.WindowSize = Configuration.Settings.MainFormSize;
             // Maximize settings do not save correctly on OS X
             if (!ProcessUtilities.CurrentOS.IsMac)
-                this.view.WindowMaximised = Utility.Configuration.Settings.MainFormMaximized;
+                this.view.WindowMaximised = Configuration.Settings.MainFormMaximized;
 
             // Set the main window caption with version information.
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -70,11 +70,12 @@ namespace UserInterface.Presenters
             }
 
             // Cleanup the recent file list
-            Utility.Configuration.Settings.CleanMruList();
+            Configuration.Settings.CleanMruList();
 
             // Populate the 2 start pages.
-            this.PopulateStartPage(this.view.StartPage1);
-            this.PopulateStartPage(this.view.StartPage2);
+            PopulateStartPage(this.view.StartPage1);
+            PopulateStartPage(this.view.StartPage2);
+            PopulateMRUList();
 
             // Trap some events.
             this.view.AllowClose += this.OnClosing;
@@ -82,18 +83,24 @@ namespace UserInterface.Presenters
             this.view.StartPage2.List.DoubleClicked += this.OnFileDoubleClicked;
             this.view.TabClosing += this.OnTabClosing;
             this.view.ShowDetailedError += this.ShowDetailedErrorMessage;
+            this.view.GitHubBtnClicked += this.OnGitHubBtnPressed;
+            this.view.DiscussionBtnClicked += this.OnDiscussionBtnPressed;
+            this.view.ModelDocsBtnClicked += this.OnModelDocsBtnPressed;
             this.view.Show();
+            // Must be done after the MarkdownView is shown.
+            ShowNotifications();
+
 
             int height = this.view.PanelHeight;
-            double savedHeight = Utility.Configuration.Settings.StatusPanelHeight;
+            double savedHeight = Configuration.Settings.StatusPanelHeight / 100.0;
             if (savedHeight > 0.9 || savedHeight < 0.1)
                 this.view.StatusPanelPosition = (int)Math.Round(height * 0.7);
             else
                 this.view.StatusPanelPosition = (int)Math.Round(height * savedHeight);
 
             double width = this.view.WindowSize.Width;
-            int savedWidth = Utility.Configuration.Settings.SplitScreenPosition;
-            if (savedHeight > 0.9 || savedHeight < 0.1)
+            int savedWidth = Configuration.Settings.SplitScreenPosition;
+            if (savedWidth > 0.9 || savedWidth < 0.1)
                 this.view.SplitScreenPosition = (int)Math.Round(width * 0.5);
             else
                 this.view.SplitScreenPosition = (int)Math.Round(width * savedWidth);
@@ -190,9 +197,8 @@ namespace UserInterface.Presenters
                 typeof(GLib.Log).Assembly.Location,
             };
 
-            var compiler = new ScriptCompiler();
-
-            var results = compiler.Compile(code, new MockModel());
+            var node = Node.Create(new MockModel());
+            var results = node.Compiler.Compile(code, node);
 
             if (results.ErrorMessages != null)
                 throw new Exception($"Script compile errors: {results.ErrorMessages}");
@@ -242,9 +248,9 @@ namespace UserInterface.Presenters
         {
             view.HideProgressBar();
         }
-        
+
         /// <summary>
-        /// Displays several messages, with a separator between them. 
+        /// Displays several messages, with a separator between them.
         /// For error messages, use <see cref="ShowError(List{Exception}, bool)"/>.
         /// </summary>
         /// <param name="messages">Messages to be displayed.</param>
@@ -300,7 +306,7 @@ namespace UserInterface.Presenters
         }
 
         /// <summary>
-        /// Displays several error messages in the status bar. Each error will have an associated 
+        /// Displays several error messages in the status bar. Each error will have an associated
         /// </summary>
         /// <param name="errors"></param>
         /// <param name="overwrite"></param>
@@ -507,15 +513,15 @@ namespace UserInterface.Presenters
                 this.view.ShowWaitCursor(true);
                 try
                 {
-                    var converter = FileFormat.ReadFromFile<Simulations>(fileName, e => ShowError(e), true);
-                    Simulations simulations = converter.NewModel as Simulations;
+                    var response = FileFormat.ReadFromFileAndReturnConvertState<Simulations>(fileName, e => ShowError(e), true);
+                    Simulations simulations = response.head.Model as Simulations;
                     presenter = (ExplorerPresenter)this.CreateNewTab(fileName, simulations, onLeftTabControl, "UserInterface.Views.ExplorerView", "UserInterface.Presenters.ExplorerPresenter");
 
                     // Clear simulation messages.
                     this.ShowMessage("", Simulation.MessageType.Information, true);
 
-                    if (converter.DidConvert)
-                        this.ShowMessage($"Simualation has been converted to the latest version: {simulations.Version}",Simulation.MessageType.Information,true);
+                    if (response.didConvert)
+                        this.ShowMessage($"Simulation has been converted to the latest version: {simulations.Version}",Simulation.MessageType.Information,true);
 
                     // Add to MRU list and update display
                     Configuration.Settings.AddMruFile(new ApsimFileMetadata(fileName));
@@ -579,7 +585,7 @@ namespace UserInterface.Presenters
         /// Populate the view for the first time. Will throw if there are errors on startup.
         /// </summary>
         /// <param name="startPage">The start page to populate.</param>
-        private void PopulateStartPage(IListButtonView startPage)
+        private void PopulateStartPage(ListButtonView startPage)
         {
             // Add the buttons into the main window.
             startPage.AddButton(
@@ -613,11 +619,6 @@ namespace UserInterface.Presenters
                                         new Gtk.Image(null, "ApsimNG.Resources.MenuImages.Upgrade.svg"),
                                         this.OnUpgrade);
 
-            startPage.AddButton(
-                                "View Cloud Jobs",
-                                        new Gtk.Image(null, "ApsimNG.Resources.Cloud.svg"),
-                                        this.OnViewCloudJobs);
-
 #if DEBUG
             startPage.AddButton(
                                 "Upgrade Resource Files",
@@ -633,10 +634,27 @@ namespace UserInterface.Presenters
                             "Help",
                             new Gtk.Image(null, "ApsimNG.Resources.MenuImages.Help.svg"),
                             this.OnHelp);
-            // Populate the view's listview.
-            startPage.List.Values = Configuration.Settings.MruList.Select(f => f.FileName).ToArray();
 
             this.PopulatePopup(startPage);
+        }
+
+        /// <summary>
+        /// Show notifications/news items in its own list.
+        /// </summary>
+        /// <param name="markdownView"></param>
+        private void ShowNotifications()
+        {
+            try
+            {
+                string aiBannerMarkdownText = NotificationUtility.GetAIBannerPath();
+                string markdownText = NotificationUtility.GetNotificationMarkdownText();
+                view.NotificationMarkdownView.Text = $"![APSIM Initiative Banner]({aiBannerMarkdownText})\n\n{markdownText}";         
+            }
+            catch(Exception e)
+            {
+                ShowMessage($"Unable to fetch notifications at this time. {e.Message}", Simulation.MessageType.Warning);
+            }
+
         }
 
         private void OnShowSettingsDialog(object sender, EventArgs e)
@@ -658,7 +676,7 @@ namespace UserInterface.Presenters
         /// most-recently-used file display.
         /// </summary>
         /// <param name="startPage">The page to which the menu will be added.</param>
-        private void PopulatePopup(IListButtonView startPage)
+        private void PopulatePopup(ListButtonView startPage)
         {
             List<MenuDescriptionArgs> descriptions = new List<MenuDescriptionArgs>();
             MenuDescriptionArgs descOpen = new MenuDescriptionArgs();
@@ -713,7 +731,7 @@ namespace UserInterface.Presenters
                 if (fileName != null)
                 {
                     this.OpenApsimXFileInTab(fileName, this.view.IsControlOnLeft(obj));
-                    Utility.Configuration.Settings.PreviousFolder = Path.GetDirectoryName(fileName);
+                    Configuration.Settings.PreviousFolder = Path.GetDirectoryName(fileName);
                     Configuration.Settings.Save();
                 }
             }
@@ -735,7 +753,7 @@ namespace UserInterface.Presenters
                 string fileName = this.view.GetMenuItemFileName(obj);
                 if (!string.IsNullOrEmpty(fileName))
                 {
-                    Utility.Configuration.Settings.DelMruFile(fileName);
+                    Configuration.Settings.DelMruFile(fileName);
                     Configuration.Settings.Save();
                     this.UpdateMRUDisplay();
                 }
@@ -760,7 +778,7 @@ namespace UserInterface.Presenters
                     string[] mruFiles = Configuration.Settings.MruList.Select(f => f.FileName).ToArray();
                     foreach (string fileName in mruFiles)
                     {
-                        Utility.Configuration.Settings.DelMruFile(fileName);
+                        Configuration.Settings.DelMruFile(fileName);
                     }
                     Configuration.Settings.Save();
 
@@ -792,7 +810,7 @@ namespace UserInterface.Presenters
                         try
                         {
                             File.Move(fileName, newName);
-                            Utility.Configuration.Settings.RenameMruFile(fileName, newName);
+                            Configuration.Settings.RenameMruFile(fileName, newName);
                             Configuration.Settings.Save();
                             this.UpdateMRUDisplay();
                         }
@@ -863,7 +881,7 @@ namespace UserInterface.Presenters
                         try
                         {
                             File.Delete(fileName);
-                            Utility.Configuration.Settings.DelMruFile(fileName);
+                            Configuration.Settings.DelMruFile(fileName);
                             Configuration.Settings.Save();
                             this.UpdateMRUDisplay();
                         }
@@ -879,6 +897,19 @@ namespace UserInterface.Presenters
                 ShowError(err);
             }
         }
+
+        public void OnNamedPipe_OpenRequest(string filesToOpen)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                if (!string.IsNullOrEmpty(filesToOpen))
+                {
+                    string[] fileNames = filesToOpen.Split(Environment.NewLine);
+                    ProcessCommandLineArguments(fileNames);
+                }
+            });
+        }
+
 
         /// <summary>
         /// Process the specified command line arguments. Will throw if there are errors during startup.
@@ -900,18 +931,20 @@ namespace UserInterface.Presenters
         }
 
         /// <summary>
-        /// Returns the ExplorerPresenter for the specified file name, 
+        /// Returns the ExplorerPresenter for the specified file name,
         /// or null if the file is not currently open.
         /// </summary>
         /// <param name="fileName">The file name being sought.</param>
         /// <param name="onLeftTabControl">If true, search the left screen, else search the right.</param>
         /// <returns>The explorer presenter.</returns>
         private ExplorerPresenter PresenterForFile(string fileName, bool onLeftTabControl)
-        {            
+        {
+            string targetPath = Path.GetFullPath(fileName);
             List<ExplorerPresenter> presenters = onLeftTabControl ? this.Presenters1.OfType<ExplorerPresenter>().ToList() : this.presenters2.OfType<ExplorerPresenter>().ToList();
             foreach (ExplorerPresenter presenter in presenters)
             {
-                if (presenter.ApsimXFile.FileName == fileName)
+                string filePath = Path.GetFullPath(presenter.ApsimXFile.FileName);
+                if (filePath.Equals(targetPath, ProcessUtilities.CurrentOS.IsUnix ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
                 {
                     return presenter;
                 }
@@ -926,7 +959,7 @@ namespace UserInterface.Presenters
         /// <param name="onLeftTabControl">If true a tab will be added to the left hand tab control.</param>
         private void OpenApsimXFromMemoryInTab(string name, string contents, bool onLeftTabControl)
         {
-            var simulations = FileFormat.ReadFromString<Simulations>(contents, e => throw e, true).NewModel as Simulations;
+            var simulations = FileFormat.ReadFromString<Simulations>(contents, e => throw e, true).Model as Simulations;
             this.CreateNewTab(name, simulations, onLeftTabControl, "UserInterface.Views.ExplorerView", "UserInterface.Presenters.ExplorerPresenter");
         }
 
@@ -955,7 +988,7 @@ namespace UserInterface.Presenters
                 ShowError(e);
                 return null;
             }
-            
+
             //ExplorerView explorerView = new ExplorerView(null);
             //ExplorerPresenter presenter = new ExplorerPresenter(this);
             if (onLeftTabControl)
@@ -975,7 +1008,7 @@ namespace UserInterface.Presenters
             if (newPresenter.GetType() == typeof(ExplorerPresenter))
             {
                 int width = this.view.WindowSize.Width;
-                double savedWidth = Utility.Configuration.Settings.TreeSplitScreenPosition;
+                double savedWidth = Configuration.Settings.TreeSplitScreenPosition;
                 if ((savedWidth > 0.9) || (savedWidth < 0.1))
                     ((ExplorerPresenter)newPresenter).TreeWidth = (int)Math.Round(width * 0.9);
                 else
@@ -993,7 +1026,11 @@ namespace UserInterface.Presenters
         {
             try
             {
-                string fileName = this.AskUserForOpenFileName("ApsimX files|*.apsimx");
+                string defaultFileSpec = "APSIM files (*.apsimx, *.json)|*.apsimx;*.json";
+                string linuxFileSpec = "APSIM files (*.apsimx)|*.apsimx";
+                if (ProcessUtilities.CurrentOS.IsUnix)
+                    defaultFileSpec = linuxFileSpec;
+                string fileName = this.AskUserForOpenFileName(defaultFileSpec);
                 if (fileName != null)
                 {
                     bool onLeftTabControl = this.view.IsControlOnLeft(sender);
@@ -1068,10 +1105,10 @@ namespace UserInterface.Presenters
             // But check to be sure a tab has actually been closed and, if not, remove it now
 
             if (view.PageCount(onLeft) == nPages)
-                view.RemoveTab(index + 1, onLeft);  
+                view.RemoveTab(index + 1, onLeft);
 
             // We've just closed Simulations
-            // This is a good time to force garbage collection 
+            // This is a good time to force garbage collection
             GC.Collect(2, GCCollectionMode.Forced, true);
         }
 
@@ -1149,35 +1186,23 @@ namespace UserInterface.Presenters
         /// <param name="leftTab">Should the file be opened in the left tabset?</param>
         public void Import(string fileName)
         {
+            // When an old .apsim file is imported, exceptions can occur when converting the file but the
+            // file is still converted i.e. exception isn't fatal. Catch these exceptions and show to user
+            // in the
+
+            List<Exception> importExceptions = new();
             try
             {
                 var importer = new Importer();
-                importer.ProcessFile(fileName);
+                importer.ProcessFile(fileName, e => { importExceptions.Add(e); });
             }
             catch (Exception err)
             {
                 throw new Exception("Error during Import: " + err.Message);
             }
-        }
-
-        /// <summary>
-        /// Open a tab which shows a list of jobs submitted to the cloud.
-        /// </summary>
-        /// <param name="sender">Sender object.</param>
-        /// <param name="e">Event Arguments.</param>
-        public void OnViewCloudJobs(object sender, EventArgs e)
-        {
-            try
-            {
-                bool onLeftTabControl = view.IsControlOnLeft(sender);
-                // Clear the message window
-                view.ShowMessage(" ", MessageType.Information);
-                CreateNewTab("View Cloud Jobs", null, onLeftTabControl, "ApsimNG.Resources.Glade.CloudJobView.glade", "UserInterface.Presenters.CloudJobPresenter");
-            }
-            catch (Exception err)
-            {
-                ShowError(err);
-            }
+            string importExceptionsAsString = importExceptions.Join(Environment.NewLine);
+            if (!string.IsNullOrEmpty(importExceptionsAsString))
+                ShowMessage(importExceptionsAsString, Simulation.MessageType.Warning);
         }
 
         /// <summary>
@@ -1256,7 +1281,7 @@ namespace UserInterface.Presenters
         {
             try
             {
-                int version = Models.Core.ApsimFile.Converter.LatestVersion;
+                int version = FileFormat.JSONVersion;
                 ClearStatusPanel();
                 string apsimx = PathUtilities.GetAbsolutePath("%root%", null);
                 string resources = Path.Combine(apsimx, "Models", "Resources");
@@ -1269,12 +1294,14 @@ namespace UserInterface.Presenters
                         throw new FileNotFoundException(string.Format("Unable to upgrade {0}: file does not exist.", file));
 
                     // Run the converter.
-                    string contents = File.ReadAllText(file);
-                    var converter = Converter.DoConvert(contents, version, file);
-                    if (converter.DidConvert)
-                        File.WriteAllText(file, converter.Root.ToString());
-                    view.ShowMessage(string.Format("Successfully upgraded {0} to version {1}.", file, version), MessageType.Information, false);
+                    var response = FileFormat.ReadFromFileAndReturnConvertState<Simulations>(file);
+                    if (response.didConvert)
+                    {
+                        File.WriteAllText(file, response.json.ToString());
+                        view.ShowMessage(string.Format("Successfully upgraded {0} to version {1}.", file, version), MessageType.Information, false);
+                    }
                 }
+                APSIM.Documentation.TestUtilities.GenerateComparisonJSONs();
                 view.ShowMessage("Successfully upgraded all files.", MessageType.Information);
             }
             catch (Exception err)
@@ -1323,14 +1350,14 @@ namespace UserInterface.Presenters
             e.AllowClose = this.AllowClose();
             if (e.AllowClose)
             {
-                Utility.Configuration.Settings.SplitScreenPosition = (int)MathF.Round((float)this.view.SplitScreenPosition / (float)this.view.WindowSize.Width);
-                Utility.Configuration.Settings.MainFormLocation = this.view.WindowLocation;
-                Utility.Configuration.Settings.MainFormSize = this.view.WindowSize;
-                Utility.Configuration.Settings.MainFormMaximized = this.view.WindowMaximised;
-                Utility.Configuration.Settings.StatusPanelHeight = (double)this.view.StatusPanelPosition / (double)this.view.PanelHeight;
+                Configuration.Settings.SplitScreenPosition = (int)MathF.Round((float)this.view.SplitScreenPosition / (float)this.view.WindowSize.Width);
+                Configuration.Settings.MainFormLocation = this.view.WindowLocation;
+                Configuration.Settings.MainFormSize = this.view.WindowSize;
+                Configuration.Settings.MainFormMaximized = this.view.WindowMaximised;
+                Configuration.Settings.StatusPanelHeight = (int)(((double)this.view.StatusPanelPosition / (double)this.view.PanelHeight) * 100);
                 if (treeWidth > 0)
-                    Utility.Configuration.Settings.TreeSplitScreenPosition = (int)MathF.Round(((float)treeWidth / (float)this.view.WindowSize.Width) * 100);
-                Utility.Configuration.Settings.Save();
+                    Configuration.Settings.TreeSplitScreenPosition = (int)MathF.Round(((float)treeWidth / (float)this.view.WindowSize.Width) * 100);
+                Configuration.Settings.Save();
             }
         }
 
@@ -1343,5 +1370,57 @@ namespace UserInterface.Presenters
         {
             ShowError(args.Error);
         }
+
+
+        /// <summary>
+        /// Populate the most recently used files list view.
+        /// </summary>
+        private void PopulateMRUList()
+        {
+            view.StartPage1.List.Values = Configuration.Settings.MruList.Select(f => f.FileName).ToArray();
+        }
+
+        /// <summary> Invoked when the user clicks the 'GitHub' button.</summary>
+        /// <param name="sender">Sender object.</param> 
+        /// <param name="args">Event arguments.</param>
+        /// <remarks>Opens the GitHub repository in the default web browser.</remarks>
+        private void OnGitHubBtnPressed(object sender, EventArgs args)
+        {
+            OpenUrl("https://github.com/APSIMInitiative/ApsimX");
+        }
+
+        /// <summary>
+        /// Invoked when the user clicks the 'Discussions' button.
+        /// </summary>
+        /// <param name="sender">Sender object.</param>
+        /// <param name="args">Event arguments.</param>
+        /// <remarks>Opens the ApsimX discussions page in the default web browser.</remarks>
+        private void OnDiscussionBtnPressed(object sender, EventArgs args)
+        {
+            OpenUrl("https://github.com/APSIMInitiative/ApsimX/discussions");
+        }
+
+        /// <summary>
+        /// Invoked when the user clicks the 'Documentation' button.
+        /// </summary>
+        /// <param name="sender">Sender object.</param>
+        /// <param name="args">Event arguments.</param>
+        /// <remarks>Opens the ApsimX Model documentation page in the default web browser.</remarks>
+        private void OnModelDocsBtnPressed(object sender, EventArgs args)
+        {
+            OpenUrl("https://docs.apsim.info");
+        }
+
+
+        /// <summary>
+        /// Open the specified URL in the user's default web browser.
+        /// </summary>
+        /// <param name="url">The URL to open.</param>
+        static void OpenUrl(string url)
+        {
+            ProcessUtilities.ProcessStart(url);
+        }
+
+
     }
 }

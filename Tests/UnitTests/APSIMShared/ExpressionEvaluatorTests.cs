@@ -47,14 +47,16 @@ namespace UnitTests.APSIMShared
         [TestCase("floor(2.99)", 2)]
         [TestCase("ceil(3.1)", 4)]
         [TestCase("ceiling(2.678)", 3)]
+        [TestCase("divide(1, 0)", 0)]
+        [TestCase("divide(1, 0, 2)", 2)]
         public void TestExpression(string expression, double value)
         {
             ExpressionEvaluator parser = new ExpressionEvaluator();
             parser.Parse(expression);
             parser.Infix2Postfix();
             parser.EvaluatePostfix();
-            Assert.False(parser.Error);
-            Assert.AreEqual(value, parser.Result, tolerance);
+            Assert.That(parser.Error, Is.False);
+            Assert.That(parser.Result, Is.EqualTo(value).Within(tolerance));
         }
 
         /// <summary>
@@ -86,16 +88,16 @@ namespace UnitTests.APSIMShared
 
             // blech
             List<Symbol> variables = parser.Variables;
-            Assert.AreEqual(1, variables.Count, "Expression must have exactly 1 symbol");
+            Assert.That(variables.Count, Is.EqualTo(1), "Expression must have exactly 1 symbol");
             Symbol symbol = variables[0];
             symbol.m_values = inputs;
             variables[0] = symbol;
             parser.Variables = variables;
 
             parser.EvaluatePostfix();
-            Assert.False(parser.Error);
+            Assert.That(parser.Error, Is.False);
 
-            Assert.AreEqual(value, parser.Result, tolerance);
+            Assert.That(parser.Result, Is.EqualTo(value).Within(tolerance));
         }
 
         [Test]
@@ -149,19 +151,18 @@ namespace UnitTests.APSIMShared
             else
             {
                 symbol = variables.FirstOrDefault(v => v.m_name == "x");
-                Assert.NotNull(symbol);
             }
             symbol.m_values = inputs;
             variables[0] = symbol;
             parser.Variables = variables;
 
             parser.EvaluatePostfix();
-            Assert.False(parser.Error);
+            Assert.That(parser.Error, Is.False);
 
-            Assert.NotNull(parser.Results, $"ExpressionEvaluator returned a scalar for {expression}");
-            Assert.AreEqual(inputs.Length, parser.Results.Length);
+            Assert.That(parser.Results, Is.Not.Null, $"ExpressionEvaluator returned a scalar for {expression}");
+            Assert.That(parser.Results.Length, Is.EqualTo(inputs.Length));
             for (uint i = 0; i < inputs.Length; i++)
-                Assert.AreEqual(func(inputs[i]), parser.Results[i], tolerance, $"{expression.Replace("(x)", $"({inputs[i]})")}: incorrect return value");
+                Assert.That(parser.Results[i], Is.EqualTo(func(inputs[i])).Within(tolerance), $"{expression.Replace("(x)", $"({inputs[i]})")}: incorrect return value");
         }
     }
 }

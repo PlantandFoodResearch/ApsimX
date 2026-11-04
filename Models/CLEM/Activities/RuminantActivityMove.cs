@@ -13,7 +13,6 @@ namespace Models.CLEM.Activities
 {
     /// <summary>Ruminant moving activity</summary>
     /// <summary>This activity moves specified ruminants to a given pasture</summary>
-    /// <version>1.0</version>
     [Serializable]
     [ViewName("UserInterface.Views.PropertyView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
@@ -21,9 +20,11 @@ namespace Models.CLEM.Activities
     [ValidParent(ParentType = typeof(ActivitiesHolder))]
     [ValidParent(ParentType = typeof(ActivityFolder))]
     [Description("Define the location (pastures) of specified individuals (move) and assign location at the start of the simulation")]
+    [Version(1, 0, 3, "Includes ability to select timing of activity within the time-step")]
     [Version(1, 0, 2, "Now allows multiple RuminantFilterGroups to identify individuals to be moved")]
     [Version(1, 0, 1, "")]
     [HelpUri(@"Content/Features/Activities/Ruminant/RuminantMove.htm")]
+    [MinimumTimeStepPermitted(TimeStepTypes.Daily)]
     public class RuminantActivityMove: CLEMRuminantActivityBase, IHandlesActivityCompanionModels
     {
         private int numberToDo;
@@ -31,6 +32,7 @@ namespace Models.CLEM.Activities
         private string pastureName = "";
         private IEnumerable<Ruminant> uniqueIndividuals;
         private IEnumerable<RuminantGroup> filterGroups;
+        [Link] readonly CLEMEvents events = null;
 
         /// <summary>
         /// Managed pasture to move to
@@ -53,6 +55,13 @@ namespace Models.CLEM.Activities
         [Description("Move sucklings with mother")]
         [Required]
         public bool MoveSucklings { get; set; }
+
+        /// <summary>
+        /// The position within time-step to perform the move.
+        /// </summary>
+        [Description("Within time step timing of move")]
+        [Required]
+        public WithinTimeStepTimingStyle TimeStepTiming { get; set; } = WithinTimeStepTimingStyle.Late;
 
         /// <inheritdoc/>
         public override LabelsForCompanionModels DefineCompanionModelLabels(string type)
@@ -88,16 +97,33 @@ namespace Models.CLEM.Activities
             this.InitialiseHerd(true, true);
             filterGroups = GetCompanionModelsByIdentifier<RuminantGroup>(true, false);
 
+            // activity is performed depends on the within time step timing style
+            this.AllocationStyle = ResourceAllocationStyle.Manual;
+
             // link to graze food store type (pasture) to move to
             // "Not specified" is general yards.
             pastureName = "";
             if (ManagedPastureName.StartsWith("Not specified"))
+            {
                 pastureName = "";
+            }
             else
+            {
                 pastureName = ManagedPastureName.Split('.')[1];
+            }
+        }
+
+        /// <summary>An event handler to allow us to initialise ourselves.</summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        [EventSubscribe("CLEMInitialiseActivity")]
+        private void OnFinalInitialise(object sender, EventArgs e)
+        {
+            // moved to FinalInitialise so that validation of setup can occur before performed.
 
             if (PerformAtStartOfSimulation)
             {
+                Status = ActivityStatus.NotNeeded;
                 RequestResourcesForTimestep();
                 PerformTasksForTimestep();
                 if (numberToDo > 0)
@@ -109,12 +135,42 @@ namespace Models.CLEM.Activities
         }
 
         /// <inheritdoc/>
+        [EventSubscribe("CLEMPreFinalise")]
+        protected void OnCLEMAnimalMarkLate(object sender, EventArgs e)
+        {
+            if (TimeStepTiming == WithinTimeStepTimingStyle.Late)
+            {
+                ManageActivityResourcesAndTasks();
+            }
+        }
+
+        /// <inheritdoc/>
+        [EventSubscribe("CLEMGetResourcesRequired")]
+        protected override void OnGetResourcesPerformActivity(object sender, EventArgs e)
+        {
+            if (TimeStepTiming == WithinTimeStepTimingStyle.Normal)
+            {
+                ManageActivityResourcesAndTasks();
+            }
+        }
+
+        /// <inheritdoc/>
+        [EventSubscribe("CLEMDoCutAndCarry")]
+        protected void OnCLEMAnimalMarkEarly(object sender, EventArgs e)
+        {
+            if (TimeStepTiming == WithinTimeStepTimingStyle.Early)
+            {
+                ManageActivityResourcesAndTasks();
+            }
+        }
+
+        /// <inheritdoc/>
         public override List<ResourceRequest> RequestResourcesForTimestep(double argument = 0)
         {
             numberToDo = 0;
             numberToSkip = 0;
             IEnumerable<Ruminant> herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.AllOnFarm).Where(a => a.Location != pastureName);
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
             numberToDo = uniqueIndividuals?.Count() ?? 0;
 
             // provide updated measure for companion models
@@ -168,32 +224,17 @@ namespace Models.CLEM.Activities
 
                     // check if sucklings are to be moved with mother
                     if (MoveSucklings && ruminant is RuminantFemale)
-                        // check if mother with sucklings
+                    {
                         foreach (var suckling in (ruminant as RuminantFemale).SucklingOffspringList)
+                        {
                             suckling.Location = pastureName;
+                        }
+                    }
 
                     moved++;
                 }
-                SetStatusSuccessOrPartial(moved != numberToDo);
+                SetStatusSuccessOrPartial(events.IntervalIndex >= 0 && moved > 0 && moved != numberToDo);
             }
         }
-
-        #region descriptive summary
-
-        /// <inheritdoc/>
-        public override string ModelSummary()
-        {
-            using (StringWriter htmlWriter = new StringWriter())
-            {
-                htmlWriter.Write($"\r\n<div class=\"activityentry\">Move individuals to {DisplaySummaryResourceTypeSnippet(ManagedPastureName, nullGeneralYards: true)}");
-                if (MoveSucklings)
-                    htmlWriter.Write(" moving sucklings with mother");
-                htmlWriter.Write(".</div>");
-                if (PerformAtStartOfSimulation)
-                    htmlWriter.Write("\r\n<div class=\"activityentry\">These individuals will be located on the specified pasture at startup</div>");
-                return htmlWriter.ToString(); 
-            }
-        } 
-        #endregion
     }
 }

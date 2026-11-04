@@ -10,7 +10,7 @@
       "Children": [
         {
           "$type": "Models.Weather, Models",
-          "FileName": "%root%\\Examples\\WeatherFiles\\lincoln.met",
+          "FileName": "%root%/Examples/WeatherFiles/NZ_Lincoln.met",
           "ExcelWorkSheetName": "",
           "Name": "Weather",
           "Children": [],
@@ -625,7 +625,6 @@
     },
     {
       "$type": "Models.Storage.DataStore, Models",
-      "useFirebird": false,
       "CustomFileName": null,
       "Name": "DataStore",
       "Children": [],

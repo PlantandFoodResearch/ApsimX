@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using APSIM.Core;
 using APSIM.Shared.Utilities;
 using Models.Core;
 
@@ -54,7 +55,7 @@ namespace Models.Functions
         private void OnStartOfDay(object sender, EventArgs e)
         {
             if (ChildFunctions == null)
-                ChildFunctions = FindAllChildren<IFunction>().ToList();
+                ChildFunctions = Node.FindChildren<IFunction>().ToList();
 
             if (DateUtilities.WithinDates(StartDate, clock.Today, EndDate))
             {
@@ -71,6 +72,8 @@ namespace Models.Functions
             //Zero value if today is reset date
             if (DateUtilities.WithinDates(ResetDate, clock.Today, ResetDate))
                 AccumulatedValue = 0;
+
+            FunctionUtilities.ValidateFunctionChildren(Node);
         }
 
 

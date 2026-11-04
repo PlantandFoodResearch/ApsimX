@@ -5,7 +5,7 @@ namespace Models.Surface
 {
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     public class SurfOrganicMatterType
@@ -60,6 +60,27 @@ namespace Models.Surface
             this.name = name;
             OrganicMatterType = type;
         }
+
+        /// <summary>
+        /// Remove a fraction of the material.
+        /// </summary>
+        /// <param name="fIncorp">The fraction to remove.</param>
+        /// <returns>The amount removed.</returns>
+        internal OMFractionType Remove(double fIncorp)
+        {
+            OMFractionType removed = new();
+            for (int pool = 0; pool < SurfaceOrganicMatter.maxFr; pool++)
+            {
+                var removedFromPool = Lying[pool].Remove(fIncorp);
+                removed.Add(removedFromPool);
+
+                removedFromPool = Standing[pool].Remove(fIncorp);
+                removed.Add(removedFromPool);
+            }
+
+            return removed;
+        }
+
     }
 
     /// <summary>
@@ -67,6 +88,9 @@ namespace Models.Surface
     /// </summary>
     public class ResidueCanopy : ICanopy
     {
+        /// <summary>Canopy type identifier.</summary>
+        public string CanopyType { get; set; } = "Residue";
+
         /// <summary>Albedo.</summary>
         public double Albedo { get; set; }
 
@@ -122,6 +146,5 @@ namespace Models.Surface
             PotentialEP = 0;
             WaterDemand = 0;
         }
-
     }
 }

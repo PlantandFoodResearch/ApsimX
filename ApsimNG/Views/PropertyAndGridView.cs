@@ -1,7 +1,6 @@
 using Gtk;
 using System;
-using UserInterface.Interfaces;
-using Utility;
+using APSIMNG.Utility;
 
 namespace UserInterface.Views
 {
@@ -21,7 +20,7 @@ namespace UserInterface.Views
             PropertiesView = new PropertyView(owner);
             Grid = new ContainerView(owner);
 
-            VPaned panel = new VPaned();
+            Paned panel = new Paned(Orientation.Vertical);
             mainWidget = panel;
             panel.Pack1((PropertiesView as ViewBase).MainWidget, true, false);
             panel.Pack2((Grid as ViewBase).MainWidget, true, false);

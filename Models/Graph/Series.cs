@@ -4,6 +4,8 @@ using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using APSIM.Core;
+using APSIM.Numerics;
 using APSIM.Shared.Graphing;
 using APSIM.Shared.Utilities;
 using Models.Core;
@@ -19,8 +21,12 @@ namespace Models
     [ViewName("UserInterface.Views.SeriesView")]
     [PresenterName("UserInterface.Presenters.SeriesPresenter")]
     [Serializable]
-    public class Series : Model, IGraphable
+    public class Series : Model, IGraphable, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
         /// <summary>Constructor for a series</summary>
         public Series()
         {
@@ -176,7 +182,7 @@ namespace Models
                         if (seriesDefinitions.Count == 0)
                             seriesDefinitions = CreateDefinitionsFromFieldInTable(reader, checkpointName, colourModifier, markerModifier, varyByFieldNames, inScopeSimulationNames);
 
-                        // Paint all definitions. 
+                        // Paint all definitions.
                         var painter = GetSeriesPainter();
                         foreach (var seriesDefinition in seriesDefinitions)
                             painter.Paint(seriesDefinition);
@@ -189,7 +195,7 @@ namespace Models
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="reader">A storage reader.</param>
         /// <param name="simulationDescriptions">A list of simulation descriptions.</param>
@@ -200,7 +206,7 @@ namespace Models
                                                  List<string> simulationFilter = null)
         {
             // We might have child models that want to add to our series definitions e.g. regression.
-            foreach (IGraphable graphable in FindAllChildren<IGraphable>())
+            foreach (IGraphable graphable in Structure.FindChildren<IGraphable>())
             {
                 try
                 {
@@ -221,7 +227,7 @@ namespace Models
         public IEnumerable<IAnnotation> GetAnnotations()
         {
             // We might have child models that wan't to add to the annotations e.g. regression.
-            return FindAllChildren<IGraphable>().Where(g => g.Enabled).SelectMany(g => g.GetAnnotations());
+            return Structure.FindChildren<IGraphable>().Where(g => g.Enabled).SelectMany(g => g.GetAnnotations());
         }
 
         /// <summary>Return a list of extra fields that the definition should read.</summary>
@@ -261,9 +267,9 @@ namespace Models
 
             foreach (var combination in MathUtilities.AllCombinationsOf(validValuesForEachVaryByField.ToArray(), reverse: true))
             {
-                var descriptors = new List<SimulationDescription.Descriptor>();
+                var descriptors = new List<SimulationDescriptor>();
                 for (int i = 0; i < combination.Count; i++)
-                    descriptors.Add(new SimulationDescription.Descriptor(varyByThatExistInTable[i],
+                    descriptors.Add(new SimulationDescriptor(varyByThatExistInTable[i],
                                                                          combination[i]));
                 definitions.Add(new SeriesDefinition(this, checkpointName, colourModifier, markerModifier, inScopeSimulationNames, Filter, descriptors));
             }
@@ -311,7 +317,7 @@ namespace Models
             {
                 // Determine the descriptors to pass to the new definition that will
                 // be created below. We only want to pass the 'vary by' descriptors.
-                var descriptorsForDefinition = new List<SimulationDescription.Descriptor>();
+                var descriptorsForDefinition = new List<SimulationDescriptor>();
                 foreach (var descriptor in simulationDescription.Descriptors)
                 {
                     if (varyByFieldNames.Contains(descriptor.Name) || NeedsDescriptor(descriptor))
@@ -343,14 +349,14 @@ namespace Models
         /// Check if the given descriptor is needed by the series definition.
         /// </summary>
         /// <param name="descriptor">The descriptor to be checked.</param>
-        private bool NeedsDescriptor(SimulationDescription.Descriptor descriptor)
+        private bool NeedsDescriptor(SimulationDescriptor descriptor)
         {
             // We need a simulation name descriptor if any child event names
             // on graph components exist and require it.
             // todo: should probably add this into the IGraphable interface.
             if (descriptor.Name == "SimulationName")
             {
-                EventNamesOnGraph events = FindChild<EventNamesOnGraph>();
+                EventNamesOnGraph events = Node.FindChild<EventNamesOnGraph>();
                 if (events != null && !string.IsNullOrEmpty(events.SimulationName))
                     return true;
             }
@@ -377,7 +383,7 @@ namespace Models
             var newList = new List<SimulationDescription>();
             foreach (var simulationDescription in simulationDescriptions)
             {
-                var descriptors = new List<List<SimulationDescription.Descriptor>>();
+                var descriptors = new List<List<SimulationDescriptor>>();
                 var descriptorGroups = simulationDescription.Descriptors.GroupBy(d => d.Name);
                 foreach (var group in descriptorGroups)
                     descriptors.Add(group.ToList());
@@ -460,7 +466,7 @@ namespace Models
             {
                 painter = new SequentialPainter
                    (this, FactorToVaryLines,
-                    Enum.GetValues(typeof(LineType)).Length - 1, // minus 1 to avoid None type   
+                    Enum.GetValues(typeof(LineType)).Length - 1, // minus 1 to avoid None type
                     SeriesDefinition.SetLineType);
             }
             else if (FactorToVaryMarkers != null)

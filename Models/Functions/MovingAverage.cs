@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using APSIM.Shared.Documentation;
+using APSIM.Core;
+using APSIM.Numerics;
 using APSIM.Shared.Utilities;
 using Models.Core;
 using Models.PMF.Phen;
@@ -23,6 +24,7 @@ namespace Models.Functions
 
         /// <summary>The stage to start calculating moving average</summary>
         [Description("The stage to start calculating moving average")]
+        [Display(Type = DisplayType.CropStageName)]
         public string StageToStartMovingAverage { get; set; }
 
 
@@ -41,13 +43,19 @@ namespace Models.Functions
             get
             {
                 IFunction value;
-                IEnumerable<IFunction> ChildFunctions = FindAllChildren<IFunction>();
+                IEnumerable<IFunction> ChildFunctions = Node.FindChildren<IFunction>();
                 if (ChildFunctions.Count() == 1)
                     value = ChildFunctions.First();
                 else
                     throw new ApsimXException(this, "Moving average function " + this.Name + " must only have one child node.");
                 return value;
             }
+        }
+
+        [EventSubscribe("StartOfSimulation")]
+        private void OnStartOfSimulation(object sender, EventArgs e)
+        {
+            FunctionUtilities.ValidateFunctionChildren(Node);
         }
 
 
@@ -71,6 +79,7 @@ namespace Models.Functions
             //Put the first data member into the list on the day that moving average is to start being calculated
             if (phaseChange.StageName == StageToStartMovingAverage)
             {
+                AccumulatedValues.Clear();
                 AccumulatedValues.Add(ChildFunction.Value());
                 InitialisedToday = true;
                 Calculate = true;
@@ -100,15 +109,6 @@ namespace Models.Functions
             if (NumberOfDays == 0)
                 throw new ApsimXException(this, "Number of days for moving average cannot be zero in function " + this.Name);
             return MathUtilities.Average(AccumulatedValues);
-        }
-
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
-        {
-            if (FindAllChildren<IFunction>().Count() == 1)
-                yield return new Paragraph($"{Name} is calculated from a moving average of {ChildFunction.Name} over a series of {NumberOfDays} days.");
         }
     }
 }

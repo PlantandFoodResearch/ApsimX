@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using APSIM.Shared.Documentation;
-using APSIM.Shared.Utilities;
+using APSIM.Core;
 using Models.Core;
-using Models.Functions;
 using Newtonsoft.Json;
 
 namespace Models.PMF.Phen
@@ -17,25 +14,23 @@ namespace Models.PMF.Phen
     [ViewName("UserInterface.Views.PropertyView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
     [ValidParent(ParentType = typeof(Phenology))]
-    public class EmergingPhase : Model, IPhase, IPhaseWithTarget
+    public class EmergingPhase : Model, IPhase, IPhaseWithTarget, IPhaseWithSetableCompletionDate
     {
-        // 1. Links
-        //----------------------------------------------------------------------------------------------------------------
-
-        [Link]
-        Phenology phenology = null;
 
         [Link]
         IClock clock = null;
 
-        [Link]
-        Plant plant = null;
-
         [Link(Type = LinkType.Child, ByName = true)]
         private IFunction target = null;
 
-        // 2. Public properties
-        //-----------------------------------------------------------------------------------------------------------------
+        [Link(Type = LinkType.Child, ByName = true)]
+        private IFunction thermalTime = null;
+
+        /// <summary>Fraction of phase that is complete (0-1).on yesterdays timestep</summary>
+        private double fractionCompleteYesterday; 
+
+        /// <summary>First date in this phase</summary>
+        private DateTime startDate;
 
         /// <summary>The phenological stage at the start of this phase.</summary>
         [Description("Start")]
@@ -47,20 +42,8 @@ namespace Models.PMF.Phen
 
         /// <summary>Is the phase emerged from the ground?</summary>
         [Description("Is the phase emerged?")]
-        public bool IsEmerged { get; set; } = true;
+        public bool IsEmerged { get; set; } = false;
 
-        /// <summary>Fraction of phase that is complete (0-1).</summary>
-        [JsonIgnore]
-        public double FractionComplete
-        {
-            get
-            {
-                if (Target == 0)
-                    return 1;
-                else
-                    return ProgressThroughPhase / Target;
-            }
-        }
 
         /// <summary>Thermal time target to end this phase.</summary>
         [JsonIgnore]
@@ -73,43 +56,43 @@ namespace Models.PMF.Phen
         [JsonIgnore]
         public double ProgressThroughPhase { get; set; }
 
-        /// <summary>
-        /// Date for emergence to occur.  null by default so model is used
-        /// </summary>
+        /// <summary>Data to progress.  Is empty by default.  If set by external model, phase will ignore its mechanisum and wait for the specified date to progress</summary>
         [JsonIgnore]
-        public string EmergenceDate { get; set; }
+        public string DateToProgress { get; set; } = "";
 
-        // 3. Public methods
-        //-----------------------------------------------------------------------------------------------------------------
+        /// <summary>Fraction of phase that is complete (0-1).</summary>
+        [JsonIgnore]
+        public double FractionComplete
+        {
+            get
+            {
+                return Phenology.FractionComplete(DateToProgress, ProgressThroughPhase, Target, startDate, clock.Today, fractionCompleteYesterday);
+            }
+        }
 
         /// <summary>Computes the phenological development during one time-step.</summary>
         /// <remarks>Returns true when target is met.</remarks>
         public bool DoTimeStep(ref double propOfDayToUse)
         {
-            bool proceedToNextPhase = false;
-            TTForTimeStep = phenology.thermalTime.Value() * propOfDayToUse;
-            if (EmergenceDate != null)
+
+            if (!String.IsNullOrEmpty(DateToProgress))
             {
-                Target = (DateUtilities.GetDate(EmergenceDate, clock.Today) - plant.SowingDate).TotalDays;
-                ProgressThroughPhase += 1;
-                if (DateUtilities.DayMonthIsEqual(EmergenceDate, clock.Today))
+                return Phenology.checkIfCompletionDate(ref startDate, clock.Today, DateToProgress, ref propOfDayToUse);
+            }
+
+            bool proceedToNextPhase = false;
+            TTForTimeStep = thermalTime.Value() * propOfDayToUse;
+            ProgressThroughPhase += TTForTimeStep;
+            fractionCompleteYesterday = FractionComplete;
+            if (ProgressThroughPhase > Target)
+            {
+                if (TTForTimeStep > 0.0)
                 {
                     proceedToNextPhase = true;
+                    propOfDayToUse = (ProgressThroughPhase - Target) / TTForTimeStep;
+                    TTForTimeStep *= (1 - propOfDayToUse);
                 }
-            }
-            else
-            {
-                ProgressThroughPhase += TTForTimeStep;
-                if (ProgressThroughPhase > Target)
-                {
-                    if (TTForTimeStep > 0.0)
-                    {
-                        proceedToNextPhase = true;
-                        propOfDayToUse = (ProgressThroughPhase - Target) / TTForTimeStep;
-                        TTForTimeStep *= (1 - propOfDayToUse);
-                    }
-                    ProgressThroughPhase = Target;
-                }
+                ProgressThroughPhase = Target;
             }
             return proceedToNextPhase;
         }
@@ -120,7 +103,8 @@ namespace Models.PMF.Phen
             TTForTimeStep = 0;
             ProgressThroughPhase = 0;
             Target = 0;
-            EmergenceDate = null;
+            DateToProgress = null;
+            startDate = DateTime.MinValue;
         }
 
         // 4. Private method
@@ -142,24 +126,5 @@ namespace Models.PMF.Phen
             Target = target.Value();
         }
 
-        /// <summary>Document the model.</summary>
-        public override IEnumerable<ITag> Document()
-        {
-            // Write description of this class.
-            yield return new Paragraph($"This phase goes from {Start.ToLower()} to {End.ToLower()} and simulates time to {End.ToLower()} as a function of sowing depth. The *ThermalTime Target* for ending this phase is given by:");
-            yield return new Paragraph($"*Target* = *SowingDepth* x *ShootRate* + *ShootLag*");
-            yield return new Paragraph($"Where:");
-            yield return new Paragraph($"*SowingDepth* (mm) is sent from the manager with the sowing event.");
-
-            // Write memos.
-            foreach (var tag in DocumentChildren<Memo>())
-                yield return tag;
-
-            IFunction thermalTime = FindChild<IFunction>("ThermalTime");
-            yield return new Paragraph($"Progress toward emergence is driven by thermal time accumulation{(thermalTime == null ? "" : ", where thermal time is calculated as:")}");
-            if (thermalTime != null)
-                foreach (var tag in thermalTime.Document())
-                    yield return tag;
-        }
     }
 }

@@ -11,7 +11,7 @@ namespace Models.CLEM.Groupings
 {
     ///<summary>
     /// Provides a link to an existing ruminant group to identify individual ruminants
-    ///</summary> 
+    ///</summary>
     [Serializable]
     [ViewName("UserInterface.Views.PropertyView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
@@ -51,9 +51,9 @@ namespace Models.CLEM.Groupings
 
         private void GetAllRuminantGroupsAvailable()
         {
-            groupsAvailable = FindAncestor<Zone>().FindAllDescendants<RuminantGroup>().Where(a => a.Enabled);
+            var zone = Structure.FindParent<Zone>(recurse: true);
+            groupsAvailable = Structure.FindChildren<RuminantGroup>(relativeTo: zone, recurse: true).Where(a => a.Enabled);
         }
-
         private List<string> GetAllRuminantGroupNames()
         {
             GetAllRuminantGroupsAvailable();
@@ -63,7 +63,7 @@ namespace Models.CLEM.Groupings
         /// <summary>An event handler to allow us to initialise ourselves.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        [EventSubscribe("StartOfSimulation")]
+        [EventSubscribe("CLEMInitialise")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
             GetAllRuminantGroupsAvailable();
@@ -84,82 +84,24 @@ namespace Models.CLEM.Groupings
 
         #region validation
 
-        /// <summary>
-        /// Validate model
-        /// </summary>
-        /// <param name="validationContext"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var results = new List<ValidationResult>();
-
             if (linkedGroup is null)
             {
-                string[] memberNames = new string[] { "Linked filter group" };
-                string errorMsg = string.Empty;
+                string errorMsg;
                 if (ExistingGroupName is null)
+                {
                     errorMsg = "No existing filter group has been specified";
-                else
-                    errorMsg = $"The filter group [f={ExistingGroupName}] could not be found.{Environment.NewLine}Ensure the name matches the name of an enabled group in the simulation tree below the same ZoneCLEM";
-
-                results.Add(new ValidationResult(errorMsg, memberNames));
-            }
-            return results;
-        }
-        #endregion
-
-        #region descriptive summary
-
-        /// <inheritdoc/>
-        public override string ModelSummary()
-        {
-            return "";
-        }
-
-        /// <inheritdoc/>
-        public override string ModelSummaryClosingTags()
-        {
-            return "";
-        }
-
-        /// <inheritdoc/>
-        public override string ModelSummaryInnerOpeningTags()
-        {
-            return "";
-        }
-
-        /// <inheritdoc/>
-        public override string ModelSummaryInnerClosingTags()
-        {
-            return "";
-        }
-
-        /// <inheritdoc/>
-        public override string ModelSummaryOpeningTags()
-        {
-            using (StringWriter htmlWriter = new StringWriter())
-            {
-                htmlWriter.Write("<div class=\"filtername\">");
-                //if (!this.Name.Contains(this.GetType().Name.Split('.').Last()))
-                htmlWriter.Write($"{Name}");
-                if ((Identifier ?? "") != "")
-                    htmlWriter.Write($" - applies to {Identifier} and");
-                htmlWriter.Write($" linked to </div>");
-
-                var foundGroup = FindAncestor<Zone>().FindAllDescendants<RuminantGroup>().Where(a => a.Enabled).Cast<Model>().Where(a => $"{a.Parent.Name}.{a.Name}" == ExistingGroupName).FirstOrDefault() as RuminantGroup;
-                if (foundGroup != null)
-                    htmlWriter.Write(foundGroup.GetFullSummary(foundGroup, new List<string>(), ""));
+                }
                 else
                 {
-                    if ((ExistingGroupName ?? "") == "")
-                        htmlWriter.Write("<div class=\"errorbanner\">Linked RuminantGroup not specified</div>");
-                    else
-                        htmlWriter.Write($"<div class=\"errorbanner\">Linked RuminantGroup <span class=\"setvalue\">{ExistingGroupName}</span> not found</div>");
+                    errorMsg = $"The filter group [f={ExistingGroupName}] could not be found.{Environment.NewLine}Ensure the name matches the name of an enabled group in the simulation tree below the same ZoneCLEM";
                 }
-                return htmlWriter.ToString();
+
+                yield return new ValidationResult(errorMsg, new string[] { "Linked filter group" });
             }
         }
-
         #endregion
     }
 }

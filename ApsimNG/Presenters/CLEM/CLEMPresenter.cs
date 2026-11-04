@@ -48,7 +48,8 @@ namespace UserInterface.Presenters
                 {
                     if (model is ZoneCLEM)
                     {
-                        object newView = new MarkdownView(this.View as ViewBase);
+                        MarkdownView newView = new MarkdownView(this.View as ViewBase);
+                        newView.Refresh();
                         IPresenter messagePresenter = new MessagePresenter();
                         if (newView != null && messagePresenter != null)
                         {
@@ -83,7 +84,7 @@ namespace UserInterface.Presenters
                           BindingFlags.Instance
                           );
 
-                    // check if any category attribtes other than "*" fould and if so make this a PropertyCategoryPresenter
+                    // check if any category attributes other than "*" found and if so make this a PropertyCategoryPresenter
                     bool categoryAttributeFound = props.Where(prop => prop.IsDefined(typeof(CategoryAttribute), false) && (prop.GetCustomAttribute(typeof(CategoryAttribute)) as CategoryAttribute).Category != "*").Any();
                     if (categoryAttributeFound)
                     {
@@ -96,8 +97,7 @@ namespace UserInterface.Presenters
                         (props.Where(prop => prop.IsDefined(typeof(DescriptionAttribute), false)).Count() > 0))
                     {
                         object newView = Assembly.GetExecutingAssembly().CreateInstance(viewName, false, BindingFlags.Default, null, new object[] { this.View }, null, null);
-                        IPresenter propertyPresenter = Assembly.GetExecutingAssembly().CreateInstance(propPresenterName) as IPresenter;
-                        if (newView != null && propertyPresenter != null)
+                        if (newView != null && Assembly.GetExecutingAssembly().CreateInstance(propPresenterName) is IPresenter propertyPresenter)
                         {
                             this.View.AddTabView("Properties", newView);
                             propertyPresenter.Attach(model, newView, this.ExplorerPresenter);
@@ -117,7 +117,8 @@ namespace UserInterface.Presenters
                 //HTML Summary
                 try
                 {
-                    object newView = new MarkdownView(this.View as ViewBase);
+                    MarkdownView newView = new MarkdownView(this.View as ViewBase);
+                    newView.Refresh();
                     IPresenter summaryPresenter = new CLEMSummaryPresenter();
                     if (newView != null && summaryPresenter != null)
                     {
@@ -136,7 +137,8 @@ namespace UserInterface.Presenters
                     var versions = ReflectionUtilities.GetAttributes(model.GetType(), typeof(VersionAttribute), false);
                     if (versions.Count() > 0)
                     {
-                        object newView = new MarkdownView(this.View as ViewBase);
+                        MarkdownView newView = new MarkdownView(this.View as ViewBase);
+                        newView.Refresh();
                         IPresenter versionPresenter = new VersionsPresenter();
                         if (newView != null && versionPresenter != null)
                         {
@@ -159,11 +161,17 @@ namespace UserInterface.Presenters
                     if(ClemModel.SelectedTab == "Summary")
                     {
                         PresenterList.TryGetValue("Summary", out IPresenter selectedPresenter);
-                        (selectedPresenter as CLEMSummaryPresenter).Refresh();
+//                        (selectedPresenter as CLEMSummaryPresenter).Refresh();
                     }
+                    else if (ClemModel.SelectedTab == "Messages")
+                    {
+                        PresenterList.TryGetValue("Messages", out IPresenter selectedPresenter);
+                        (selectedPresenter as MessagePresenter).Refresh();
+                    }
+
                 }
 
-                if(ClemModel != null && ClemModel.SelectedTab is null && PresenterList.Count > 0)
+                if (ClemModel != null && ClemModel.SelectedTab is null && PresenterList.Count > 0)
                     if (PresenterList.FirstOrDefault().Value is IRefreshPresenter)
                         (PresenterList.FirstOrDefault().Value as IRefreshPresenter).Refresh(); 
             }
@@ -174,9 +182,12 @@ namespace UserInterface.Presenters
         /// <param name="e">Close arguments</param>
         internal void OnTabSelected(object sender, EventArgs e)
         {
+            // no clem model or selected tab has not changed
+            if (ClemModel == null)
+                return;
+
             // change tab name
-            if (ClemModel != null)
-                ClemModel.SelectedTab = (e as TabChangedEventArgs).TabName;
+            ClemModel.SelectedTab = (e as TabChangedEventArgs).TabName;
 
             string tabName = (e as TabChangedEventArgs).TabName;
             PresenterList.TryGetValue(tabName, out IPresenter selectedPresenter);

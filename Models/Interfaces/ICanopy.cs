@@ -8,6 +8,9 @@ namespace Models.Interfaces
     public interface ICanopy
     {
         /// <summary>Albedo.</summary>
+        string CanopyType { get; }
+
+        /// <summary>Albedo.</summary>
         double Albedo { get; }
 
         /// <summary>Gets or sets the gsmax.</summary>
@@ -44,7 +47,7 @@ namespace Models.Interfaces
         double WaterDemand { get; set; }
 
         /// <summary>Sets the light profile.</summary>
-        CanopyEnergyBalanceInterceptionlayerType[] LightProfile { set; }
+        CanopyEnergyBalanceInterceptionlayerType[] LightProfile { get;  set; }
     }
 
     /// <summary>This interface describes a model that has a list of canopies.</summary>
@@ -66,5 +69,11 @@ namespace Models.Interfaces
 
         ///  <summary>The amount of radiation on dead area</summary>
         public double AmountOnDead;
+
+        ///  <summary>The total amount of radiation on green area for the entire canopy</summary>
+        public double AmountOnGreenTotal;
+
+        ///  <summary>The total amount of radiation on dead area for the entire canopy</summary>
+        public double AmountOnDeadTotal;
     }
 }

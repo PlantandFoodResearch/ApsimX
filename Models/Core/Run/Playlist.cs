@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using APSIM.Core;
 using Models.Core;
 using Models.Factorial;
 using Newtonsoft.Json;
@@ -16,8 +17,13 @@ namespace Models
     [ViewName("UserInterface.Views.TextAndCodeView")]
     [PresenterName("UserInterface.Presenters.PlaylistPresenter")]
     [ValidParent(ParentType = typeof(Simulations))]
-    public class Playlist : Model
+    public class Playlist : Model, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
+        [Serializable]
         private class PlaylistPrevSearch
         {
             public string searchString = null;
@@ -32,9 +38,28 @@ namespace Models
         [JsonIgnore]
         private List<PlaylistPrevSearch> searchCache = new List<PlaylistPrevSearch>();
 
+        [JsonIgnore]
+        private string[] lastSearch = null;
+
         /// <summary>The Playlist text that is used for comparisions</summary>
         [Description("Text of the playlist")]
         public string Text { get; set; }
+
+        /// <summary>
+        /// Returns the last generated list of simulation names.
+        /// If that list has not been searched yet, this will generate the list.
+        /// </summary>
+        /// <returns>
+        /// An array of simulation and simulation variations names that were found during the last search.
+        /// Will return an empty array if no matches are found.
+        /// </returns>
+        public string[] GetListOfSimulations()
+        {
+            if (lastSearch == null)
+                return GenerateListOfSimulations();
+            else
+                return lastSearch;
+        }
 
         /// <summary>
         /// Returns the name of all simulations that match the text
@@ -45,19 +70,19 @@ namespace Models
         /// <param name="allSimulations">Optional: A list of all simulations to compare against</param>
         /// <param name="allExperiments">Optional: A list of all experiments to compare against</param>
         /// <returns>
-        /// An array of simulation and simulation variations names that match the text of this playlist. 
+        /// An array of simulation and simulation variations names that match the text of this playlist.
         /// Will return an empty array if no matches are found.
         /// </returns>
-        public string[] GetListOfSimulations(List<Simulation> allSimulations = null, List<Experiment> allExperiments = null)
+        public string[] GenerateListOfSimulations(List<Simulation> allSimulations = null, List<Experiment> allExperiments = null)
         {
             if (Simulations == null)
-                Simulations = this.FindAncestor<Simulations>();
+                Simulations = Structure.FindParent<Simulations>(relativeTo: this, recurse: true);
 
             if (allSimulations == null)
-                allSimulations = Simulations.FindAllDescendants<Simulation>().ToList();
+                allSimulations = Simulations.Node.FindChildren<Simulation>(recurse: true).ToList();
 
             if (allExperiments == null)
-                allExperiments = Simulations.FindAllDescendants<Experiment>().ToList();
+                allExperiments = Simulations.Node.FindChildren<Experiment>(recurse: true).ToList();
 
             Simulations = this.Parent as Simulations;
 
@@ -74,7 +99,7 @@ namespace Models
                 if (line.Contains(','))
                 {
                     parts = line.Split(',').ToList();
-                } 
+                }
                 else
                 {
                     parts.Add(line);
@@ -86,7 +111,7 @@ namespace Models
                     string cleanPart = cleanString(part);
 
                     string expression = cleanPart;
-                    
+
                     //convert our wildcard to regex symbol
                     expression = expression.Replace("*", "[\\s\\S]*");
                     expression = expression.Replace("#", ".");
@@ -110,7 +135,7 @@ namespace Models
                         {
                             if (regex.IsMatch(sim.Name.ToLower()))
                             {
-                                if (sim.FindAncestor<Experiment>() == null)//don't add if under experiment
+                                if (Structure.FindParent<Experiment>(relativeTo: sim, recurse: true) == null)//don't add if under experiment
                                 {
                                     if (names.Contains(sim.Name) == false)
                                     {
@@ -118,12 +143,12 @@ namespace Models
                                         resultsForThisPart.Add(sim.Name);
                                     }
                                 }
-                            }      
+                            }
                         }
 
                         foreach (Experiment exp in allExperiments)
                         {
-                            List<Core.Run.SimulationDescription> expNames = exp.GetSimulationDescriptions().ToList();
+                            List<Core.Run.SimulationDescription> expNames = exp.GetSimulationDescriptions(false).ToList();
                             //match experiment name
                             if (regex.IsMatch(exp.Name.ToLower()))
                             {
@@ -137,7 +162,7 @@ namespace Models
                                             resultsForThisPart.Add(expN.Name);
                                         }
                                     }
-                                }        
+                                }
                             }
                             else
                             {
@@ -162,7 +187,8 @@ namespace Models
                     }
                 }
             }
-            return names.ToArray();
+            lastSearch = names.ToArray();
+            return lastSearch;
         }
 
         /// <summary>
@@ -193,7 +219,7 @@ namespace Models
             output = output.Replace("\t", " ");
 
             foreach (char c in input)
-                if (char.IsLetter(c) || char.IsNumber(c) || c == '*' || c == '#' || c == ' ' || c == '_' || c == '-')
+                if (char.IsLetter(c) || char.IsNumber(c) || c == '*' || c == '#' || c == ' ' || c == '_' || c == '-' || c == '.')
                     output += c;
 
             //trim whitespace

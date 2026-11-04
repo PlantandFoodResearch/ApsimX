@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using APSIM.Shared.Documentation;
+using APSIM.Core;
 using Models.Core;
 using Models.PMF.Phen;
-using Models.PMF;
 
 namespace Models.Functions
 {
@@ -22,6 +20,7 @@ namespace Models.Functions
 
         /// <summary>The start stage name</summary>
         [Description("StartStageName")]
+        [Display(Type = DisplayType.CropStageName)]
         public string StartStageName { get; set; }
 
         /// <summary>The child function to return a delta for</summary>
@@ -38,8 +37,8 @@ namespace Models.Functions
             YesterdaysValue = 0;
         }
 
-        [EventSubscribe("DoDailyInitialisation")]
-        private void OnDoDailyInitialisation(object sender, EventArgs e)
+        [EventSubscribe("DoCatchYesterday")]
+        private void OnDoCatchYesterday(object sender, EventArgs e)
         {
              YesterdaysValue = Integral.Value();
         }
@@ -78,16 +77,9 @@ namespace Models.Functions
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         [EventSubscribe("StageWasReset")]
-        private void OnStageReset(object sender, EventArgs e)
+        private void OnStageReset(object sender, StageSetType e)
         {
             YesterdaysValue = Integral.Value();
-        }
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
-        {
-            yield return new Paragraph($"*{Name}* is the daily differential of");
         }
     }
 }

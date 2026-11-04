@@ -1,4 +1,6 @@
 ﻿using System;
+using APSIM.Core;
+using APSIM.Numerics;
 using APSIM.Shared.Utilities;
 using Models.Core;
 using Models.Interfaces;
@@ -19,14 +21,17 @@ namespace Models.Functions
         [Link]
         IPhysical physical = null;
 
+        [Link(Type = LinkType.Child, ByName = true)] 
+        IFunction CriticalAerationForDenitrification = null;
+
         /// <summary>Gets the value.</summary>
         /// <value>The value.</value>
         public double Value(int arrayIndex = -1)
         {
             if (arrayIndex == -1)
-                throw new Exception("Layer number must be provided to CERES Nitrification Model");
+                throw new Exception("Layer number must be provided to CERES Denitrification Water Factor Model");
 
-            double WF = MathUtilities.Divide(soilwater.SW[arrayIndex] - physical.DUL[arrayIndex], physical.SAT[arrayIndex] - physical.DUL[arrayIndex], 0.0);
+            double WF = MathUtilities.Divide(soilwater.SW[arrayIndex] - CriticalAerationForDenitrification.Value(arrayIndex), physical.SAT[arrayIndex] - CriticalAerationForDenitrification.Value(arrayIndex), 0.0);
             return MathUtilities.Bound(WF, 0, 1);
         }
 

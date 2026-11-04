@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using APSIM.Shared.Documentation;
 using Models.Core;
 using Models.Functions;
 using Models.Interfaces;
@@ -10,21 +9,31 @@ using Models.PMF.Interfaces;
 using Models.PMF.Organs;
 using Models.PMF.Phen;
 using Newtonsoft.Json;
+using APSIM.Core;
 
 namespace Models.PMF
 {
     /// <summary>
-    /// The model has been developed using the Plant Modelling Framework (PMF) of [brown_plant_2014]. This
-    /// new framework provides a library of plant organ and process submodels that can be coupled, at runtime, to construct a
+    /// The model has been developed using the Plant Modelling Framework (PMF) of [#brown_plant_2014]. This
+    /// framework provides a library of plant organ and process submodels that can be coupled, at runtime, to construct a
     /// model in much the same way that models can be coupled to construct a simulation.This means that dynamic composition
     /// of lower level process and organ classes(e.g.photosynthesis, leaf) into larger constructions(e.g.maize, wheat,
     /// sorghum) can be achieved by the model developer without additional coding.
     /// </summary>
     [ValidParent(ParentType = typeof(Zone))]
     [Serializable]
-    [ScopedModel]
-    public class Plant : Model, IPlant, IPlantDamage
+    public class Plant : Model, IPlant, IPlantDamage, IScopedModel, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
+        /// <summary> The parent simulation </summary>
+        [JsonIgnore]
+        [Link(Type = LinkType.Ancestor)]
+        private Simulation simulation = null;
+
+
         /// <summary>The summary</summary>
         [Link]
         private ISummary summary = null;
@@ -53,7 +62,7 @@ namespace Models.PMF
 
         /// <summary>The structure</summary>
         [Link(IsOptional = true)]
-        public IStructure structure = null;
+        public Models.PMF.Struct.Structure structure = null;
 
         /// <summary>The leaf</summary>
         [Link(IsOptional = true)]
@@ -90,7 +99,7 @@ namespace Models.PMF
         {
             get
             {
-                return new SortedSet<string>(FindAllDescendants<Cultivar>().SelectMany(c => c.GetNames())).ToArray();
+                return new SortedSet<string>(Structure.FindChildren<Cultivar>(relativeTo: this, recurse: true).SelectMany(c => c.GetNames())).ToArray();
             }
         }
 
@@ -112,7 +121,7 @@ namespace Models.PMF
             set
             {
                 double InitialPopn = plantPopulation;
-                if (IsAlive && value <= 0.01)
+                if (IsAlive && value <= 0.001)
                     EndCrop();  // the plant is dying due to population decline
                 else
                 {
@@ -173,7 +182,7 @@ namespace Models.PMF
             get
             {
                 double cover = 0;
-                foreach (ICanopy canopy in this.FindAllDescendants<ICanopy>())
+                foreach (ICanopy canopy in Structure.FindChildren<ICanopy>(recurse: true))
                     cover = 1 - (1.0 - cover) * (1.0 - canopy.CoverGreen);
                 return cover;
             }
@@ -188,7 +197,7 @@ namespace Models.PMF
             get
             {
                 double cover = 0;
-                foreach (ICanopy canopy in this.FindAllDescendants<ICanopy>())
+                foreach (ICanopy canopy in Structure.FindChildren<ICanopy>(recurse: true))
                     cover = 1 - (1.0 - cover) * (1.0 - canopy.CoverTotal);
                 return cover;
             }
@@ -215,6 +224,10 @@ namespace Models.PMF
             }
         }
 
+        /// <summary>List of zones with conditions to specify if roots grow there or not</summary>
+        [JsonIgnore]
+        public Dictionary<string, bool> ZonesToGrowRootsIn = null;
+
         /// <summary>The sw uptake</summary>
         public IReadOnlyList<double> WaterUptake => Root == null ? null : Root.SWUptakeLayered;
 
@@ -225,8 +238,10 @@ namespace Models.PMF
         public event EventHandler Sowing;
         /// <summary>Occurs when a plant is sown.</summary>
         public event EventHandler<SowingParameters> PlantSowing;
-        /// <summary>Occurs when a plant is about to be harvested.</summary>
+        /// <summary>Occurs when a plant is about to be harvested so that values can be reported.</summary>
         public event EventHandler Harvesting;
+        /// <summary>Occurs when a plant is harvested, this event should trigger functions that remove biomass from organs and reset values</summary>
+        public event EventHandler<HarvestingParameters> PostHarvesting;
         /// <summary>Occurs when a plant is ended via EndCrop.</summary>
         public event EventHandler PlantEnding;
         /// <summary>Occurs when a plant is about to flower</summary>
@@ -244,6 +259,20 @@ namespace Models.PMF
             IEnumerable<string> duplicates = CultivarNames.GroupBy(x => x).Where(g => g.Count() > 1).Select(x => x.Key);
             if (duplicates.Count() > 0)
                 throw new Exception("Duplicate Names in " + this.Name + " has duplicate cultivar names " + string.Join(",", duplicates));
+            List<Zone> zones = Structure.FindAll<Zone>(relativeTo: simulation).ToList();
+            ZonesToGrowRootsIn = new Dictionary<string, bool>();
+            foreach (Zone z in zones)
+                ZonesToGrowRootsIn[z.Name] = true;
+        }
+
+        /// <summary>
+        /// Simulation is now completed. Make sure that we undo any commands. i.e. reset
+        /// back to default state.
+        /// </summary>
+        [EventSubscribe("Completed")]
+        private void OnSimulationCompleted(object sender, EventArgs e)
+        {
+            Clear();
         }
 
         /// <summary>Called when [phase changed].</summary>
@@ -307,8 +336,8 @@ namespace Models.PMF
             if (SowingData.TilleringMethod < -1 || SowingData.TilleringMethod > 1)
                 throw new Exception("Invalid TilleringMethod set in sowingData.");
 
-            if (SowingData.TilleringMethod != 0 && SowingData.FTN > 0.0)
-                throw new Exception("Cannot set a FertileTillerNumber when TilleringMethod is not set to FixedTillering.");
+            // if (SowingData.TilleringMethod != 0 && SowingData.FTN > 0.0)
+            //    throw new Exception("Cannot set a FertileTillerNumber when TilleringMethod is not set to FixedTillering.");
 
             if (rowConfig == 0)
             {
@@ -346,9 +375,11 @@ namespace Models.PMF
                 this.Population = SowingData.Population = seeds;
 
             // Find cultivar and apply cultivar overrides.
-            cultivarDefinition = FindAllDescendants<Cultivar>().FirstOrDefault(c => c.IsKnownAs(SowingData.Cultivar));
+            cultivarDefinition = Structure.FindChildren<Cultivar>(recurse: true).FirstOrDefault(c => c.IsKnownAs(SowingData.Cultivar));
             if (cultivarDefinition == null)
-                throw new ApsimXException(this, $"Cannot find a cultivar definition for '{SowingData.Cultivar}'");
+                throw new ApsimXException(this, $"Cannot find a cultivar definition for '{SowingData.Cultivar}'." + 
+                " Check that the cultivar name is correct and that the cultivar definition is included " +
+                "in the simulation and is enabled.");
 
             cultivarDefinition.Apply(this);
 
@@ -360,17 +391,16 @@ namespace Models.PMF
             if (PlantSowing != null)
                 PlantSowing.Invoke(this, SowingData);
 
-            summary.WriteMessage(this, string.Format("A crop of " + PlantType + " (cultivar = " + cultivar + ") was sown today at a population of " + Population + " plants/m2 with " + budNumber + " buds per plant at a row spacing of " + rowSpacing + " mm and a depth of " + depth + " mm"), MessageType.Information);
+            summary.WriteMessage(this, string.Format("A crop of " + Name + " (cultivar = " + cultivar + ") was sown today at a population of " + Population + " plants/m2 with " + budNumber + " buds per plant at a row spacing of " + rowSpacing + " mm and a depth of " + depth + " mm"), MessageType.Information);
         }
 
         /// <summary>Harvest the crop.</summary>
         public void Harvest(bool removeBiomassFromOrgans = true)
         {
-            Phenology.SetToEndStage();
+            //Phenology.SetToEndStage();
             Harvesting?.Invoke(this, EventArgs.Empty);
-            if (removeBiomassFromOrgans)
-                foreach (var organ in Organs)
-                    organ.Harvest();
+
+            PostHarvesting?.Invoke(this, new HarvestingParameters() { RemoveBiomass = removeBiomassFromOrgans });
         }
 
         /// <summary>End the crop.</summary>
@@ -382,6 +412,7 @@ namespace Models.PMF
 
             // Undo cultivar changes.
             cultivarDefinition.Unapply();
+
             // Invoke a plant ending event.
             if (PlantEnding != null)
                 PlantEnding.Invoke(this, new EventArgs());
@@ -396,53 +427,6 @@ namespace Models.PMF
             plantPopulation = 0.0;
             IsAlive = false;
             SowingDate = DateTime.MinValue;
-        }
-
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
-        {
-            yield return new Section($"The APSIM {Name} Model", GetTags());
-        }
-
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        private IEnumerable<ITag> GetTags()
-        {
-            // If first child is a memo, document it first.
-            Memo introduction = Children?.FirstOrDefault() as Memo;
-            if (introduction != null)
-                foreach (ITag tag in introduction.Document())
-                    yield return tag;
-
-            foreach (var tag in GetModelDescription())
-                yield return tag;
-
-            yield return new Paragraph($"The model is constructed from the following list of software components. Details of the implementation and model parameterisation are provided in the following sections.");
-
-            // Write Plant Model Table
-            yield return new Paragraph("**List of Plant Model Components.**");
-            DataTable tableData = new DataTable();
-            tableData.Columns.Add("Component Name", typeof(string));
-            tableData.Columns.Add("Component Type", typeof(string));
-            foreach (IModel child in Children)
-            {
-                if (child.GetType() != typeof(Memo) && child.GetType() != typeof(Cultivar) && child.GetType() != typeof(Folder) && child.GetType() != typeof(CompositeBiomass))
-                {
-                    DataRow row = tableData.NewRow();
-                    row[0] = child.Name;
-                    row[1] = child.GetType().ToString();
-                    tableData.Rows.Add(row);
-                }
-            }
-            yield return new Table(tableData);
-
-            // Document children.
-            foreach (IModel child in Children)
-                if (child != introduction)
-                    yield return new Section(child.Name, child.Document());
         }
 
         /// <summary>
@@ -463,6 +447,15 @@ namespace Models.PMF
                     structure.ProportionPlantMortality = 1 - (newPlantPopulation / InitialPopn);
                 }
             }
+        }
+
+        /// <summary>
+        /// Add a cultivar.
+        /// </summary>
+        /// <param name="cultivar">The cultivar to add</param>
+        public void AddCultivar(Cultivar cultivar)
+        {
+            Structure.AddChild(cultivar);
         }
     }
 }

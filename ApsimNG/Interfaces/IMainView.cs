@@ -1,5 +1,4 @@
-﻿using Cairo;
-using Gtk;
+﻿using Gtk;
 using System;
 using UserInterface.Views;
 using UserInterface.EventArguments;
@@ -11,12 +10,23 @@ namespace UserInterface.Interfaces
         /// <summary>
         /// Get the start page 1 view
         /// </summary>
-        IListButtonView StartPage1 { get; }
+        ListButtonView StartPage1 { get; }
 
         /// <summary>
         /// Get the start page 2 view
         /// </summary>
-        IListButtonView StartPage2 { get; }
+        ListButtonView StartPage2 { get; }
+
+        /// <summary>
+        /// Get the start page 3 view
+        /// </summary>
+        MarkdownView NotificationMarkdownView { get; }
+
+        /// <summary>
+        /// Get the most recently used files list view
+        /// </summary>
+        ListButtonView MenuList { get; }
+
 
         /// <summary>Add a tab form to the tab control. Optionally select the tab if SelectTab is true.</summary>
         /// <param name="text">Text for tab.</param>
@@ -62,7 +72,6 @@ namespace UserInterface.Interfaces
         bool SplitWindowOn { get; set; }
 
         /// <summary>Position of split screen divider.</summary>
-        /// <remarks>Not sure what units this uses...might be pixels.</remarks>
         int SplitScreenPosition { get; set; }
 
         /// <summary
@@ -71,7 +80,7 @@ namespace UserInterface.Interfaces
         int StatusPanelPosition { get; set; }
 
         /// <summary>
-        /// Height of the VPaned that holds the view
+        /// Height of the Paned that holds the view
         /// </summary>
         int PanelHeight { get; }
 
@@ -252,5 +261,14 @@ namespace UserInterface.Interfaces
         /// Invoked when an error has been thrown in a view.
         /// </summary>
         event EventHandler<ErrorArgs> OnError;
+
+        /// <summary> Invoked when the user clicks the 'GitHub' button. </summary>
+        event EventHandler<EventArgs> GitHubBtnClicked;
+
+        /// <summary> Invoked when the user clicks the 'Discussion' button. </summary>
+        event EventHandler<EventArgs> DiscussionBtnClicked;
+
+        /// <summary> Invoked when the user clicks the 'Model Documentation' button. </summary>
+        event EventHandler<EventArgs> ModelDocsBtnClicked;
     }
 }

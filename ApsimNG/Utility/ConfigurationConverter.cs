@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using APSIM.Shared.Utilities;
 using System.Xml;
 using System.Globalization;
 using System.Reflection;
 using System.Xml.Serialization;
 
-namespace Utility
+namespace APSIMNG.Utility
 {
     public class ConfigurationConverter
     {
@@ -49,7 +45,12 @@ namespace Utility
 
             XmlSerializer serializer = new XmlSerializer(typeof(Configuration), typeof(Configuration).GetNestedTypes());
             using (XmlReader reader = new XmlNodeReader(document))
-                return serializer.Deserialize(reader) as Configuration;
+            {
+                Configuration configurationSettings = serializer.Deserialize(reader) as Configuration;
+                // reset to false as this should be false at the beginning of every APSIM launch.
+                configurationSettings.ThemeRestartRequired = false;
+                return configurationSettings;
+            }
         }
 
         /// <summary>

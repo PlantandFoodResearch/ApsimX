@@ -1,7 +1,7 @@
-﻿using APSIM.Shared.Utilities;
+﻿using APSIM.Core;
+using APSIM.Shared.Utilities;
 using Models;
 using Models.Core;
-using Models.Core.ApsimFile;
 using Models.Core.Run;
 using Models.Storage;
 using NUnit.Framework;
@@ -52,7 +52,7 @@ namespace UnitTests.Core
             playlistText.Add("Sim\nSim2\nSim4");
             names = new string[3] { "Sim", "Sim2", "Sim4" };
             expectedSimulations.Add(names);
-            
+
             //with commas and sqaure brackets
             playlistText.Add("[Sim,Sim2,Sim4]");
             expectedSimulations.Add(names);
@@ -105,9 +105,9 @@ namespace UnitTests.Core
 
             for (int i = 0; i < expectedSimulations.Count; i++)
             {
-                Simulations sims = FileFormat.ReadFromString<Simulations>(json, e => throw e, false).NewModel as Simulations;
+                Simulations sims = FileFormat.ReadFromString<Simulations>(json).Model as Simulations;
 
-                Playlist playlist = sims.FindChild<Playlist>();
+                Playlist playlist = sims.Node.FindChild<Playlist>();
                 playlist.Text = playlistText[i];
 
                 if (expectedSimulations[i].Length > 0)
@@ -115,13 +115,13 @@ namespace UnitTests.Core
                     Runner runner = new Runner(playlist);
                     List<Exception> errors = runner.Run();
                     // Check that no errors were thrown
-                    Assert.AreEqual(0, errors.Count);
+                    Assert.That(errors.Count, Is.EqualTo(0));
 
-                    DataStore dataStore = sims.FindChild<DataStore>();
+                    DataStore dataStore = sims.Node.FindChild<DataStore>();
                     List<String> dataStoreNames = dataStore.Reader.SimulationNames;
 
                     //check that the datastore and expected simulations have the same amount of entries
-                    Assert.AreEqual(dataStoreNames.Count, expectedSimulations[i].Length);
+                    Assert.That(dataStoreNames.Count, Is.EqualTo(expectedSimulations[i].Length));
                     for (int j = 0; j < expectedSimulations[i].Length; j++)
                     {
                         if (!dataStoreNames.Contains(expectedSimulations[i][j]))
@@ -129,13 +129,13 @@ namespace UnitTests.Core
                             Assert.Fail();
                         }
                     }
-                } 
+                }
                 else
                 {
                     Assert.Throws<Exception>(() => new Runner(playlist));
                 }
-                
-            }           
+
+            }
         }
 
         /// <summary>Testing a number of variations of playlist text to make sure they run correctly.</summary>
@@ -147,20 +147,23 @@ namespace UnitTests.Core
 
             //read in our base test that we'll use for this
             string json = ReflectionUtilities.GetResourceAsString("UnitTests.Core.Run.PlaylistTests.apsimx");
-            Simulations sims = FileFormat.ReadFromString<Simulations>(json, e => throw e, false).NewModel as Simulations;
-            Playlist playlist = sims.FindChild<Playlist>();
+            Simulations sims = FileFormat.ReadFromString<Simulations>(json).Model as Simulations;
+            Playlist playlist = sims.Node.FindChild<Playlist>();
             playlist.Text = "Sim*\n";
 
-            Assert.AreEqual(expectedSimulations1, playlist.GetListOfSimulations());
+            Assert.That(playlist.GenerateListOfSimulations(), Is.EqualTo(expectedSimulations1));
 
             //now change the name of one of the simulations without clearing the cache,
             //should give the same 4 names if reading from cache correctly.
-            sims.FindChild("Sim3").Name = "DifferentName";
-            Assert.AreEqual(expectedSimulations1, playlist.GetListOfSimulations());
+            sims.Node.FindChild<IModel>("Sim3").Name = "DifferentName";
+            Assert.That(playlist.GenerateListOfSimulations(), Is.EqualTo(expectedSimulations1));
 
             //now clear the cache and run again, should only get 3 sims this time.
             playlist.ClearSearchCache();
-            Assert.AreEqual(expectedSimulations2, playlist.GetListOfSimulations());
+            Assert.That(playlist.GenerateListOfSimulations(), Is.EqualTo(expectedSimulations2));
+
+            //Check that GetListOfSimulations is working, should return the previous result again.
+            Assert.That(playlist.GetListOfSimulations(), Is.EqualTo(expectedSimulations2));
         }
     }
 }

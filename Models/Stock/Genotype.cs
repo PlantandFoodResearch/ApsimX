@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using APSIM.Core;
 using Models.Core;
 using StdUnits;
-using static Models.Core.Overrides;
 
 namespace Models.GrazPlan
 {
@@ -16,7 +16,7 @@ namespace Models.GrazPlan
     public class Genotype : Model
     {
         private const double DAYSPERYR = 365.25;
-        private const double NC = 2.5;                                      // 2.5 cycles joining is assumed            
+        private const double NC = 2.5;                                      // 2.5 cycles joining is assumed
 
         /// <summary>The breed ancestry of the parameter set.</summary>
         private Ancestry[] FParentage = new Ancestry[0];
@@ -29,6 +29,7 @@ namespace Models.GrazPlan
             //create a new array
             for (int i = 0; i < ConceiveSigs.Length; i++)
                 ConceiveSigs[i] = new double[2];
+            Node = APSIM.Core.Node.Create(this);
         }
 
         /// <summary>Construct an animal parameter set from a source parameters set.</summary>
@@ -42,6 +43,8 @@ namespace Models.GrazPlan
 
             if (srcSet != null)
                 Initialise();
+
+            Node = APSIM.Core.Node.Create(this);
         }
 
         /// <summary>
@@ -142,6 +145,7 @@ namespace Models.GrazPlan
                     }
                 }
             }
+            Node = APSIM.Core.Node.Create(this);
         }
 
         /// <summary>
@@ -150,7 +154,7 @@ namespace Models.GrazPlan
         /// <param name="name">Name of the animal parameter set.</param>
         /// <param name="animalTypeString">The animal type.</param>
         /// <param name="parameters">The parameter values to apply.</param>
-        public Genotype(string name, string animalTypeString, List<Override> parameters)
+        public Genotype(string name, string animalTypeString, List<IModelCommand> parameters)
         {
             for (int i = 0; i < ConceiveSigs.Length; i++)
                 ConceiveSigs[i] = new double[2];
@@ -159,7 +163,8 @@ namespace Models.GrazPlan
                 Animal = GrazType.AnimalType.Cattle;
             else if (animalTypeString == "sheep")
                 Animal = GrazType.AnimalType.Sheep;
-            Overrides.Apply(this, parameters);
+            Node = APSIM.Core.Node.Create(this);
+            CommandProcessor.Run(parameters, this, runner: null);
             PotFleeceWt = FleeceRatio * BreedSRW;
             SetPeakMilk(IntakeC[11] * BreedSRW);
         }
@@ -218,11 +223,77 @@ namespace Models.GrazPlan
         [Description("Weight differential in dying animals c-d-")]
         public double MortWtDiff { get; set; }
 
-        /// <summary>Growth C c-n-</summary>
+        /// <summary>
+        /// Growth C c-n- Coefficients for the stock model's normal-weight growth curve. The curve approaches
+        /// the animal's Standard Reference Weight (SRW) over time:
+        /// <c>k = GrowthC[1] / SRW^GrowthC[2]</c>, then
+        /// <c>normalWeight = SRW - (SRW - birthWeight) * exp(-k * ageDays)</c>.
+        /// Parameter indices follow the legacy <c>c-n-</c> numbering.
+        /// <list type="table">
+        ///   <listheader>
+        ///     <term>Index</term>
+        ///     <description>Meaning</description>
+        ///   </listheader>
+        ///   <item>
+        ///     <term>0</term>
+        ///     <description>Unused by the current model.</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>1</term>
+        ///     <description>Growth-rate scale used to calculate <c>k</c>.</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>2</term>
+        ///     <description>Exponent applied to SRW when calculating <c>k</c>; controls how growth rate scales with reference weight.</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>3</term>
+        ///     <description>Weighting for recovery from delayed frame growth. When the animal's previous maximum weight is below the curve-based normal weight, this controls the blend between the curve value and the previous maximum. A value of 1 follows the curve immediately; a value nearer 0 gives more weight to the previous maximum.</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>4</term>
+        ///     <description>Unused by the current model.</description>
+        ///   </item>
+        /// </list>
+        /// </summary>
+        /// <remarks>WARNING: this array index table was AI generated and is only indicative.</remarks>
         [Description("Growth C c-n-")]
         public double[] GrowthC { get; set; } = new double[5];
 
-        /// <summary>Intake C c-i-</summary>
+        /// <summary>
+        /// Intake C c-i- - Genotype coefficients used by the stock model's potential-intake, lactation,
+        /// temperature and protein-adjustment calculations. Parameter indices follow the
+        /// legacy <c>c-i-</c> numbering; index 0 is unused by the current model.
+        /// <list type="table">
+        ///   <listheader>
+        ///     <term>Index</term>
+        ///     <description>Meaning in the current model</description>
+        ///   </listheader>
+        ///   <item><term>0</term><description>Unused.</description></item>
+        ///   <item><term>1</term><description>Scale factor for baseline potential intake, multiplied by standard reference weight and relative size.</description></item>
+        ///   <item><term>2</term><description>Relative-size term in the baseline potential-intake curve; the equation includes <c>RelativeSize * (IntakeC[2] - RelativeSize)</c>.</description></item>
+        ///   <item><term>3</term><description>Steepness coefficient for the age response of suckling animals.</description></item>
+        ///   <item><term>4</term><description>Age midpoint, in days, for the suckling-animal intake response controlled by index 3.</description></item>
+        ///   <item><term>5</term><description>Magnitude coefficient for intake depression at high temperatures.</description></item>
+        ///   <item><term>6</term><description>Mean-temperature threshold above which the high-temperature depression term increases.</description></item>
+        ///   <item><term>7</term><description>Minimum-temperature threshold that gates application of the high-temperature depression.</description></item>
+        ///   <item><term>8</term><description>Time scale, in days, for the Wood-type lactation curve and dry-off timeline calculations.</description></item>
+        ///   <item><term>9</term><description>Shape coefficient for the Wood-type curve when the animal has suckling young.</description></item>
+        ///   <item><term>10</term><description>Weighting for adjustment of the dairy intake-at-peak-lactation coefficient based on relative peak milk. Zero removes the adjustment; one applies it fully.</description></item>
+        ///   <item><term>11</term><description>Peak-milk scale per unit of standard reference weight; the genotype's peak milk is calculated as this value multiplied by standard reference weight.</description></item>
+        ///   <item><term>12</term><description>Scale coefficient in the lactation intake adjustment applied when estimated weight loss exceeds its time-varying threshold.</description></item>
+        ///   <item><term>13</term><description>Coefficient used in both the time-varying critical weight-loss threshold and the weight-loss adjustment during lactation.</description></item>
+        ///   <item><term>14</term><description>Starting scale for the critical weight-loss threshold, which declines over lactation according to index 13.</description></item>
+        ///   <item><term>15</term><description>Weight assigned to birth condition in the lactation-related potential-intake factor; the remainder of the factor is independent of birth condition.</description></item>
+        ///   <item><term>16</term><description>RDP intake-factor adjustment coefficient. When strictly between zero and one, it damps the adjustment towards the calculated RDP intake-to-requirement ratio.</description></item>
+        ///   <item><term>17</term><description>Coefficient for the cold-related intake adjustment below the animal's lower critical temperature.</description></item>
+        ///   <item><term>18</term><description>Rainfall scale used to attenuate the cold-related intake adjustment.</description></item>
+        ///   <item><term>19</term><description>Rate used to advance the dry-off timeline with elapsed days after dry-off.</description></item>
+        ///   <item><term>20</term><description>Upper body-condition reference in the condition-related intake factor applied when body condition is above 1.</description></item>
+        ///   <item><term>21</term><description>Shape coefficient for the Wood-type curve when the animal has no suckling young.</description></item>
+        /// </list>
+        /// </summary>
+        /// <remarks>WARNING: this array index table was AI generated and is only indicative.</remarks>
         [Description("Intake C c-i-")]
         public double[] IntakeC { get; set; } = new double[22];
 
@@ -230,7 +301,35 @@ namespace Models.GrazPlan
         [Description("Intake Lact C c-imx-")]
         public double[] IntakeLactC { get; set; } = new double[4];
 
-        /// <summary>Graze C c-r-</summary>
+        /// <summary>
+        /// Graze C c-r - Grazing parameters controlling forage and supplement quality, pasture intake, and grazing time.
+        /// <list type="table">
+        ///   <listheader>
+        ///     <term>Index</term>
+        ///     <description>Parameter</description>
+        ///   </listheader>
+        ///   <item><term>0</term><description>Unused.</description></item>
+        ///   <item><term>1</term><description>Reference digestibility for relative forage quality.</description></item>
+        ///   <item><term>2</term><description>Scales the pasture intake increase associated with legume proportion.</description></item>
+        ///   <item><term>3</term><description>Controls the digestibility penalty and pasture-to-supplement intake transition.</description></item>
+        ///   <item><term>4</term><description>Scales the pasture intake-rate response to feed availability.</description></item>
+        ///   <item><term>5</term><description>Scales the additional grazing-time response when scaled feed availability is low.</description></item>
+        ///   <item><term>6</term><description>Sets how quickly the index-5 grazing-time response changes with scaled feed availability.</description></item>
+        ///   <item><term>7</term><description>Relative-size threshold used to adjust pasture relative fill.</description></item>
+        ///   <item><term>8</term><description>Time scale, in days, for the lactation-related supplement effect.</description></item>
+        ///   <item><term>9</term><description>Lower threshold for the supplement protein effect.</description></item>
+        ///   <item><term>10</term><description>Upper threshold at which the supplement protein effect reaches its maximum.</description></item>
+        ///   <item><term>11</term><description>Supplement energy-intake cap for non-lactating animals.</description></item>
+        ///   <item><term>12</term><description>Weights the pasture-height ratio in the height factor.</description></item>
+        ///   <item><term>13</term><description>Adjusts relative fill according to the fraction of total feed in a particular class.</description></item>
+        ///   <item><term>14</term><description>Maximum supplement relative quality.</description></item>
+        ///   <item><term>15</term><description>Scales the maximum lactation-related reduction to supplement relative quality.</description></item>
+        ///   <item><term>16</term><description>Scales the protein-related reduction to supplement relative quality.</description></item>
+        ///   <item><term>17-19</term><description>Unused.</description></item>
+        ///   <item><term>20</term><description>Supplement energy-intake cap for lactating animals; defaults to 11.5 when zero.</description></item>
+        /// </list>
+        /// </summary>
+        /// <remarks>WARNING: this array index table was AI generated and is only indicative.</remarks>
         [Description("Graze C c-r-")]
         public double[] GrazeC { get; set; } = new double[21];
 
@@ -290,7 +389,7 @@ namespace Models.GrazPlan
         [Description("Sulf C c-su-")]
         public double[] SulfC { get; set; } = new double[5];
 
-        /// <summary>Methane C c-h-1,2,3,4,5,6,7  
+        /// <summary>Methane C c-h-1,2,3,4,5,6,7
         /// 1. gross energy content of DM intake MJ/g
         /// 2. constant term at maintenance
         /// 3. M/D term at maintenance kg/MJ
@@ -303,21 +402,21 @@ namespace Models.GrazPlan
         public double[] MethC { get; set; } = new double[8];
 
         /// <summary>Ash alkalinity C c-aa-1,2,3
-        /// 1. Ash alkalinity of basal weight and conceptus    
-        /// 2. Ash alkalinity of greasy wool  
-        /// 3. Ash alkalinity of faeces  
+        /// 1. Ash alkalinity of basal weight and conceptus
+        /// 2. Ash alkalinity of greasy wool
+        /// 3. Ash alkalinity of faeces
         /// </summary>
         [Units("mol/kg")]
         [Description("Ash alkalinity C c-aa-")]
         public double[] AshAlkC { get; set; } = new double[4];
 
-        /// <summary>Ovulation period c-f  
+        /// <summary>Ovulation period c-f
         /// Conception: length of oestrus cycle
         /// </summary>
         [Description("Ovulation period c-f4")]
         public int OvulationPeriod { get; set; }
 
-        /// <summary>Puberty c-pbt-1,2  
+        /// <summary>Puberty c-pbt-1,2
         /// 1. Puberty: females
         /// 2. Puberty: males
         /// </summary>
@@ -400,6 +499,7 @@ namespace Models.GrazPlan
 
         /// <summary>Potential greasy fleece weight:SRW</summary>
         [Units("-")]
+        [Description("Potential Fleece Ratio")]
         public double FleeceRatio { get; set; }
 
         /// <summary>Peak milk</summary>
@@ -710,27 +810,27 @@ namespace Models.GrazPlan
 
             for (N = 1; N <= MaxYoung; N++)
             {
-                SeekPR = 0.0;                                                           // SeekPR is the proportion of mothers      
-                for (P = N; P <= MaxYoung; P++)                                         //   conceiving at least N young            
+                SeekPR = 0.0;                                                           // SeekPR is the proportion of mothers
+                for (P = N; P <= MaxYoung; P++)                                         //   conceiving at least N young
                     SeekPR = SeekPR + Rates[P];
-                SeekPR = Math.Min(SeekPR, 0.9975);                                      // If 1.0, no sensitivity to condition      
+                SeekPR = Math.Min(SeekPR, 0.9975);                                      // If 1.0, no sensitivity to condition
 
-                if (SeekPR <= 0.0)                                                      // Force zero conception rate if SeekPR = 0 
+                if (SeekPR <= 0.0)                                                      // Force zero conception rate if SeekPR = 0
                     ConceiveSigs[N][0] = 10.0;
                 else
                 {
-                    if (Animal == GrazType.AnimalType.Sheep)                            // For sheep, use the default value for   
-                    {                                                                   //   curvature and fit the 50% point      
+                    if (Animal == GrazType.AnimalType.Sheep)                            // For sheep, use the default value for
+                    {                                                                   //   curvature and fit the 50% point
                         Sigs = ConceiveSigs[N];
                         Idx = 0;
                     }
-                    else if ((Animal == GrazType.AnimalType.Cattle) && (N == 1))        // For single calves, use the default value 
+                    else if ((Animal == GrazType.AnimalType.Cattle) && (N == 1))        // For single calves, use the default value
                     {                                                                   //   for the 50% point and fit the curvature
                         Sigs = ConceiveSigs[N];
                         Idx = 1;
                     }
-                    else                                                                // For twin calves, use the curvature for   
-                    {                                                                   //   single calves and fit the 50% point    
+                    else                                                                // For twin calves, use the curvature for
+                    {                                                                   //   single calves and fit the 50% point
                         Sigs = ConceiveSigs[N - 1];
                         Idx = 0;
                     }
@@ -738,8 +838,8 @@ namespace Models.GrazPlan
                     fCR1 = 0;
                     if (N > 1)
                         ComputeConception(ConceiveSigs[1], 1, ref fCR1);
-                    PR = ComputeConception(Sigs, N, ref fCR1);                          // Search algorithm begins.  Only a little  
-                    if (PR > SeekPR)                                                    //   search, so coded for size not speed    
+                    PR = ComputeConception(Sigs, N, ref fCR1);                          // Search algorithm begins.  Only a little
+                    if (PR > SeekPR)                                                    //   search, so coded for size not speed
                         Scale = InitScale[Idx];
                     else
                         Scale = -InitScale[Idx];
@@ -747,12 +847,12 @@ namespace Models.GrazPlan
                     do
                     {
                         PrevPR = PR;
-                        Sigs[Idx] = Sigs[Idx] + Scale;                                  // Move the parameter up or down...         
-                        PR = ComputeConception(Sigs, N, ref fCR1);                      // Compute the corresponding pregnancy rate 
-                                                                                        //   at (BC x size) = 1                     
-                        if ((PrevPR > SeekPR) && (PR <= SeekPR))                        // If the difference (current-wanted)       
-                            Scale = -0.25 * Scale;                                      //   changes sign, reduce the step size and 
-                        else if ((PrevPR < SeekPR) && (PR >= SeekPR))                   //   change direction                       
+                        Sigs[Idx] = Sigs[Idx] + Scale;                                  // Move the parameter up or down...
+                        PR = ComputeConception(Sigs, N, ref fCR1);                      // Compute the corresponding pregnancy rate
+                                                                                        //   at (BC x size) = 1
+                        if ((PrevPR > SeekPR) && (PR <= SeekPR))                        // If the difference (current-wanted)
+                            Scale = -0.25 * Scale;                                      //   changes sign, reduce the step size and
+                        else if ((PrevPR < SeekPR) && (PR >= SeekPR))                   //   change direction
                             Scale = -0.25 * Scale;
                     } while ((Math.Abs(SeekPR - PR) >= 1.0E-6) && (Math.Abs(Scale) >= 0.00001));     // until (Abs(SeekPR-PR) < 1.0E-6) or (Abs(Scale) < 0.00001);
 

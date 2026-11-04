@@ -1,4 +1,5 @@
-﻿using APSIM.Shared.Utilities;
+﻿using APSIM.Core;
+using APSIM.Shared.Utilities;
 using Models.CLEM;
 using Models.CLEM.Activities;
 using Models.CLEM.Groupings;
@@ -9,11 +10,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UserInterface.Interfaces;
 using UserInterface.Presenters;
 using UserInterface.Views;
+using APSIMNG.Utility;
 
 namespace UserInterface.Presenters
 {
@@ -30,7 +33,7 @@ namespace UserInterface.Presenters
         /// <summary>
         /// The view to use
         /// </summary>
-        private IMarkdownView genericView;
+        private MarkdownView genericView;
 
         /// <summary>
         /// The explorer
@@ -68,7 +71,8 @@ namespace UserInterface.Presenters
         public void Attach(object model, object view, ExplorerPresenter explorerPresenter)
         {
             this.model = model as Model;
-            this.genericView = view as IMarkdownView;
+            this.genericView = view as MarkdownView;
+            genericView.Refresh();
             this.explorerPresenter = explorerPresenter;
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(this.explorerPresenter.ApsimXFile.FileName), (model as ISpecificOutputFilename).HtmlOutputFilename), CreateHTML());
             this.genericView.Text = CreateMarkdown();
@@ -125,32 +129,13 @@ namespace UserInterface.Presenters
 
             // Start building table
             // apply theme based settings
-            if (!Utility.Configuration.Settings.DarkTheme)
+            if (!Configuration.Settings.ThemeRestartRequired)
             {
-                // light theme
-                htmlString = htmlString.Replace("[FontColor]", "#000000");
-                htmlString = htmlString.Replace("[GridColor]", "Black");
-                htmlString = htmlString.Replace("[WarningBackground]", "#FFFFFA");
-                htmlString = htmlString.Replace("[MessageBackground]", "#FAFAFF");
-                htmlString = htmlString.Replace("[DisabledColour]", "#cccccc");
-                htmlString = htmlString.Replace("[TableBackground]", "background-color: white;");
-                htmlString = htmlString.Replace("[ContDefaultBack]", "#FAFAFA");
-                htmlString = htmlString.Replace("[ContDefaultBanner]", "#000");
-                htmlString = htmlString.Replace("[HeaderFontColor]", "white");
-
+                htmlString = !Configuration.Settings.DarkTheme ? ModifyHTMLStyle(htmlString, false) : ModifyHTMLStyle(htmlString, true);
             }
             else
             {
-                // dark theme
-                htmlString = htmlString.Replace("[FontColor]", "#E5E5E5");
-                htmlString = htmlString.Replace("[GridColor]", "#888");
-                htmlString = htmlString.Replace("[WarningBackground]", "rgba(255, 102, 0, 0.4)");
-                htmlString = htmlString.Replace("[MessageBackground]", "rgba(100, 149, 237, 0.4)");
-                htmlString = htmlString.Replace("[DisabledColour]", "#666666");
-                htmlString = htmlString.Replace("[TableBackground]", "background-color: rgba(50, 50, 50, 0.5);");
-                htmlString = htmlString.Replace("[ContDefaultBack]", "#282828");
-                htmlString = htmlString.Replace("[ContDefaultBanner]", "#686868");
-                htmlString = htmlString.Replace("[HeaderFontColor]", "#333333");
+                htmlString = !Configuration.Settings.DarkTheme ? ModifyHTMLStyle(htmlString, true) : ModifyHTMLStyle(htmlString, false);
             }
 
             // get CLEM Zone
@@ -173,7 +158,7 @@ namespace UserInterface.Presenters
                 htmlWriter.WriteLine("\n</div>");
 
                 // Get Labour resources
-                labour = clem.FindAllDescendants<Labour>().FirstOrDefault() as Labour;
+                labour = clem.Node.FindChildren<Labour>(recurse: true).FirstOrDefault();
                 if (labour == null)
                 {
                     htmlWriter.Write("No Labour supplied in resources");
@@ -181,7 +166,7 @@ namespace UserInterface.Presenters
                     return htmlWriter.ToString();
                 }
 
-                numberLabourTypes = labour.FindAllChildren<LabourType>().Count();
+                numberLabourTypes = labour.Node.FindChildren<LabourType>().Count();
                 if (numberLabourTypes == 0)
                 {
                     htmlWriter.Write("No Labour types supplied in Labour resource");
@@ -191,17 +176,17 @@ namespace UserInterface.Presenters
 
                 // create labour list
                 labourList.Clear();
-                foreach (LabourType lt in labour.FindAllChildren<LabourType>())
+                foreach (LabourType lt in labour.Node.FindChildren<LabourType>())
                 {
                     var newLabour = new LabourType()
                     {
                         Parent = labour,
                         Name = lt.Name,
-                        AgeInMonths = lt.InitialAge * 12,
+                        InitialAge = lt.InitialAge,
                         Sex = lt.Sex
                     };
                     IndividualAttribute att = new IndividualAttribute() { StoredValue = lt.Name };
-                    newLabour.Attributes.Add("Group", att);
+                    newLabour.Attributes.Add("Cohort", att);
                     labourList.Add(newLabour);
                 }
 
@@ -218,7 +203,7 @@ namespace UserInterface.Presenters
 
                 // walk through all activities
                 // check if LabourRequirement can be added
-                ActivitiesHolder activities = clem.FindDescendant<ActivitiesHolder>();
+                ActivitiesHolder activities = clem.Node.FindChild<ActivitiesHolder>(recurse: true);
                 if (activities == null)
                 {
                     htmlWriter.Write("Could not find an Activities Holder");
@@ -230,7 +215,7 @@ namespace UserInterface.Presenters
                 {
                     tableHtml.WriteLine("<table class=\"main\">");
                     tableHtml.Write("<tr><th>Activity</th>");
-                    foreach (LabourType lt in labour.FindAllChildren<LabourType>())
+                    foreach (LabourType lt in labour.Node.FindChildren<LabourType>())
                         tableHtml.Write($"<th><span>{lt.Name}</span></th>");
 
                     tableHtml.WriteLine("</tr>");
@@ -260,11 +245,11 @@ namespace UserInterface.Presenters
                 htmlWriter.Write("\n</div>");
 
                 // aging note
-                if (labour.AllowAging)
+                if (labour.AllowAgeing)
                 {
                     htmlWriter.WriteLine("\n<div class=\"holdermain\">");
                     htmlWriter.WriteLine("\n<div class=\"clearfix warningbanner\">");
-                    htmlWriter.Write("<div class=\"typediv\">" + "Warning" + "</div>");
+                    htmlWriter.Write("<div class=\"typediv\">Warning</div>");
                     htmlWriter.Write("</div>");
                     htmlWriter.Write("\n<div class=\"warningcontent\">");
                     htmlWriter.Write("\n<div class=\"activityentry\">As this simulation allows aging of individuals (see Labour) these allocations may change over the duration of the simulation. ");
@@ -272,20 +257,28 @@ namespace UserInterface.Presenters
                     htmlWriter.WriteLine("\n</div>");
                 }
                 htmlWriter.Write("\n</body>\n</html>");
-                return htmlWriter.ToString(); 
+                return htmlWriter.ToString();
             }
         }
 
+
+
         private string TableRowHTML(IModel model)
         {
+            IStructure structure = (model as CLEMModel)?.Structure;
+            if (structure == null)
+            {
+                return "";
+            }
+
             // create row
             using (StringWriter tblstr = new StringWriter())
             {
                 if (validpAtt.Select(a => a.ParentType).Contains(model.GetType()))
                 {
-                    if (model.FindAllChildren<LabourRequirement>().Any())
+                    if (model.Node.FindChildren<LabourRequirement>().Any())
                     {
-                        foreach (LabourRequirement labourRequirement in model.FindAllChildren<LabourRequirement>())
+                        foreach (LabourRequirement labourRequirement in model.Node.FindChildren<LabourRequirement>())
                         {
                             tblstr.Write("<tr" + ((labourRequirement == null) ? " class=\"disabled\"" : "") + "><td" + ((labourRequirement == null) ? " class=\"disabled\"" : "") + ">" + model.Name + "</td>");
                             // for each labour type
@@ -293,24 +286,30 @@ namespace UserInterface.Presenters
                             {
                                 tblstr.WriteLine("<td>");
                                 // for each filter group
-                                foreach (var item in labourRequirement.FindAllChildren<LabourGroup>())
+                                foreach (var item in labourRequirement.Node.FindChildren<LabourGroup>())
                                 {
                                     tblstr.Write("<div>");
                                     int level = 0;
-                                    // while nested 
-                                    var nested = labourRequirement.FindChild<LabourGroup>();
+                                    // while nested
+                                    var nested = labourRequirement.Node.FindChild<LabourGroup>();
                                     bool found = false;
                                     while (nested != null)
                                     {
                                         nested.InitialiseFilters();
                                         level++;
-                                        if (nested.Filter(lt))
+                                        LabourGroup filtergroup = nested;
+                                        if (nested is LabourGroupLinked ngl)
+                                        {
+                                            filtergroup = structure.FindAll<LabourGroup>(relativeTo: nested).Where(lg => $"{lg.Parent.Name}.{lg.Name}" == ngl.ExistingGroupName).FirstOrDefault();
+                                        }
+
+                                        if (filtergroup is not null && filtergroup.Filter(lt))
                                         {
                                             found = true;
                                             break;
                                         }
                                         nested.ClearRules();
-                                        nested = nested.FindAllChildren<LabourGroup>().FirstOrDefault();
+                                        nested = nested.Node.FindChildren<LabourGroup>().FirstOrDefault();
                                     }
                                     if (found)
                                         tblstr.Write($"<span class=\"dot dot{((level < 5) ? level.ToString() : "4")}\"></span>");
@@ -348,17 +347,17 @@ namespace UserInterface.Presenters
             using (StringWriter markdownString = new StringWriter())
             {
                 // Start building table
-                IModel clem = model.FindAncestor<ZoneCLEM>() as IModel;
+                IModel clem = model.Node.FindParent<ZoneCLEM>(recurse: true) as IModel;
 
                 // Get Labour resources
-                labour = clem.FindAllDescendants<Labour>().FirstOrDefault() as Labour;
+                labour = clem.Node.FindChildren<Labour>(recurse: true).FirstOrDefault();
                 if (labour == null)
                 {
                     markdownString.Write("No Labour supplied in resources");
                     return markdownString.ToString();
                 }
 
-                numberLabourTypes = labour.FindAllChildren<LabourType>().Count();
+                numberLabourTypes = labour.Node.FindChildren<LabourType>().Count();
                 if (numberLabourTypes == 0)
                 {
                     markdownString.Write("No Labour types supplied in Labour resource");
@@ -366,14 +365,16 @@ namespace UserInterface.Presenters
                 }
 
                 labourList.Clear();
-                foreach (LabourType lt in labour.FindAllChildren<LabourType>())
+                foreach (LabourType lt in labour.Node.FindChildren<LabourType>())
                 {
                     var newLabour = new LabourType()
                     {
                         Parent = labour,
                         Name = lt.Name,
-                        AgeInMonths = lt.InitialAge * 12,
-                        Sex = lt.Sex
+                        InitialAge = lt.InitialAge,
+                        Sex = lt.Sex,
+                        IsHired = lt.IsHired,
+                        Individuals = lt.Individuals
                     };
                     IndividualAttribute att = new IndividualAttribute() { StoredValue = lt.Name };
                     newLabour.Attributes.Add("Group", att);
@@ -392,7 +393,7 @@ namespace UserInterface.Presenters
 
                 // walk through all activities
                 // check if LabourRequirement can be added
-                ActivitiesHolder activities = clem.FindAllDescendants<ActivitiesHolder>().FirstOrDefault() as ActivitiesHolder;
+                ActivitiesHolder activities = clem.Node.FindChildren<ActivitiesHolder>(recurse: true).FirstOrDefault();
                 if (activities == null)
                 {
                     markdownString.Write("Could not find an Activities Holder");
@@ -405,7 +406,7 @@ namespace UserInterface.Presenters
                     {
                         tableHeader.Write("| Activity");
                         tableSpacer.Write("| :---");
-                        foreach (LabourType lt in labour.FindAllChildren<LabourType>())
+                        foreach (LabourType lt in labour.Node.FindChildren<LabourType>())
                         {
                             tableHeader.Write(" | " + lt.Name.Replace("_", " "));
                             tableSpacer.Write(" | :---:");
@@ -428,7 +429,7 @@ namespace UserInterface.Presenters
                 markdownString.Write("-  The preferential allocation of labour is identified from 1 (1st) to 5 (5th, max levels displayed)  \n");
 
                 // aging note
-                if (labour.AllowAging)
+                if (labour.AllowAgeing)
                 {
                     markdownString.Write("  \n***  \n");
                     markdownString.Write("Warnings  \n");
@@ -436,22 +437,29 @@ namespace UserInterface.Presenters
                 }
 
                 markdownString.Write("  \n***  \n");
-                return markdownString.ToString(); 
+                return markdownString.ToString();
             }
         }
 
         private string TableRowMarkdown(IModel model)
         {
+            IStructure structure = (model as CLEMModel)?.Structure;
+            if (structure == null)
+            {
+                return "";
+            }
+
             using (StringWriter tblstr = new StringWriter())
             {
                 // create row
                 // can row be included?
-                if (validpAtt.Select(a => a.ParentType).Contains(model.GetType()))
+                // (validpAtt.Select(a => a.ParentType).Contains(model.GetType()))
+                if (validpAtt.Where(a => a.ParentType == model.GetType() | (a.ParentType.IsInterface && model.GetType().GetInterfaces().Contains(a.ParentType))).Any())
                 {
                     string emph = "_";
-                    if (model.FindAllChildren<LabourRequirement>().Any())
+                    if (model.Node.FindChildren<LabourRequirement>().Any())
                     {
-                        foreach (LabourRequirement labourRequirement in model.FindAllChildren<LabourRequirement>())
+                        foreach (LabourRequirement labourRequirement in model.Node.FindChildren<LabourRequirement>())
                         {
                             emph = "";
                             tblstr.Write($"| {emph}{model.Name.Replace("_", " ")}{emph} |");
@@ -459,25 +467,37 @@ namespace UserInterface.Presenters
                             foreach (LabourType lt in labourList)
                             {
                                 // for each filter group
-                                foreach (var item in labourRequirement.FindAllChildren<LabourGroup>())
+                                foreach (var item in labourRequirement.Node.FindChildren<LabourGroup>())
                                 {
                                     string levelstring = "";
                                     bool found = false;
                                     int level = 0;
-                                    // while nested 
+                                    // while nested
                                     var nested = item;
                                     while (nested != null)
                                     {
                                         nested.InitialiseFilters();
                                         level++;
                                         levelstring = (level < 5) ? level.ToString() : "4";
-                                        if (nested.Filter(lt))
+
+                                        LabourGroup filtergroup = nested;
+                                        if (nested is LabourGroupLinked ngl)
+                                        {
+                                            filtergroup = structure.FindAll<LabourGroup>(relativeTo: nested).Where(lg => $"{lg.Parent.Name}.{lg.Name}" == ngl.ExistingGroupName).FirstOrDefault();
+                                            filtergroup.InitialiseFilters();
+                                        }
+                                        if (filtergroup is not null && filtergroup.Filter(lt))
                                         {
                                             found = true;
                                             break;
                                         }
+                                        //if (nested.Filter(lt))
+                                        //{
+                                        //    found = true;
+                                        //    break;
+                                        //}
                                         nested.ClearRules();
-                                        nested = nested.FindChild<LabourGroup>();
+                                        nested = nested.Node.FindChild<LabourGroup>();
                                     }
                                     tblstr.Write($" {(found ? levelstring : "0")} |");
                                 }
@@ -493,7 +513,7 @@ namespace UserInterface.Presenters
                 foreach (var child in model.Children.Where(a => a.Enabled))
                     tblstr.Write(TableRowMarkdown(child));
 
-                return tblstr.ToString(); 
+                return tblstr.ToString();
             }
         }
 
@@ -513,6 +533,39 @@ namespace UserInterface.Presenters
         /// </summary>
         public void Detach()
         {
+        }
+
+        private static string ModifyHTMLStyle(string htmlString, bool isDarkMode )
+        {
+            string reformattedHTML = htmlString;
+            if ( isDarkMode )
+            {
+                // dark theme
+                reformattedHTML = reformattedHTML.Replace("[FontColor]", "#E5E5E5");
+                reformattedHTML = reformattedHTML.Replace("[GridColor]", "#888");
+                reformattedHTML = reformattedHTML.Replace("[WarningBackground]", "rgba(255, 102, 0, 0.4)");
+                reformattedHTML = reformattedHTML.Replace("[MessageBackground]", "rgba(100, 149, 237, 0.4)");
+                reformattedHTML = reformattedHTML.Replace("[DisabledColour]", "#666666");
+                reformattedHTML = reformattedHTML.Replace("[TableBackground]", "background-color: rgba(50, 50, 50, 0.5);");
+                reformattedHTML = reformattedHTML.Replace("[ContDefaultBack]", "#282828");
+                reformattedHTML = reformattedHTML.Replace("[ContDefaultBanner]", "#686868");
+                reformattedHTML = reformattedHTML.Replace("[HeaderFontColor]", "#333333");
+            }
+            else
+            {
+                // light theme
+                reformattedHTML = reformattedHTML.Replace("[FontColor]", "#000000");
+                reformattedHTML = reformattedHTML.Replace("[GridColor]", "Black");
+                reformattedHTML = reformattedHTML.Replace("[WarningBackground]", "#FFFFFA");
+                reformattedHTML = reformattedHTML.Replace("[MessageBackground]", "#FAFAFF");
+                reformattedHTML = reformattedHTML.Replace("[DisabledColour]", "#cccccc");
+                reformattedHTML = reformattedHTML.Replace("[TableBackground]", "background-color: white;");
+                reformattedHTML = reformattedHTML.Replace("[ContDefaultBack]", "#FAFAFA");
+                reformattedHTML = reformattedHTML.Replace("[ContDefaultBanner]", "#000");
+                reformattedHTML = reformattedHTML.Replace("[HeaderFontColor]", "white");
+            }
+
+            return reformattedHTML;
         }
 
     }

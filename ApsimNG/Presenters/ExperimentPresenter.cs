@@ -46,7 +46,7 @@ namespace UserInterface.Presenters
             explorerPresenter = parentPresenter;
 
             //add playlists to popup menu
-            List<Playlist> playlists = explorerPresenter.ApsimXFile.FindAllDescendants<Playlist>().ToList();
+            List<Playlist> playlists = explorerPresenter.ApsimXFile.Node.FindChildren<Playlist>(recurse: true).ToList();
             foreach (Playlist playlist in playlists)
             {
                 IMenuItemView item = view.AddMenuItem("Add to " + playlist.Name);
@@ -176,7 +176,7 @@ namespace UserInterface.Presenters
                 experiment.DisabledSimNames = selectedSimulations.Union(experiment.DisabledSimNames).ToList();
             PopulateView();
         }
-        
+
         /// <summary>
         /// Generates a .csv file containing the factor information displayed in the grid.
         /// The user can edit this file to more efficiently enable or disable factors in bulk.
@@ -187,16 +187,19 @@ namespace UserInterface.Presenters
         {
             try
             {
-                var path = explorerPresenter.MainPresenter.AskUserForSaveFileName("*.csv", null);
+                var path = explorerPresenter.MainPresenter.AskUserForSaveFileName("Comma-Separated Values|*.csv", null);
                 if (path != null)
                 {
                     // Clone the datatable and add an enabled column.
                     var data = view.List.DataSource.Copy();
-                    data.Columns.Add("Enabled?", typeof(bool));
+                    data.Columns.Add("Enabled", typeof(bool));
                     foreach (DataRow row in data.Rows)
                     {
                         var simulationName = row[0].ToString();
-                        row["Enabled"] = !experiment.DisabledSimNames.Contains(simulationName);
+                        if (experiment.DisabledSimNames != null && experiment.DisabledSimNames.Contains(simulationName))
+                            row["Enabled"] = false;
+                        else
+                            row["Enabled"] = true;
                     }
 
                     // Convert datatable to csv and write to path.
@@ -220,12 +223,14 @@ namespace UserInterface.Presenters
             ApsimTextFile textFile = new ApsimTextFile();
             try
             {
-                var path = explorerPresenter.MainPresenter.AskUserForOpenFileName("*.csv");
+                var path = explorerPresenter.MainPresenter.AskUserForOpenFileName("Comma-Separated Values|*.csv");
                 if (path != null)
                 {
                     textFile.Open(path);
-                    var disabledSimsTable = new DataView(textFile.ToTable());
-                    disabledSimsTable.RowFilter = "Enabled = False";
+                    DataView disabledSimsTable = new(textFile.ToTable())
+                    {
+                        RowFilter = "Enabled = False"
+                    };
                     experiment.DisabledSimNames = DataTableUtilities.GetColumnAsStrings(disabledSimsTable, "SimulationName").ToList();
                 }
                 PopulateView();
@@ -320,7 +325,7 @@ namespace UserInterface.Presenters
                 string itemText = itemView.GetLabel();
                 string playlistName = itemText.Replace("Add to", "").Trim();
 
-                Playlist playlist = explorerPresenter.ApsimXFile.FindDescendant(playlistName) as Playlist;
+                Playlist playlist = explorerPresenter.ApsimXFile.Node.FindChild<Playlist>(playlistName, recurse: true);
                 if (playlist != null)
                     playlist.AddSimulationNamesToList(namesToAdd.ToArray());
             }

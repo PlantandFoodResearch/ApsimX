@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using APSIM.Core;
 using Models.Core;
 using Models.ForageDigestibility;
 using Models.Interfaces;
@@ -70,7 +71,8 @@ namespace Models.GrazPlan
         /// <param name="clockModel">The clock model.</param>
         /// <param name="weatherModel">The weather model.</param>
         /// <param name="paddocksInSimulation">The paddocks in the simulation.</param>
-        public StockList(Stock stockModel, IClock clockModel, IWeather weatherModel, List<Zone> paddocksInSimulation)
+        /// <param name="structure">Structure instance</param>
+        public StockList(Stock stockModel, IClock clockModel, IWeather weatherModel, List<Zone> paddocksInSimulation, IStructure structure)
         {
             parentStockModel = stockModel;
             ForagesAll = new ForageProviders();
@@ -81,16 +83,16 @@ namespace Models.GrazPlan
             Array.Resize(ref this.stock, 1);                                          // Set aside temporary storage
             Paddocks = new List<PaddockInfo>();
 
-            Paddocks.Add(new PaddockInfo());
+            Paddocks.Add(new PaddockInfo(structure));
 
             // get the paddock areas from the simulation
             foreach (var zone in paddocksInSimulation)
             {
-                var newPadd = new PaddockInfo(zone) { zone = zone };
+                var newPadd = new PaddockInfo(zone: zone, structure: structure) { zone = zone };
                 Paddocks.Add(newPadd);
 
                 // find all the child crop, pasture components that have removable biomass
-                var forages = stockModel.FindInScope<Forages>();
+                var forages = structure.Find<Forages>(relativeTo: stockModel);
                 if (forages == null)
                     throw new Exception("No forages component found in simulation.");
 
@@ -740,44 +742,64 @@ namespace Models.GrazPlan
         }
 
         /// <summary>
+        /// Get the mass of animals per ha
+        /// </summary>
+        /// <param name="paddockName">Name of the zone/paddock</param>
+        /// <param name="units">units per area</param>
+        /// <returns></returns>
+        public double ReturnMassPerArea(string paddockName, string units)
+        {
+            double result = 0;
+
+            if (paddockName != string.Empty)
+            {
+                PaddockInfo thePadd = this.Paddocks.Find(p => p.Name.Equals(paddockName, StringComparison.InvariantCultureIgnoreCase));
+                result = ReturnMassPerArea(thePadd, null, units);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Get the mass for the area
         /// </summary>
         /// <param name="thePadd">Paddock</param>
         /// <param name="provider">The forage provider object</param>
-        /// <param name="units">The units</param>
+        /// <param name="units">The mass or dse per area units</param>
         /// <returns>The mass</returns>
         public double ReturnMassPerArea(PaddockInfo thePadd, ForageProvider provider, string units)
         {
-            double result;
-            double massKGHA;
-            int idx;
+            double result = 0;
 
             if (provider != null)
                 thePadd = provider.OwningPaddock;
 
-            massKGHA = 0.0;
+            double massKGHA = 0.0;
             if (thePadd != null)
             {
-                for (idx = 1; idx <= this.Count(); idx++)
+                for (int idx = 1; idx <= this.Count(); idx++)
+                {
                     if (stock[idx].PaddOccupied == thePadd)
                     {
                         massKGHA = massKGHA + (stock[idx].NoAnimals * stock[idx].LiveWeight);
                         if (stock[idx].Young != null)
                             massKGHA = massKGHA + (stock[idx].Young.NoAnimals * stock[idx].Young.LiveWeight);
                     }
+                }
                 massKGHA = massKGHA / thePadd.Area;
-            }
 
-            if (units == "kg/ha")
-                result = massKGHA;
-            else if (units == "kg/m^2")
-                result = massKGHA * 0.0001;
-            else if (units == "dse/ha")
-                result = massKGHA * WEIGHT2DSE;
-            else if (units == "g/m^2")
-                result = massKGHA * 0.1;
-            else
-                throw new Exception("Stock: Unit (" + units + ") not recognised");
+
+                if (units == "kg/ha")
+                    result = massKGHA;
+                else if (units == "kg/m^2")
+                    result = massKGHA * 0.0001;
+                else if (units == "dse/ha")
+                    result = massKGHA * WEIGHT2DSE;
+                else if (units == "g/m^2")
+                    result = massKGHA * 0.1;
+                else
+                    throw new Exception("Stock: Unit (" + units + ") not recognised");
+            }
 
             return result;
         }

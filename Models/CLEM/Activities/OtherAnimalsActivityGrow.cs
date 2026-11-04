@@ -1,9 +1,8 @@
 ﻿using Models.Core;
 using Models.CLEM.Resources;
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Models.Core.Attributes;
+using System.Collections.Generic;
 
 namespace Models.CLEM.Activities
 {
@@ -15,20 +14,15 @@ namespace Models.CLEM.Activities
     [ValidParent(ParentType = typeof(CLEMActivityBase))]
     [ValidParent(ParentType = typeof(ActivitiesHolder))]
     [ValidParent(ParentType = typeof(ActivityFolder))]
-    [Description("Performs the growth and aging of a specified type of other animal")]
+    [Description("Performs the growth, aging, and mortality of all other animals")]
     [Version(1, 0, 1, "")]
     [HelpUri(@"Content/Features/Activities/OtherAnimals/OtherAnimalsActivityGrow.htm")]
     public class OtherAnimalsActivityGrow : CLEMActivityBase
     {
-        /// <summary>
-        /// Name of Other Animal Type
-        /// </summary>
-        [Description("Name of Other Animal Type")]
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Name of Other Animal Type to use required")]
-        [Core.Display(Type = DisplayType.DropDown, Values = "GetResourcesAvailableByName", ValuesArgs = new object[] { new object[] { typeof(OtherAnimals) } })]
-        public string OtherAnimalType { get; set; }
-
-        private OtherAnimalsType animalType { get; set; }
+        [Link]
+        private const CLEMEvents events = null;
+        private OtherAnimals otherAnimals { get; set; }
+        private IEnumerable<OtherAnimalsType> otherAnimalsTypes { get; set; }
 
         /// <summary>An event handler to allow us to initialise ourselves.</summary>
         /// <param name="sender">The sender.</param>
@@ -36,8 +30,16 @@ namespace Models.CLEM.Activities
         [EventSubscribe("CLEMInitialiseActivity")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            // locate OtherAnimalsType resource
-            animalType = Resources.FindResourceType<OtherAnimals, OtherAnimalsType>(this, OtherAnimalType, OnMissingResourceActionTypes.ReportErrorAndStop, OnMissingResourceActionTypes.ReportErrorAndStop);
+            // locate OtherAnimals resource holder
+            otherAnimals = Resources.FindResourceGroup<OtherAnimals>();
+            if(otherAnimals != null)
+                otherAnimalsTypes = Structure.FindChildren<OtherAnimalsType>(relativeTo: otherAnimals);
+
+            if (otherAnimalsTypes == null)
+            {
+                string warn = $"No [r=OtherAnimalType] are available for [a={this.NameWithParent}].{Environment.NewLine}This activity will be ignored.";
+                Warnings.CheckAndWrite(warn, Summary, this, MessageType.Warning);
+            }
         }
 
         /// <summary>
@@ -50,14 +52,17 @@ namespace Models.CLEM.Activities
         private void OnCLEMAgeResources(object sender, EventArgs e)
         {
             // grow all individuals
-            foreach (OtherAnimalsTypeCohort cohort in animalType.Cohorts.OfType<OtherAnimalsTypeCohort>())
-                cohort.Age++;
-
-            // death from old age
-            while(animalType.Cohorts.Where(a => a.Age > animalType.MaxAge).Count() > 0)
-                animalType.Remove(animalType.Cohorts.Where(a => a.Age > animalType.MaxAge).FirstOrDefault(), this, "Died");
-
+            foreach (OtherAnimalsTypeCohort cohort in otherAnimals.GetCohorts(null, false))
+            {
+                cohort.AgeDetails.AddDays(events.Interval);
+                cohort.Weight = cohort.AnimalType.AgeWeightRelationship?.SolveY(cohort.AgeDetails.InDays) ?? 0.0;
+                // death from old age
+                if (cohort.AgeDetails.InDays > cohort.AnimalType.MaxAge.InDays)
+                {
+                    cohort.AdjustedNumber = cohort.Number;
+                    cohort.AnimalType.Remove(cohort, this, "Died");
+                }
+            }
         }
-
     }
 }

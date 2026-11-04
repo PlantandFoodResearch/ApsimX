@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
+using APSIM.Core;
+using APSIM.Numerics;
 using APSIM.Shared.Utilities;
 using Models.Core;
 using Models.Core.Run;
 using Models.Factorial;
+using Models.PreSimulationTools;
 using Models.Storage;
 
 namespace Models.PostSimulationTools
@@ -27,8 +31,13 @@ namespace Models.PostSimulationTools
     [ValidParent(ParentType = typeof(Folder))]
     [ValidParent(typeof(ParallelPostSimulationTool))]
     [ValidParent(ParentType = typeof(SerialPostSimulationTool))]
-    public class PredictedObserved : Model, IPostSimulationTool
+    public class PredictedObserved : Model, IPostSimulationTool, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
+
         [Link]
         private IDataStore dataStore = null;
 
@@ -125,11 +134,9 @@ namespace Models.PostSimulationTools
                 if (PredictedTableName == null || ObservedTableName == null)
                     return;
 
-                // If neither the predicted nor obseved tables have been modified during
-                // the most recent simulations run, don't do anything.
-                if (dataStore?.Writer != null &&
-                !(dataStore.Writer.TablesModified.Contains(PredictedTableName) || dataStore.Writer.TablesModified.Contains(ObservedTableName)))
-                    return;
+                DataTable dt = dataStore.Reader.GetDataUsingSql("SELECT * FROM [_Simulations]");
+                if (dt == null)
+                    throw new ApsimXException(this, "Datastore is empty, please re-run simulations");
 
                 IEnumerable<string> predictedDataNames = dataStore.Reader.ColumnNames(PredictedTableName);
                 IEnumerable<string> observedDataNames = dataStore.Reader.ColumnNames(ObservedTableName);
@@ -138,16 +145,16 @@ namespace Models.PostSimulationTools
                     throw new ApsimXException(this, "Could not find model data table: " + PredictedTableName);
 
                 if (!predictedDataNames.Any())
-                    throw new Exception($"Predicted table '{PredictedTableName}' contains no data");
+                    throw new Exception($"Predicted table '{PredictedTableName}' does not exist. Check Reports and re-run simulation.");
 
                 if (!observedDataNames.Any())
-                    throw new Exception($"Observed table '{ObservedTableName}' contains no data");
+                    throw new Exception($"Observed table '{ObservedTableName}' does not exist. Check Inputs and refresh datastore.");
 
                 if (observedDataNames == null)
                     throw new ApsimXException(this, "Could not find observed data table: " + ObservedTableName);
 
                 // get the common columns between these lists of columns
-                List<string> commonCols = predictedDataNames.Intersect(observedDataNames).ToList();
+                List<string> commonCols = predictedDataNames.Intersect(observedDataNames, StringComparer.OrdinalIgnoreCase).ToList();
                 if (commonCols.Count == 0)
                     throw new Exception($"Predicted table '{PredictedTableName}' and observed table '{ObservedTableName}' do not have any columns with the same name.");
                 // This should be all columns which exist in one table but not both.
@@ -167,7 +174,7 @@ namespace Models.PostSimulationTools
                         query.Append(", ");
 
                     if (fieldNamesToMatch.Contains(s))
-                        query.Append($"O.\"{s}\"");
+                        query.Append($"O.\"{s}\" as \"{s}\"");
                     else
                         query.Append($"O.\"{s}\" AS \"Observed.{s}\", P.\"{s}\" AS \"Predicted.{s}\"");
                 }
@@ -207,13 +214,13 @@ namespace Models.PostSimulationTools
                 {
                     // Limit it to particular simulations in scope.
                     List<string> simulationNames = new List<string>();
-                    foreach (Experiment experiment in this.FindAllInScope<Experiment>())
+                    foreach (Experiment experiment in Structure.FindAll<Experiment>())
                     {
                         var names = experiment.GenerateSimulationDescriptions().Select(s => s.Name);
                         simulationNames.AddRange(names);
                     }
 
-                    foreach (Simulation simulation in this.FindAllInScope<Simulation>())
+                    foreach (Simulation simulation in Structure.FindAll<Simulation>())
                         if (!(simulation.Parent is Experiment))
                             simulationNames.Add(simulation.Name);
 
@@ -296,6 +303,9 @@ namespace Models.PostSimulationTools
                         }
                         dataStore.Writer.AddUnits(Name, unitFieldNames, unitNames);
                     }
+
+                    //write the details of the PO to the datastore as well for POStats to read
+                    WriteMetadataToDataStore();
                 }
                 else
                 {
@@ -312,7 +322,12 @@ namespace Models.PostSimulationTools
             }
             catch (Exception err)
             {
-                throw new Exception($"Error in PredictedObserved tool {Name}", err);
+                string fileName = "Unknown";
+                if ((dataStore as DataStore).Parent is Simulation simulation)
+                    fileName = simulation.FileName;
+                else if ((dataStore as DataStore).Parent is Simulations simulations)
+                    fileName = simulations.FileName;
+                throw new Exception($"Error in PredictedObserved tool {Name}. File: {fileName}", err);
             }
         }
 
@@ -324,7 +339,7 @@ namespace Models.PostSimulationTools
             if (string.IsNullOrEmpty(PredictedTableName) || string.IsNullOrEmpty(ObservedTableName))
                 return new string[0];
 
-            IDataStore storage = FindInScope<IDataStore>();
+            IDataStore storage = Structure.Find<IDataStore>();
             if (!storage.Reader.TableNames.Contains(PredictedTableName) || !storage.Reader.TableNames.Contains(ObservedTableName))
                 return new string[0];
 
@@ -348,6 +363,41 @@ namespace Models.PostSimulationTools
             }
 
             return intersect.ToArray();
+        }
+
+        private void WriteMetadataToDataStore()
+        {
+            string fileReference = "";
+            if (Node != null)
+            {
+                Virtual import = Node.FindParent<Virtual>(recurse:true);
+                if (import != null)
+                    fileReference = Path.GetFileNameWithoutExtension(import.FileName);
+            }
+            
+            //Save metadata about predictedObserved
+            DataTable table = new DataTable("_PredictedObserved");
+            table.Columns.Add("name", typeof(string));
+            table.Columns.Add("predicted_table", typeof(string));
+            table.Columns.Add("observed_table", typeof(string));
+            table.Columns.Add("field_match_one", typeof(string));
+            table.Columns.Add("field_match_two", typeof(string));
+            table.Columns.Add("field_match_three", typeof(string));
+            table.Columns.Add("field_match_four", typeof(string));
+            table.Columns.Add("comparison", typeof(string));
+
+            DataRow row = table.NewRow();
+            row["name"] = Name;
+            row["predicted_table"] = PredictedTableName;
+            row["observed_table"] = ObservedTableName;
+            row["field_match_one"] = FieldNameUsedForMatch;
+            row["field_match_two"] = FieldName2UsedForMatch;
+            row["field_match_three"] = FieldName3UsedForMatch;
+            row["field_match_four"] = FieldName4UsedForMatch;
+            row["comparison"] = fileReference;
+            table.Rows.Add(row);
+
+            dataStore.Writer.WriteTable(table, false);
         }
     }
 }

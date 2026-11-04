@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using APSIM.Core;
+using APSIM.Numerics;
 using APSIM.Shared.Extensions.Collections;
 using APSIM.Shared.Utilities;
 using Models.Core;
-using Models.Core.ApsimFile;
 using Models.Soils.Nutrients;
 using Models.Surface;
 
@@ -18,8 +19,13 @@ namespace Models.Soils.NutrientPatching
     [ViewName("UserInterface.Views.PropertyView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
     [ValidParent(ParentType = typeof(Soil))]
-    public class NutrientPatchManager : Model, INutrient, INutrientPatchManager
+    public class NutrientPatchManager : Model, INutrient, INutrientPatchManager, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
+
         [Link]
         private IClock clock = null;
 
@@ -36,9 +42,6 @@ namespace Models.Soils.NutrientPatching
 
         /// <summary>Minimum allowable relative area for a CNpatch (0-1).</summary>
         private double minimumPatchArea = 0.000001;
-
-        /// <summary>The maximum amount of N that is made available to plants in one day (kg/ha/day).</summary>
-        public double MaximumNitrogenAvailableToPlants { get; set; } = 3;
 
         /// <summary>The approach used for partitioning the N between patches.</summary>
         public PartitionApproachEnum NPartitionApproach { get; set; } = PartitionApproachEnum.BasedOnConcentrationAndDelta;
@@ -62,6 +65,14 @@ namespace Models.Soils.NutrientPatching
         /// <summary>Layer thickness to consider when N partition between patches is BasedOnSoilConcentration (mm).</summary>
         [Units("mm")]
         public double LayerForNPartition { get; set; } = -99;
+
+        /// <summary>The maximum amount of NO3 (by layer) that is available to plants (ppm).</summary>
+        [Units("ppm")]
+        public double[] MaximumNO3AvailableToPlants { get; set; } = null;
+
+        /// <summary>The maximum amount of NH4 (by layer) that is available to plants (ppm).</summary>
+        [Units("ppm")]
+        public double[] MaximumNH4AvailableToPlants { get; set; } = null;
 
         /// <summary>The inert pool.</summary>
         public IOrganicPool Inert { get { return SumNutrientPools(patches.Select(patch => patch.Nutrient.Inert)); } }
@@ -93,6 +104,12 @@ namespace Models.Soils.NutrientPatching
         /// <summary>The NH4 pool.</summary>
         public ISolute NH4 { get { return SumSolutes(patches.Select(patch => patch.Nutrient.NH4)); } }
 
+        /// <summary>The effective NO3 pool.</summary>
+        public ISolute NO3Effective { get { return SumSolutesEffective(patches.Select(patch => patch.Nutrient.NO3), MaximumNO3AvailableToPlants); } }
+
+        /// <summary>The NH4 pool.</summary>
+        public ISolute NH4Effective { get { return SumSolutesEffective(patches.Select(patch => patch.Nutrient.NH4), MaximumNH4AvailableToPlants); } }
+
         /// <summary>The Urea pool.</summary>
         public ISolute Urea { get { return SumSolutes(patches.Select(patch => patch.Nutrient.Urea)); } }
 
@@ -119,6 +136,9 @@ namespace Models.Soils.NutrientPatching
 
         /// <summary>Total N2O lost to the atmosphere</summary>
         public IReadOnlyList<double> N2Oatm { get { return SumDoubles(patches.Select(patch => patch.Nutrient.N2Oatm)); } }
+
+        /// <summary>Total N2O lost to the atmosphere from top 300mm of soil.</summary>
+        public IReadOnlyList<double> N2Oatm300mm { get { return SumDoubles(patches.Select(patch => SoilUtilities.KeepTopXmm(patch.Nutrient.N2Oatm, soilPhysical.Thickness, 300))); } }
 
         /// <summary>Total Net N Mineralisation in each soil layer</summary>
         public IReadOnlyList<double> MineralisedN { get { return SumDoubles(patches.Select(patch => patch.Nutrient.MineralisedN)); } }
@@ -165,14 +185,49 @@ namespace Models.Soils.NutrientPatching
         /// <summary>Denitrified Nitrogen (N flow from NO3) for each patch.</summary>
         public double[] DenitrifiedNEachPatch { get { return patches.Select(patch => patch.Nutrient.DenitrifiedN.Sum()).ToArray(); } }
 
-        /// <summary>Total N2O lost to the atmosphere for each patch.</summary>
-        public double[] DenitN2OEachPatch { get { return patches.Select(patch => patch.Nutrient.N2Oatm.Sum()).ToArray(); } }
+        /// <summary>Total N2O lost to the atmosphere for each patch from top 300mm of soil.</summary>
+        public double[] N2OatmEachPatch { get { return patches.Select(patch => patch.Nutrient.N2Oatm.Sum()).ToArray(); } }
+
+        /// <summary>Total N2O lost to the atmosphere for each patch from top 300mm of soil.</summary>
+        public double[] N2Oatm300mmEachPatch { get { return patches.Select(patch => SoilUtilities.KeepTopXmm(patch.Nutrient.N2Oatm, soilPhysical.Thickness, 300).Sum()).ToArray(); } }
 
         /// <summary>Total C for each patch</summary>
         public double[] TotalCEachPatch { get { return patches.Select(patch => patch.Nutrient.TotalC.Sum()).ToArray(); } }
 
         /// <summary>Total N for each patch</summary>
         public double[] TotalNEachPatch { get { return patches.Select(patch => patch.Nutrient.TotalN.Sum()).ToArray(); } }
+
+        /// <summary>
+        /// Add an amount of c, n, p (kg/ha) into a layer of the microbial pool.
+        /// </summary>
+        /// <param name="i">Layer index</param>
+        /// <param name="c">Amount of carbon (kg/ha)</param>
+        /// <param name="n">Amount of nitrogen (kg/ha)</param>
+        /// <param name="p">Amount of phosphorus (kg/ha)</param>
+        public void AddToMicrobial(int i, double c, double n, double p)
+        {
+            var areas = patches.Select(patch => patch.RelativeArea).ToList();
+            var poolsAsList = patches.Select(patch => patch.Nutrient.Microbial).ToList();
+
+            for (int poolIndex = 0; poolIndex < poolsAsList.Count; poolIndex++)
+                poolsAsList[poolIndex].Add(i, c, n, p);
+        }
+
+        /// <summary>
+        /// Add an amount of c, n, p (kg/ha) into a layer of the humic pool.
+        /// </summary>
+        /// <param name="i">Layer index</param>
+        /// <param name="c">Amount of carbon (kg/ha)</param>
+        /// <param name="n">Amount of nitrogen (kg/ha)</param>
+        /// <param name="p">Amount of phosphorus (kg/ha)</param>
+        public void AddToHumic(int i, double c, double n, double p)
+        {
+            var areas = patches.Select(patch => patch.RelativeArea).ToList();
+            var poolsAsList = patches.Select(patch => patch.Nutrient.Humic).ToList();
+
+            for (int poolIndex = 0; poolIndex < poolsAsList.Count; poolIndex++)
+                poolsAsList[poolIndex].Add(i, c, n, p);
+        }
 
         /// <summary>
         /// Called by solutes to get the value of a solute.
@@ -261,6 +316,8 @@ namespace Models.Soils.NutrientPatching
         /// <param name="patch">Details of the patch to add.</param>
         public void Add(AddSoilCNPatchType patch)
         {
+            Initialise();
+
             AddSoilCNPatchwithFOMType PatchtoAdd = new AddSoilCNPatchwithFOMType();
             PatchtoAdd.Sender = patch.Sender;
             PatchtoAdd.SuppressMessages = patch.SuppressMessages;
@@ -388,6 +445,33 @@ namespace Models.Soils.NutrientPatching
         }
 
         /// <summary>
+        /// Sum a list of solutes, multiplying them by their respective areas.
+        /// </summary>
+        /// <param name="solutes">The list of solutes</param>
+        /// <param name="maximums">The maximum values (by layer) available to plants.</param>
+        private ISolute SumSolutesEffective(IEnumerable<ISolute> solutes, double[] maximums)
+        {
+            var areas = patches.Select(patch => patch.RelativeArea).ToList();
+
+            var values = new double[soilPhysical.Thickness.Length];
+            string name = solutes.First().Name;
+            foreach (var patch in solutes.Zip(areas))
+            {
+                var soluteppm = patch.First.ppm;
+                var area = patch.Second;
+                for (int i = 0; i < soilPhysical.Thickness.Length; i++)
+                {
+                    double value = soluteppm[i];
+                    if (maximums != null)
+                        value = Math.Min(value, maximums[i]);
+                    values[i] += value * area;
+                }
+            }
+            values = SoilUtilities.ppm2kgha(soilPhysical.Thickness, soilPhysical.BD, values);
+            return new Solute(name, values);
+        }
+
+        /// <summary>
         /// Sum a list of double values, multiplying them by their respective areas.
         /// </summary>
         /// <param name="values">The list of solutes</param>
@@ -433,25 +517,66 @@ namespace Models.Soils.NutrientPatching
             return new OrganicPool(c, n, p);
         }
 
+        /// <summary>At the start of the simulation set up.</summary>
+        public override void OnPreLink()
+        {
+            Initialise();
+        }
+
         /// <summary>At the start of the simulation set up LifeCyclePhases</summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         [EventSubscribe("Commencing")]
         private void OnStartOfSimulation(object sender, EventArgs e)
         {
-            // Make sure the NutrientPatchManager is after the solutes so that scoping works.
-            // This is an ugly hack but I can't think of an easy way to get around the problem of
-            // the plant models and soil water finding the solutes under NutrientPatchManager
-            // instead of the solute directly under the soil. Scoping design problem.
-            if (Parent.Children.Last() != this)
-                throw new Exception("NutrientPatchManager must be the last child of soil");
+            Initialise();
+        }
 
-            // Create a new nutrient patch.
-            var newPatch = new NutrientPatch(soilPhysical.Thickness, this);
-            newPatch.CreationDate = clock.Today;
-            newPatch.Name = "base";
-            patches.Add(newPatch);
-            Structure.Add(newPatch.Nutrient, this);
+        /// <summary>
+        /// Initialise the patch manager if necessary.
+        /// </summary>
+        /// <exception cref="Exception"></exception>
+        private void Initialise()
+        {
+            if (!patches.Any())
+            {
+                // Make sure the NutrientPatchManager is after the solutes so that scoping works.
+                // This is an ugly hack but I can't think of an easy way to get around the problem of
+                // the plant models and soil water finding the solutes under NutrientPatchManager
+                // instead of the solute directly under the soil. Scoping design problem.
+                if (Parent.Children.Last() != this)
+                    throw new Exception("NutrientPatchManager must be the last child of soil");
+
+                // Find the physical node.
+                soilPhysical = Structure.Find<Physical>();
+                clock = Structure.Find<Clock>();
+
+                // Create a new nutrient patch.
+                var newPatch = new NutrientPatch(soilPhysical.Thickness, this, Structure);
+                newPatch.CreationDate = clock.Today;
+                newPatch.Name = "base";
+                patches.Add(newPatch);
+                Node.AddChild(newPatch.Nutrient);
+                Apsim.ReconnectLinksAndEvents(newPatch.Nutrient);
+
+                // Create an OrganicPoolPatch under SurfaceOrganicMatter so that SurfaceOrganicMatter residue composition
+                // C and N flows go to this patch manager rather than directly to the pool under Nutrient in the first patch.
+                var microbialPool = new OrganicPoolPatch(this)
+                {
+                    Name = "Microbial"
+                };
+
+                Node.InsertChild(0, microbialPool);
+                Apsim.ReconnectLinksAndEvents(microbialPool);
+
+                var humicPool = new OrganicPoolPatch(this)
+                {
+                    Name = "Humic"
+                };
+
+                Node.InsertChild(0, humicPool);
+                Apsim.ReconnectLinksAndEvents(microbialPool);
+            }
         }
 
         /// <summary>
@@ -657,7 +782,7 @@ namespace Models.Soils.NutrientPatching
                         }
                         patches[k].CreationDate = clock.Today;
                         idPatchesJustAdded.Add(k);
-                        if (!PatchtoAdd.SuppressMessages)
+                        if (summary != null && !PatchtoAdd.SuppressMessages)
                         {
                             summary.WriteMessage(this, "create new patch, with area = " + NewPatch_NewArea.ToString("#0.00#") +
                                          ", based on existing patch(" + idPatchesAffected[i].ToString() +
@@ -785,7 +910,7 @@ namespace Models.Soils.NutrientPatching
         private void ClonePatch(int j)
         {
             // create new patch
-            var newPatch = new NutrientPatch(patches[j]);
+            var newPatch = new NutrientPatch(patches[j], Structure);
             patches.Add(newPatch);
             //int k = patches.Count - 1;
 

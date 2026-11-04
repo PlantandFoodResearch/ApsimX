@@ -1,0 +1,222 @@
+using CommandLine;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using System.Diagnostics;
+using Humanizer;
+using System.Threading;
+using System.Globalization;
+
+namespace APSIM.Workflow;
+
+/// <summary>
+/// Main program class for the APSIM.Workflow application.
+/// </summary>
+public class Program
+{
+    /// <summary>Exit code for the application.</summary>
+    private static int exitCode = 0;
+
+    /// <summary>List of APSIM file paths to be processed.</summary>
+    public static List<string> apsimFilePaths = new();
+
+    private static ILogger<Program> logger;
+
+    /// <summary>
+    /// relative paths for simulation files that should not be included because
+    /// they either will not run, or are not meant to run, or are ran in a different
+    /// manner.
+    /// </summary>
+    public static string[] EXCLUDED_SIMS_FILEPATHS = {
+            "/Prototypes/CroptimizR/template.apsimx",
+            "/Examples/Optimisation/CroptimizRExample.apsimx",
+            "/Examples/CsvWeather.apsimx", //has no output
+            "/Tests/Simulation/SoilNitrogenPatch/PaddockSims/Edited_v2_BivariateNormal.apsimx", //has no output
+            "/Tests/Simulation/SoilNitrogenPatch/PaddockSims/Edited_v5_BivariateNormal.apsimx", //has no output
+            "/Tests/Validation/Wheat/Wheat.apsimx", //TODO: Leave wheat out for now as it gets split into smaller files automatically.
+            "/Tests/Validation/Wheat/FAR/FAR.apsimx", //TODO: Leave FAR out for now as it gets split into smaller files automatically.
+            "/Tests/Validation/Wheat/Phenology/Phenology.apsimx", //TODO: Leave Phenology out for now as it gets split into smaller files automatically.
+            "/Tests/Validation/Eucalyptus/Eucalyptus.apsimx",
+            "/Tests/Validation/Eucalyptus/EKB.250603b/EKB 250603b.apsimx",
+            "/Tests/Validation/Barley/Barley.apsimx",
+            "/Tests/Validation/Pinus/Pinus.apsimx"
+        };
+
+
+    /// <summary> Main entry point for APSIM.WorkFlow</summary>
+    /// <param name="args">command line arguments</param>
+    public static int Main(string[] args)
+    {
+        using var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddConsole(options =>
+            {
+                options.FormatterName = MinimalConsoleFormatter.FormatterName;
+            });
+            builder.AddConsoleFormatter<MinimalConsoleFormatter, ConsoleFormatterOptions>();
+        });
+        logger = loggerFactory.CreateLogger<Program>();
+
+        Parser.Default.ParseArguments<Options>(args).WithParsed(RunOptions).WithNotParsed(HandleParseError);
+
+        return exitCode;
+    }
+
+
+    /// <summary>Runs the application with the specified options.</summary>
+    /// <param name="options"></param>
+    private static void RunOptions(Options options)
+    {
+        try
+        {
+            if (options.SplitFiles != null)
+            {
+                FileSplitter.Run(options.DirectoryPath, options.SplitFiles, Path.GetDirectoryName(options.DirectoryPath) + "/", logger);
+                return;
+            }
+            else if (options.ValidationLocations)
+            {
+                if (options.Verbose)
+                    logger.LogInformation("Validation locations:");
+
+                foreach (string dir in ValidationLocationUtility.GetValidationFilePaths())
+                {
+                    Console.WriteLine(dir);
+                }
+            }
+            else if (options.SimulationCount)
+            {
+                Console.WriteLine(ValidationLocationUtility.GetSimulationCount());
+            }
+            if (!string.IsNullOrEmpty(options.DirectoryPath))
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                try
+                {
+                    string[] validationPaths = RemoveExcludedPaths(ValidationLocationUtility.GetValidationFilePaths());
+                    // Create a pool name using the PR number and commit SHA.
+                    if (string.IsNullOrEmpty(options.PullRequestNumber))
+                        throw new ArgumentException("A pull request number argument must be provided for Azure batch pool creation to complete successfully.");
+                    if (string.IsNullOrEmpty(options.CommitSHA))
+                        throw new ArgumentException("A commit SHA argument must be provided for Azure batch pool creation to complete successfully.");
+                    if (validationPaths.Length < 1)
+                        throw new Exception("A list of validation paths must be provided to continue.");
+                    if (string.IsNullOrEmpty(options.EnvString))
+                        throw new ArgumentException("An environment variable must be provided to continue.");
+
+                    string shortCommitSha = options.CommitSHA.Length > 6 ? options.CommitSHA[..6] : options.CommitSHA;
+                    string poolName = $"{options.PullRequestNumber}-{shortCommitSha}";
+                    string nowDateString = DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture);
+                    string jobName = $"{nowDateString}-acceptance-tests-pr-{options.PullRequestNumber}";
+
+                    // Create the environment variable dictionary for use further on 
+                    // from the environment variable string.
+
+                    Dictionary<string, string> envDict = [];
+                    foreach(string line in options.EnvString.Split(
+                        [ "\r\n", "\n" ],
+                        StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        // Split only on the first '=' since values (e.g. base64 keys) may themselves contain '='.
+                        string[] values = line.Split('=', 2);
+                        envDict.Add(values[0], values[1]);
+                    }
+
+                    // Add PO Stats specific environment variables
+                    envDict.Add("AUTHOR", options.GitHubAuthorID);
+                    envDict.Add("COMMIT_SHA", shortCommitSha);
+                    envDict.Add("FULL_COMMIT_HASH", options.FullCommitHash);
+
+                    Azure.CreatePool(envDict["AZURE_PRIMARY_ACCESS_KEY"], poolName, isAutoscaling: false);
+                    logger.LogInformation($"An Azure batch pool called {poolName} successfully created!");
+                    Azure.CreateJobs(
+                        envDict["AZURE_PRIMARY_ACCESS_KEY"],
+                        validationPaths,
+                        envDict,
+                        jobName,
+                        envDict["AZURE_KEY1"],
+                        options.PullRequestNumber,
+                        poolName
+                    );
+                    logger.LogInformation($"Azure jobs successfully submitted!");
+                    // Wait for a few minutes before resizing.
+                    Thread.Sleep(TimeSpan.FromMinutes(3));
+                    Azure.EnablePoolAutoReszing(envDict["AZURE_PRIMARY_ACCESS_KEY"], poolName);
+                    logger.LogInformation($"Azure pool successfully resized!");
+                    stopwatch.Stop();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError($"Validation workflow error: {ex.Message}\n{ex.StackTrace}");
+                    stopwatch.Stop();
+                    logger.LogInformation($"Workflow failed after: {stopwatch.Elapsed.Humanize()}");
+                    exitCode = 1;
+                }
+
+                logger.LogInformation($"Validation workflow completed successfully in {stopwatch.Elapsed.Humanize()}");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Error: " + ex.Message);
+            exitCode = 1;
+        }
+    }
+
+
+    /// <summary>
+    /// Handles parser errors to ensure that a non-zero exit code
+    /// is returned when parse errors are encountered.
+    /// </summary>
+    /// <param name="errors">Parse errors</param>
+    private static void HandleParseError(IEnumerable<Error> errors)
+    {
+        foreach (var error in errors)
+        {
+            if (error as VersionRequestedError == null && error as HelpRequestedError == null && error as MissingRequiredOptionError == null)
+            {
+                logger.LogError("Console error output: " + error.ToString());
+                logger.LogError("Trace error output: " + error.ToString());
+            }
+        }
+
+        if (!(errors.IsHelp() || errors.IsVersion() || errors.Any(e => e is MissingRequiredOptionError)))
+            exitCode = 1;
+    }
+
+    /// <summary>
+    /// Removes paths from the validation paths array if they contain any of the excluded simulation file paths.
+    /// </summary>
+    /// <param name="paths">The collection of validation paths.</param>
+    /// <returns>A filtered array of validation paths without excluded simulations.</returns>
+    public static string[] RemoveExcludedPaths(IEnumerable<string> paths)
+    {
+        return paths.Where(path => !ContainsExcludedPath(path)).ToArray();
+    }
+
+    /// <summary>
+    /// Removes paths from the validation paths list if they contain any of the excluded simulation file paths.
+    /// </summary>
+    /// <param name="paths">The list of validation paths.</param>
+    public static void RemoveExcludedPaths(List<string> paths)
+    {
+        paths.RemoveAll(ContainsExcludedPath);
+    }
+
+    /// <summary>
+    /// Determines whether a path contains any of the excluded simulation file paths.
+    /// </summary>
+    /// <param name="path">The file path to check.</param>
+    /// <returns>True if the path contains an excluded simulation path; otherwise, false.</returns>
+    public static bool ContainsExcludedPath(string path)
+    {
+        string normalizedPath = path.NormalizePath().TrimStart('/');
+        return EXCLUDED_SIMS_FILEPATHS.Any(excluded =>
+            normalizedPath.Contains(excluded.NormalizePath().TrimStart('/'), StringComparison.OrdinalIgnoreCase));
+    }
+
+}

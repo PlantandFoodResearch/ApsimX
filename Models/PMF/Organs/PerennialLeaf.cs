@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using APSIM.Shared.Documentation;
+using APSIM.Core;
+using APSIM.Numerics;
 using APSIM.Shared.Utilities;
 using Models.Core;
 using Models.Functions;
@@ -26,12 +26,6 @@ namespace Models.PMF.Organs
         /// <summary>The met data</summary>
         [Link]
         public IWeather MetData = null;
-
-        /// <summary>
-        /// The plant
-        /// </summary>
-        [Link]
-        private Plant plant = null;
 
         /// <summary>Carbon concentration</summary>
         /// [Units("-")]
@@ -145,7 +139,7 @@ namespace Models.PMF.Organs
             {
                 if (Plant.IsAlive)
                 {
-                    double greenCover = 1.0 - Math.Exp(-ExtinctionCoefficient.Value() * LAI);
+                    double greenCover = coverGreenFunction.Value();
                     return Math.Min(Math.Max(greenCover, 0.0), 0.999999999); // limiting to within 10^-9, so MicroClimate doesn't complain
                 }
                 else
@@ -212,12 +206,15 @@ namespace Models.PMF.Organs
         [Units("g/m2/d")]
         private NutrientPoolFunctions nDemands = null;
 
-        /// <summary>The extinction coefficient function</summary>
+        /// <summary>The fractional cover for green canopy</summary>
         [Link(Type = LinkType.Child, ByName = true)]
-        IFunction ExtinctionCoefficient = null;
-        /// <summary>The extinction coefficient function for dead leaves</summary>
+        private IFunction coverGreenFunction = null;
+        /// <summary>The fractional cover for dead canopy</summary>
         [Link(Type = LinkType.Child, ByName = true)]
-        IFunction ExtinctionCoefficientDead = null;
+        private IFunction coverDeadFunction = null;
+
+
+
         /// <summary>The photosynthesis</summary>
         [Link(Type = LinkType.Child, ByName = true)]
         IFunction Photosynthesis = null;
@@ -309,7 +306,15 @@ namespace Models.PMF.Organs
         public double LAIDead => cohort.LaiDead;
 
         /// <summary>Gets the cover dead.</summary>
-        public double CoverDead { get { return 1.0 - Math.Exp(-ExtinctionCoefficientDead.Value() * LAIDead); } }
+        public double CoverDead { 
+            get {
+                double value = coverDeadFunction.Value();
+                if (MathUtilities.FloatsAreEqual(value, 0))
+                    return 0; 
+                else
+                    return value;
+            } 
+        }
 
         /// <summary>Gets the total radiation intercepted.</summary>
         [Units("MJ/m^2/day")]
@@ -394,8 +399,7 @@ namespace Models.PMF.Organs
                     if (Structure != null)
                         Structure.LeafTipsAppeared = 1.0;
 
-            if (plant.IsAlive)
-                ClearBiomassFlows();
+            ClearBiomassFlows();
         }
         #endregion
 
@@ -516,10 +520,10 @@ namespace Models.PMF.Organs
         /// <summary>Sets the dry matter allocation.</summary>
         public void SetDryMatterAllocation(BiomassAllocationType dryMatter)
         {
-            // GrowthRespiration with unit CO2 
-            // GrowthRespiration is calculated as 
-            // Allocated CH2O from photosynthesis "1 / DMConversionEfficiency.Value()", converted 
-            // into carbon through (12 / 30), then minus the carbon in the biomass, finally converted into 
+            // GrowthRespiration with unit CO2
+            // GrowthRespiration is calculated as
+            // Allocated CH2O from photosynthesis "1 / DMConversionEfficiency.Value()", converted
+            // into carbon through (12 / 30), then minus the carbon in the biomass, finally converted into
             // CO2 (44/12).
             double growthRespFactor = ((1 / DMConversionEfficiency.Value()) * (12.0 / 30.0) - 1.0 * CarbonConcentration.Value()) * 44.0 / 12.0;
             GrowthRespiration = (dryMatter.Structural + dryMatter.Storage) * growthRespFactor;
@@ -546,10 +550,10 @@ namespace Models.PMF.Organs
         }
 
         /// <summary>Gets or sets the maximum nconc.</summary>
-        public double MaxNconc { get { return MaximumNConc.Value(); } }
+        public double MaxNConc { get { return MaximumNConc.Value(); } }
 
         /// <summary>Gets or sets the minimum nconc.</summary>
-        public double MinNconc { get { return MinimumNConc.Value(); } }
+        public double MinNConc { get { return MinimumNConc.Value(); } }
 
         /// <summary>Gets the total biomass</summary>
         public Biomass Total { get { return Live + Dead; } }
@@ -568,7 +572,7 @@ namespace Models.PMF.Organs
         /// <summary>Called when [simulation commencing].</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// 
+        ///
         [EventSubscribe("Commencing")]
         protected void OnSimulationCommencing(object sender, EventArgs e)
         {
@@ -674,6 +678,16 @@ namespace Models.PMF.Organs
             Clear();
         }
 
+        /// <summary>Called when crop is harvested</summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        [EventSubscribe("PostHarvesting")]
+        protected void OnPostHarvesting(object sender, HarvestingParameters e)
+        {
+            if (e.RemoveBiomass)
+                Harvest();
+        }
+
         /// <summary>Called when [phase changed].</summary>
         /// <param name="phaseChange">The phase change.</param>
         /// <param name="sender">Sender plant.</param>
@@ -699,12 +713,13 @@ namespace Models.PMF.Organs
         /// <param name="deadToRemove">Fraction of dead biomass to remove from simulation (0-1).</param>
         /// <param name="liveToResidue">Fraction of live biomass to remove and send to residue pool(0-1).</param>
         /// <param name="deadToResidue">Fraction of dead biomass to remove and send to residue pool(0-1).</param>
+        /// <param name="fractionStanding">Fraction of biomass that remains standing when passed to surfaceOM (0-1).</param>
         /// <returns>The amount of biomass (live+dead) removed from the plant (g/m2).</returns>
-        public double RemoveBiomass(double liveToRemove, double deadToRemove, double liveToResidue, double deadToResidue)
+        public double RemoveBiomass(double liveToRemove, double deadToRemove, double liveToResidue, double deadToResidue, double fractionStanding = 0)
         {
             Biomass liveAfterRemoval = Live;
             Biomass deadAfterRemoval = Dead;
-            double amountRemoved = biomassRemovalModel.RemoveBiomass(liveToRemove, deadToRemove, liveToResidue, deadToResidue, liveAfterRemoval, deadAfterRemoval, Removed, Detached);
+            double amountRemoved = biomassRemovalModel.RemoveBiomass(liveToRemove, deadToRemove, liveToResidue, deadToResidue, liveAfterRemoval, deadAfterRemoval, Removed, Detached, fractionStanding);
 
             cohort.ReduceLeavesUniformly(liveFraction: MathUtilities.Divide(liveAfterRemoval.Wt, Live.Wt, 0),
                                          deadFraction: MathUtilities.Divide(deadAfterRemoval.Wt, Dead.Wt, 0));
@@ -722,30 +737,6 @@ namespace Models.PMF.Organs
         {
             return RemoveBiomass(biomassRemovalModel.HarvestFractionLiveToRemove, biomassRemovalModel.HarvestFractionDeadToRemove,
                                  biomassRemovalModel.HarvestFractionLiveToResidue, biomassRemovalModel.HarvestFractionDeadToResidue);
-        }
-
-        /// <summary>Writes documentation for this function by adding to the list of documentation tags.</summary>
-        public override IEnumerable<ITag> Document()
-        {
-            foreach (var tag in GetModelDescription())
-                yield return tag;
-
-            // Document memos.
-            foreach (var memo in FindAllChildren<Memo>())
-                foreach (var tag in memo.Document())
-                    yield return tag;
-
-            // Document Constants
-            var constantTags = new List<ITag>();
-            foreach (var constant in FindAllChildren<Constant>())
-                foreach (var tag in constant.Document())
-                    constantTags.Add(tag);
-            yield return new Section("Constants", constantTags);
-
-            // Document everything else.
-            foreach (var child in Children.Where(child => !(child is Memo) &&
-                                                          !(child is Constant)))
-                yield return new Section(child.Name, child.Document());
         }
 
     }

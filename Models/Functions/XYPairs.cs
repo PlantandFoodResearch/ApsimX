@@ -1,51 +1,53 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using APSIM.Shared.Documentation;
-using APSIM.Shared.Graphing;
-using APSIM.Shared.Utilities;
+using APSIM.Core;
+using APSIM.Numerics;
 using Models.Core;
-using Models.Interfaces;
-using Models.Utilities;
-using Newtonsoft.Json;
-using Table = APSIM.Shared.Documentation.Table;
 
 namespace Models.Functions
 {
     /// <summary>
-    /// This function is calculated from an XY matrix which returns a value for Y 
+    /// This function is calculated from an XY matrix which returns a value for Y
     /// interpolated from the Xvalue provided.
     /// </summary>
     [Serializable]
-    [ViewName("UserInterface.Views.XYPairsView")]
-    [PresenterName("UserInterface.Presenters.XYPairsPresenter")]
-    [Description("Returns a y value from the specified xy maxrix corresponding to the current value of the Xproperty")]
-    public class XYPairs : Model, IFunction, IIndexedFunction, IGridModel
+    [ViewName("UserInterface.Views.QuadView")]
+    [PresenterName("UserInterface.Presenters.QuadPresenter")]
+    [Description("Returns the corresponding Y value for a given X value, based on the line shape defined by the specified XY matrix.")]
+    public class XYPairs : Model, IFunction, IIndexedFunction
     {
+        private double[] _x;
+
+        private double[] _y;
+
+        /// <summary>
+        /// Is set when X or Y arrays are changed, shortcut if all y values are equal
+        /// </summary>
+        private bool _allEqual = false;
+        private double _allEqualValue = double.NaN;
+
         /// <summary>Gets or sets the x.</summary>
         [Description("X")]
-        public double[] X { get; set; }
+        [Display]
+        public double[] X 
+        { 
+            get { return _x; }
+            set { _x = value; }
+        }
 
         /// <summary>Gets or sets the y.</summary>
         [Description("Y")]
-        public double[] Y { get; set; }
-
-        /// <summary>The name of the x variable. Used in documentation.</summary>
-        [Description("Name of X variable (for documentation)")]
-        public string XVariableName { get; set; }
-
-        /// <summary>Tabular data. Called by GUI.</summary>
-        [JsonIgnore]
-        public List<GridTable> Tables
+        [Display]
+        public double[] Y
         {
-            get
+            get 
             {
-                var columns = new List<GridTableColumn>();
-                columns.Add(new GridTableColumn("X", new VariableProperty(this, GetType().GetProperty("X"))));
-                columns.Add(new GridTableColumn("Y", new VariableProperty(this, GetType().GetProperty("Y"))));
-                List<GridTable> tables = new List<GridTable>();
-                tables.Add(new GridTable(Name, columns, this));
-                return tables;
+                return _y;
+            }
+            set 
+            {
+                _y = value;
+                CheckIfAllYAreTheSame();
             }
         }
 
@@ -62,61 +64,68 @@ namespace Models.Functions
         /// <returns></returns>
         public double ValueIndexed(double dX)
         {
-            bool DidInterpolate = false;
-            return MathUtilities.LinearInterpReal(dX, X, Y, out DidInterpolate);
+            // Shortcut exit when the Y values are all the same. Runs quicker.
+            if (_allEqual)
+                return _allEqualValue;
+
+            try
+            {
+                return MathUtilities.LinearInterpReal(dX, X, Y, out bool DidInterpolate);
+            }
+            catch (Exception err)
+            {
+                throw new Exception($"Unable to evaluate linear interpolation function {FullPath}", err);
+            }
         }
 
-        /// <summary>Writes documentation for this function by adding to the list of documentation tags.</summary>
-        public override IEnumerable<ITag> Document()
+        /// <summary>Values the indexed.</summary>
+        public string GetXName()
         {
-            DataTable table = new DataTable(Name);
-            // Using the string datatype gives us control over how the numbers
-            // are rendered, and allows for empty cells.
-            if (XVariableName == null)
-                XVariableName = "X";
-            table.Columns.Add(XVariableName, typeof(string));
-            table.Columns.Add(Parent.Name, typeof(string));
-            for (int i = 0; i < Math.Max(X.Length, Y.Length); i++)
+            if (Parent != null)
             {
-                DataRow row = table.NewRow();
-
-                const double tolerance = 1e-9;
-                const int minDecimalPlaces = 1; //minimum 1 decimal place
-                const int maxDecimalPlaces = 6; //max 5 decimal places
-                string xDigits = "F" + minDecimalPlaces.ToString();
-                string yDigits = "F" + minDecimalPlaces.ToString();
-                double xDeci = Math.Round(X[i], minDecimalPlaces);
-                double yDeci = Math.Round(Y[i], minDecimalPlaces);
-                for (int j = minDecimalPlaces + 1; j <= maxDecimalPlaces; j++)
-                {
-                    if (Math.Abs(Math.Round(X[i], j) - xDeci) > tolerance)
-                    {
-                        xDigits = "F" + j.ToString();
-                        xDeci = Math.Round(X[i], j);
-                    }
-                    if (Math.Abs(Math.Round(Y[i], j) - yDeci) > tolerance)
-                    {
-                        yDigits = "F" + j.ToString();
-                        yDeci = Math.Round(Y[i], j);
-                    }
-                }
-
-                row[0] = i <= X.Length - 1 ? X[i].ToString(xDigits) : "";
-                row[1] = i <= Y.Length - 1 ? Y[i].ToString(yDigits) : "";
-                table.Rows.Add(row);
+                List<IModel> siblings = Parent.Children;
+                foreach(IModel child in siblings)
+                    if (child is VariableReference)
+                        return (child as VariableReference).VariableName;
             }
-            yield return new Table(table);
+            return "X";
+        }
 
-            var series = new APSIM.Shared.Graphing.Series[1];
+        /// <summary>
+        /// Return the y axis title.
+        /// </summary>
+        /// <returns>The axis title</returns>
+        public string GetYName()
+        {
+            if (Parent != null)
+                return Parent.Name;
+            else
+                return "Y";
+        }
 
-            // fixme: colour
-            series[0] = new LineSeries(Parent.Name, ColourUtilities.ChooseColour(4), false, X, Y, new Line(LineType.Solid, LineThickness.Normal), new Marker(MarkerType.None, MarkerSize.Normal, 1), XVariableName, Name);
+        /// <summary>
+        /// Check if all Y values are the same
+        /// Will return false if y is null or empty or if values differ
+        /// </summary>
+        private void CheckIfAllYAreTheSame()
+        {
+            //reset checks
+            _allEqual = false;
+            _allEqualValue = double.NaN;
 
-            Axis xAxis = new Axis(XVariableName, AxisPosition.Bottom, false, false);
-            Axis yAxis = new Axis(Parent.Name, AxisPosition.Left, false, false);
-
-            var legend = new LegendConfiguration(LegendOrientation.Vertical, LegendPosition.TopLeft, true);
-            yield return new APSIM.Shared.Documentation.Graph(Parent.Name, FullPath, series, xAxis, yAxis, legend);
+            //quit earlier if no Ys
+            if (Y == null || Y.Length == 0)
+                return;
+            
+            //check Ys
+            _allEqual = true;
+            for (int i = 1; i < Y.Length; i++)
+                if (Y[i] != Y[i - 1])
+                    _allEqual = false;
+            
+            //set equal value if all Ys are equal
+            if (_allEqual)
+                _allEqualValue = Y[0];
         }
     }
 }

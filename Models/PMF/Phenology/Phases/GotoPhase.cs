@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using APSIM.Shared.Documentation;
+using APSIM.Core;
+using DocumentFormat.OpenXml.Office.CustomXsn;
 using Models.Core;
+using Models.Management;
 using Newtonsoft.Json;
 
 namespace Models.PMF.Phen
@@ -14,8 +15,13 @@ namespace Models.PMF.Phen
     [ViewName("UserInterface.Views.PropertyView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
     [ValidParent(ParentType = typeof(Phenology))]
-    public class GotoPhase : Model, IPhase
+    public class GotoPhase : Model, IPhase, IStructureDependency
     {
+        /// <summary>Structure instance supplied by APSIM.core.</summary>
+        [field: NonSerialized]
+        public IStructure Structure { private get; set; }
+
+
         // 1. Links
         //----------------------------------------------------------------------------------------------------------------
 
@@ -35,26 +41,39 @@ namespace Models.PMF.Phen
             get
             {
                 if (phenology == null)
-                    phenology = FindInScope<Phenology>();
-                return phenology.FindChild<IPhase>(PhaseNameToGoto)?.Start;
+                    phenology = Structure.Find<Phenology>();
+                return Structure.FindChild<IPhase>(PhaseNameToGoto, relativeTo: phenology)?.Start;
             }
         }
-        /// <summary>Is the phase emerged from the 
+        /// <summary>Is the phase emerged from the
         /// ground?</summary>
         [Description("Is the phase emerged?")]
         public bool IsEmerged { get; set; } = true;
 
         /// <summary>The phase name to goto</summary>
         [Description("PhaseNameToGoto")]
+        [Display(Type = DisplayType.CropPhaseName)]
         public string PhaseNameToGoto { get; set; }
+
+        /// <summary>
+        /// The type of biomass removal event
+        /// </summary>
+        [Description("Type of biomass removal.  This triggers events OnCutting, OnGrazing etc")]
+        public BiomassRemovalType RemovalType
+        {
+            get { return _removalType; }
+            set { _removalType = value; }
+        }
+
+        [JsonIgnore]
+        private BiomassRemovalType _removalType { get; set; }
 
         /// <summary>Gets the fraction complete.</summary>
         [JsonIgnore]
         public double FractionComplete { get; }
 
-        /// <summary>Thermal time target</summary>
-        [JsonIgnore]
-        public double Target { get; set; }
+        /// <summary>Cutting Event</summary>
+        public event EventHandler<BiomassRemovalEventArgs> PhenologyDefoliate;
 
         //6. Public methods
         //-----------------------------------------------------------------------------------------------------------------
@@ -62,20 +81,15 @@ namespace Models.PMF.Phen
         /// <summary>Should not be called in this class</summary>
         public bool DoTimeStep(ref double PropOfDayToUse)
         {
-            PropOfDayToUse = 0;
             phenology.SetToStage((double)phenology.IndexFromPhaseName(PhaseNameToGoto) + 1);
-            return false;
+            BiomassRemovalEventArgs breg = new BiomassRemovalEventArgs();
+            breg.RemovalType = RemovalType;
+            PhenologyDefoliate?.Invoke(this, breg);
+            PropOfDayToUse = 1.0;
+            return true;
         }
 
         /// <summary>Resets the phase.</summary>
         public virtual void ResetPhase() { }
-
-        /// <summary>
-        /// Document the model.
-        /// </summary>
-        public override IEnumerable<ITag> Document()
-        {
-            yield return new Paragraph($"When the {Start} phase is reached, phenology is rewound to the {PhaseNameToGoto} phase.");
-        }
     }
 }

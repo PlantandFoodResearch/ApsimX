@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using APSIM.Core;
+using APSIM.Numerics;
 using APSIM.Shared.Utilities;
 using Models.Core;
 
@@ -22,13 +24,18 @@ namespace Models.Factorial
         internal List<List<CompositeFactor>> GetPermutations()
         {
             var factors = new List<List<CompositeFactor>>();
-            foreach (Factor factor in this.FindAllChildren<Factor>())
+            // recurse factor list to pick up any factors that are nested below any FactorFromFile component as a child of permutation.
+            foreach (Factor factor in Node.FindChildren<Factor>(recurse: true))
+                if (factor.Enabled)
+                    factors.Add(factor.GetCompositeFactors());
+
+            foreach (FactorFromFile factor in Node.FindChildren<FactorFromFile>(recurse: true))
             {
                 if (factor.Enabled)
                     factors.Add(factor.GetCompositeFactors());
             }
 
-            var compositeFactors = this.FindAllChildren<CompositeFactor>().Where(cf => cf.Enabled);
+            var compositeFactors = Node.FindChildren<CompositeFactor>().Where(cf => cf.Enabled);
 
             var permutations = new List<List<CompositeFactor>>();
             if (compositeFactors.Count() > 0)

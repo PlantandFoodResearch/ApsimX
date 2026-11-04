@@ -1,7 +1,7 @@
 {
   "$type": "Models.Core.Simulations, Models",
   "ExplorerWidth": 0,
-  "Version": 168,
+  "Version": 222,
   "Name": "Simulations",
   "Children": [
     {
@@ -494,7 +494,18 @@
               "Start": "Sowing",
               "End": "Germination",
               "Name": "Germinating",
-              "Children": [],
+              "Children": [
+                {
+                  "$type": "Models.Functions.Constant, Models",
+                  "FixedValue": 0.0,
+                  "Units": null,
+                  "Name": "MinSoilTemperature",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
               "IncludeInDocumentation": true,
               "Enabled": true,
               "ReadOnly": false
@@ -1086,7 +1097,7 @@
                   "Children": [
                     {
                       "$type": "Models.Memo, Models",
-                      "Text": "This approach is based upon the value used in [robertson_simulation_2002] increased to account for partitioning to roots.",
+                      "Text": "This approach is based upon the value used in [#robertson_simulation_2002] increased to account for partitioning to roots.",
                       "Name": "Memo",
                       "Children": [],
                       "IncludeInDocumentation": true,
@@ -1459,7 +1470,7 @@
               "Children": [
                 {
                   "$type": "Models.Memo, Models",
-                  "Text": "This approach is based upon that described by [Porter2000PhD] to account for the impacts of population and row/plant spacing.  Extinction coefficient is said to decrease with decreasing inter-plant spacing within the plant row.",
+                  "Text": "This approach is based upon that described by [#Porter2000PhD] to account for the impacts of population and row/plant spacing.  Extinction coefficient is said to decrease with decreasing inter-plant spacing within the plant row.",
                   "Name": "Memo",
                   "Children": [],
                   "IncludeInDocumentation": true,
@@ -2551,7 +2562,7 @@
                                   "Children": [
                                     {
                                       "$type": "Models.Memo, Models",
-                                      "Text": "This approach is based upon that used in [robertson_simulation_2002].",
+                                      "Text": "This approach is based upon that used in [#robertson_simulation_2002].",
                                       "Name": "Memo",
                                       "Children": [],
                                       "IncludeInDocumentation": true,
@@ -2808,7 +2819,7 @@
                       "Children": [
                         {
                           "$type": "Models.Memo, Models",
-                          "Text": "This value is based upon that used in [robertson_simulation_2002].",
+                          "Text": "This value is based upon that used in [#robertson_simulation_2002].",
                           "Name": "Memo",
                           "Children": [],
                           "IncludeInDocumentation": true,
@@ -2843,7 +2854,7 @@
                           "Children": [
                             {
                               "$type": "Models.Memo, Models",
-                              "Text": "This value is based upon that used in [robertson_simulation_2002].",
+                              "Text": "This value is based upon that used in [#robertson_simulation_2002].",
                               "Name": "Memo",
                               "Children": [],
                               "IncludeInDocumentation": true,
@@ -2992,7 +3003,10 @@
           ],
           "IncludeInDocumentation": true,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.Organs.ReproductiveOrgan, Models",
@@ -3420,7 +3434,9 @@
           ],
           "IncludeInDocumentation": true,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null
         },
         {
           "$type": "Models.PMF.Organs.Root, Models",
@@ -3583,7 +3599,7 @@
               "Children": [
                 {
                   "$type": "Models.Memo, Models",
-                  "Text": "This approach is based upon that used in [robertson_simulation_2002].",
+                  "Text": "This approach is based upon that used in [#robertson_simulation_2002].",
                   "Name": "Memo",
                   "Children": [],
                   "IncludeInDocumentation": true,
@@ -3792,7 +3808,7 @@
               "Children": [
                 {
                   "$type": "Models.Memo, Models",
-                  "Text": "This approach is based upon that used in [robertson_simulation_2002].",
+                  "Text": "This approach is based upon that used in [#robertson_simulation_2002].",
                   "Name": "Memo",
                   "Children": [],
                   "IncludeInDocumentation": true,
@@ -4189,7 +4205,9 @@
           ],
           "IncludeInDocumentation": true,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null
         },
         {
           "$type": "Models.PMF.Organs.Nodule, Models",
@@ -4835,7 +4853,10 @@
           ],
           "IncludeInDocumentation": true,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.Organs.GenericOrgan, Models",
@@ -5618,7 +5639,10 @@
           ],
           "IncludeInDocumentation": true,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.Organs.GenericOrgan, Models",
@@ -6012,7 +6036,7 @@
                           "Children": [
                             {
                               "$type": "Models.Memo, Models",
-                              "Text": "This approach is based upon that used in [robertson_simulation_2002].",
+                              "Text": "This approach is based upon that used in [#robertson_simulation_2002].",
                               "Name": "Memo",
                               "Children": [],
                               "IncludeInDocumentation": true,
@@ -6426,7 +6450,10 @@
           ],
           "IncludeInDocumentation": true,
           "Enabled": true,
-          "ReadOnly": false
+          "ReadOnly": false,
+          "MaxNConc": null,
+          "MinNConc": null,
+          "CritNConc": null
         },
         {
           "$type": "Models.PMF.CompositeBiomass, Models",
@@ -6581,7 +6608,7 @@
               "Children": [
                 {
                   "$type": "Models.Memo, Models",
-                  "Text": "This approach is based upon that used in [robertson_simulation_2002].",
+                  "Text": "This approach is based upon that used in [#robertson_simulation_2002].",
                   "Name": "Memo",
                   "Children": [],
                   "IncludeInDocumentation": true,

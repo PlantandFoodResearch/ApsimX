@@ -12,7 +12,7 @@ namespace Models.CLEM.Groupings
 {
     ///<summary>
     /// Contains a group of filters and sorters to identify individual ruminants
-    ///</summary> 
+    ///</summary>
     [Serializable]
     [ViewName("UserInterface.Views.PropertyView")]
     [PresenterName("UserInterface.Presenters.PropertyPresenter")]
@@ -38,38 +38,8 @@ namespace Models.CLEM.Groupings
     [Version(1, 1, 0, "Implements event based activity control")]
     [Version(1, 0, 1, "Added ability to select random proportion of the group to use")]
     [HelpUri(@"Content/Features/Filters/Groups/RuminantGroup.htm")]
+    [MinimumTimeStepPermitted(TimeStepTypes.Daily)]
     public class RuminantGroup : FilterGroup<Ruminant>
     {
-        #region descriptive summary
-
-        /// <inheritdoc/>
-        public override string ModelSummary()
-        {
-            return "";
-        }
-
-        /// <inheritdoc/>
-        public override string ModelSummaryClosingTags()
-        {
-            return "";
-        }
-
-        /// <inheritdoc/>
-        public override string ModelSummaryOpeningTags()
-        {
-            using (StringWriter htmlWriter = new StringWriter())
-            {
-                htmlWriter.Write($"<div class=\"filtername\" style=\"opacity: {SummaryOpacity(FormatForParentControl)}\">");
-                if (!this.Name.Contains(this.GetType().Name.Split('.').Last()))
-                    htmlWriter.Write($"{Name}");
-                if ((Identifier ?? "") != "")
-                    htmlWriter.Write($" - applies to {Identifier}");
-
-                htmlWriter.Write($"</div>");
-                return htmlWriter.ToString();
-            }
-        }
-
-        #endregion
     }
 }

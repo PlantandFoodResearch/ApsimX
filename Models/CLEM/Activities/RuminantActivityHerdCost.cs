@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Models.CLEM.Groupings;
 using Models.Core.Attributes;
-using APSIM.Shared.Utilities;
+using APSIM.Numerics;
 
 namespace Models.CLEM.Activities
 {
@@ -22,6 +22,7 @@ namespace Models.CLEM.Activities
     [Version(1, 1, 0, "Implements event based activity control")]
     [Version(1, 0, 1, "")]
     [HelpUri(@"Content/Features/Activities/Ruminant/RuminantHerdCost.htm")]
+    [MinimumTimeStepPermitted(TimeStepTypes.Daily)]
     public class RuminantActivityHerdCost : CLEMRuminantActivityBase, IHandlesActivityCompanionModels
     {
         private int numberToDo;
@@ -31,21 +32,13 @@ namespace Models.CLEM.Activities
         private IEnumerable<Ruminant> uniqueIndividuals;
         private IEnumerable<RuminantGroup> filterGroups;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public RuminantActivityHerdCost()
-        {
-            this.SetDefaults();
-        }
-
         /// <summary>An event handler to allow us to initialise ourselves.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         [EventSubscribe("CLEMInitialiseActivity")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            this.InitialiseHerd(true, true);
+            this.InitialiseHerd(false, true);
             filterGroups = GetCompanionModelsByIdentifier<RuminantGroup>(false, true);
         }
 
@@ -81,7 +74,7 @@ namespace Models.CLEM.Activities
             numberToDo = 0;
             numberToSkip = 0;
             IEnumerable<Ruminant> herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.NotMarkedForSale);
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
             numberToDo = uniqueIndividuals?.Count() ?? 0;
 
             // provide updated measure for companion models
@@ -97,7 +90,7 @@ namespace Models.CLEM.Activities
                         valuesForCompanionModels[valueToSupply.Key] = number;
                         break;
                     case "per AE":
-                        amountToDo = uniqueIndividuals.Sum(a => a.AdultEquivalent);
+                        amountToDo = uniqueIndividuals.Sum(a => a.Weight.AdultEquivalent);
                         valuesForCompanionModels[valueToSupply.Key] = amountToDo;
                         break;
                     default:

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using APSIM.Core;
 using Models.Core;
+using Models.PMF;
 using Models.PMF.Phen;
 
 namespace Models.Functions
@@ -61,6 +63,7 @@ namespace Models.Functions
         private void OnSimulationCommencing(object sender, EventArgs e)
         {
             AccumulatedValue = 0;
+            FunctionUtilities.ValidateFunctionChildren(Node);
         }
 
         /// <summary>Called by Plant.cs when phenology routines are complete.</summary>
@@ -70,7 +73,7 @@ namespace Models.Functions
         private void PostPhenology(object sender, EventArgs e)
         {
             if (ChildFunctions == null)
-                ChildFunctions = FindAllChildren<IFunction>().ToList();
+                ChildFunctions = Node.FindChildren<IFunction>().ToList();
 
             if (Phenology.Stage >= StartStageName && Phenology.Stage <= EndStageName)
             {
@@ -113,8 +116,8 @@ namespace Models.Functions
         /// <summary>Called when [cut].</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        [EventSubscribe("Harvesting")]
-        private void OnHarvest(object sender, EventArgs e)
+        [EventSubscribe("PostHarvesting")]
+        private void OnPostHarvesting(object sender, HarvestingParameters e)
         {
             AccumulatedValue -= FractionRemovedOnHarvest * AccumulatedValue;
         }

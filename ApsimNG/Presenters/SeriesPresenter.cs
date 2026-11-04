@@ -1,21 +1,22 @@
-﻿namespace UserInterface.Presenters
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Drawing;
-    using EventArguments;
-    using System.Linq;
-    using APSIM.Shared.Utilities;
-    using Interfaces;
-    using Models.Core;
-    using Models;
-    using Views;
-    using Commands;
-    using Models.Storage;
-    using APSIM.Shared.Graphing;
-    using Series = Models.Series;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using UserInterface.EventArguments;
+using System.Linq;
+using APSIM.Shared.Utilities;
+using UserInterface.Interfaces;
+using Models.Core;
+using Models;
+using UserInterface.Views;
+using UserInterface.Commands;
+using Models.Storage;
+using APSIM.Shared.Graphing;
+using Series = Models.Series;
+using Configuration = APSIMNG.Utility.Configuration;
 
+namespace UserInterface.Presenters
+{
     /// <summary>
     /// A presenter class for graph series.
     /// </summary>
@@ -40,6 +41,7 @@
         /// The intellisense.
         /// </summary>
         private IntellisensePresenter intellisense;
+        private Graph parentGraph;
 
         /// <summary>Attach the model and view to this presenter.</summary>
         /// <param name="model">The graph model to work with</param>
@@ -47,13 +49,15 @@
         /// <param name="explorerPresenter">The parent explorer presenter</param>
         public void Attach(object model, object view, ExplorerPresenter explorerPresenter)
         {
+            explorerPresenter.MainPresenter.ClearStatusPanel();
+
             this.series = model as Series;
             this.seriesView = view as SeriesView;
             this.explorerPresenter = explorerPresenter;
             intellisense = new IntellisensePresenter(seriesView as ViewBase);
             intellisense.ItemSelected += OnIntellisenseItemSelected;
 
-            Graph parentGraph = series.FindAncestor<Graph>();
+            parentGraph = series.Node.FindParent<Graph>(recurse: true);
             if (parentGraph != null)
             {
                 try
@@ -165,7 +169,7 @@
         {
             try
             {
-                foreach (var s in series.Parent.FindAllChildren<Series>())
+                foreach (var s in series.Parent.Node.FindChildren<Series>())
                 {
                     ChangeProperty command = new ChangeProperty(s, name, value);
                     explorerPresenter.CommandHistory.Add(command);
@@ -257,7 +261,7 @@
                     SetModelProperty("FactorToVaryLines", this.seriesView.LineType.SelectedValue.Replace("Vary by ", ""));
             }
         }
-        
+
         /// <summary>Series marker type has been changed by the user.</summary>
         /// <param name="sender">Event sender</param>
         /// <param name="e">Event arguments</param>
@@ -378,6 +382,16 @@
         private void OnXChanged(object sender, EventArgs e)
         {
             this.SetModelProperty("XFieldName", seriesView.X.SelectedValue);
+            ChangeProperty command;
+            if (this.seriesView.XOnTop.Checked)
+            {
+                command = new ChangeProperty(parentGraph.GetAxis(AxisPosition.Top), "Title", null);
+            }
+            else
+                command = new ChangeProperty(parentGraph.GetAxis(AxisPosition.Bottom), "Title", null);
+            explorerPresenter.CommandHistory.Add(command);
+
+
         }
 
         /// <summary>Y has been changed by the user.</summary>
@@ -386,6 +400,14 @@
         private void OnYChanged(object sender, EventArgs e)
         {
             this.SetModelProperty("YFieldName", seriesView.Y.SelectedValue);
+            ChangeProperty command;
+            if (this.seriesView.YOnRight.Checked)
+            {
+                command = new ChangeProperty(parentGraph.GetAxis(AxisPosition.Right), "Title", null);
+            }
+            else
+                 command = new ChangeProperty(parentGraph.GetAxis(AxisPosition.Left), "Title", null);
+            explorerPresenter.CommandHistory.Add(command);
         }
 
         /// <summary>Cumulative check box has been changed by the user.</summary>
@@ -429,7 +451,7 @@
             {
                 this.SetModelProperty("TableName", this.seriesView.DataSource.SelectedValue);
                 List<string> warnings = PopulateFieldNames();
-                if (warnings != null && warnings.Count > 0)
+                if (warnings != null && warnings.Count > 0 && Configuration.Settings.EnableGraphDebuggingMessages)
                 {
                     explorerPresenter.MainPresenter.ClearStatusPanel();
                     explorerPresenter.MainPresenter.ShowMessage(warnings, Simulation.MessageType.Warning);
@@ -553,8 +575,7 @@
             // Populate filter textbox.
             this.seriesView.Filter.Text = series.Filter;
 
-            explorerPresenter.MainPresenter.ClearStatusPanel();
-            if (warnings != null && warnings.Count > 0)
+            if (warnings != null && warnings.Count > 0 && Configuration.Settings.EnableGraphDebuggingMessages)
                 explorerPresenter.MainPresenter.ShowMessage(warnings, Simulation.MessageType.Warning);
         }
 

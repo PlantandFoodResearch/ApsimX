@@ -32,19 +32,16 @@ namespace Models.CLEM.Resources
         public string AttributeName { get; set; }
 
         /// <inheritdoc/>
-        [System.ComponentModel.DefaultValueAttribute(0)]
         [Description("Style of determining value")]
         [Required]
-        public SetAttributeFromHerdType CalculationStyle { get; set; }
+        public SetAttributeFromHerdType CalculationStyle { get; set; } = SetAttributeFromHerdType.Mean;
 
         /// <inheritdoc/>
-        [System.ComponentModel.DefaultValueAttribute(0)]
         [Description("Style of inheritance")]
         [Required]
-        public AttributeInheritanceStyle InheritanceStyle { get; set; }
+        public AttributeInheritanceStyle InheritanceStyle { get; set; } = AttributeInheritanceStyle.None;
 
         /// <inheritdoc/>
-        [System.ComponentModel.DefaultValueAttribute(false)]
         [Description("Mandatory attribute")]
         [Required]
         public bool Mandatory { get; set; }
@@ -52,19 +49,9 @@ namespace Models.CLEM.Resources
         /// <summary>
         /// Multiplier to adjust calculated value
         /// </summary>
-        [System.ComponentModel.DefaultValueAttribute(1)]
         [Description("Value multiplier")]
         [Required]
-        public float Multiplier { get; set; }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public SetAttributeFromHerd()
-        {
-            base.SetDefaults();
-            base.ModelSummaryStyle = HTMLSummaryStyle.SubResource;
-        }
+        public float Multiplier { get; set; } = 1;
 
         /// <summary>An event handler to allow us to initialise ourselves.</summary>
         /// <param name="sender">The sender.</param>
@@ -72,8 +59,8 @@ namespace Models.CLEM.Resources
         [EventSubscribe("CLEMInitialiseActivity")]
         private void OnCLEMInitialiseActivity(object sender, EventArgs e)
         {
-            filterGroups = FindAllChildren<RuminantGroup>();
-            ruminantActivity = FindAllAncestors<CLEMRuminantActivityBase>().FirstOrDefault();
+            filterGroups = Structure.FindChildren<RuminantGroup>();
+            ruminantActivity = Structure.FindParents<CLEMRuminantActivityBase>().FirstOrDefault();
         }
 
         /// <inheritdoc/>
@@ -81,8 +68,10 @@ namespace Models.CLEM.Resources
         {
             if (createNewInstance || lastInstance is null)
             {
-                // get all individual Attributes from unique individuals across all filter groups provided 
-                var attributeInds = CLEMRuminantActivityBase.GetUniqueIndividuals<Ruminant>(filterGroups, ruminantActivity.CurrentHerd().Where(a => a.Attributes.Exists(AttributeName)));
+                // get all individual Attributes from unique individuals across all filter groups provided
+                var attributeInds = CLEMRuminantActivityBase.GetUniqueIndividuals<Ruminant>(filterGroups,
+                                                                                            ruminantActivity.CurrentHerd().Where(a => a.Attributes.Exists(AttributeName)),
+                                                                                            Structure);
                 var inds = attributeInds.Select(a => (float)a.Attributes.GetValue(AttributeName).StoredValue);
 
                 Single valuef = 0;

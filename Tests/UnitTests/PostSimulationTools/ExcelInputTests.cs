@@ -1,0 +1,61 @@
+﻿using APSIM.Core;
+using APSIM.Shared.Utilities;
+using Models.PostSimulationTools;
+using Models.Storage;
+using NUnit.Framework;
+using System;
+using System.Data;
+using System.IO;
+using System.Reflection;
+
+namespace UnitTests
+{
+    public class ExcelInputTests
+    {
+        private IDatabaseConnection database;
+
+        /// <summary>Find and return the file name of SQLite runtime .dll</summary>
+        public static string FindSqlite3DLL()
+        {
+            string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string[] files = Directory.GetFiles(directory, "sqlite3.dll");
+            if (files.Length == 1)
+                return files[0];
+
+            throw new Exception("Cannot find sqlite3 dll directory");
+        }
+
+        [Test]
+        public void LoadExcelInput()
+        {
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+            database = new SQLite();
+            database.OpenDatabase(":memory:", readOnly: false);
+
+            var dataStore = new DataStore(database);
+            dataStore.Writer.TablesModified.Add("Observed");
+
+            ExcelInput excelInput = new ExcelInput()
+            {
+                FileNames = ["%root%/Tests/UnitTests/PostSimulationTools/Input.xlsx"],
+                SheetNames = ["Sheet1"]
+            };
+            Node.Create(excelInput);
+
+            Utilities.InjectLink(excelInput, "storage", dataStore);
+
+            excelInput.Run();
+            dataStore.Writer.Stop();
+            dataStore.Refresh();
+
+            DataTable dt = dataStore.Reader.GetData("Sheet1");
+
+            Assert.That(dt.Columns[4].DataType, Is.EqualTo(typeof(DateTime)));
+            Assert.That(dt.Columns[5].DataType, Is.EqualTo(typeof(string)));
+            Assert.That(dt.Columns[6].DataType, Is.EqualTo(typeof(string)));
+
+            database.CloseDatabase();
+        }
+    }
+}

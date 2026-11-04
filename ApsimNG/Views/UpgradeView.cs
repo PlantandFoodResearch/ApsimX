@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using APSIM.Shared.Utilities;
+using APSIMNG.Utility;
 using Gtk;
 using UserInterface.Extensions;
 using UserInterface.Interfaces;
@@ -57,8 +58,9 @@ namespace UserInterface.Views
         private Window window1 = null;
         private Button button1 = null;
         private Button button2 = null;
-        private Table table1 = null;
-        private Table table2 = null;
+        private ScrolledWindow scrolledWindow1 = null;
+        private Grid grid1 = null;
+        private Grid grid2 = null;
         private Entry firstNameBox = null;
         private Entry lastNameBox = null;
         private Entry organisationBox = null;
@@ -68,7 +70,6 @@ namespace UserInterface.Views
         private Container licenseContainer = null;
         private CheckButton checkbutton1 = null;
         private Gtk.TreeView listview1 = null;
-        private Alignment alignment7 = null;
         private CheckButton oldVersions = null;
         private ListStore listmodel = new ListStore(typeof(string), typeof(string), typeof(string));
         private MarkdownView licenseView;
@@ -82,8 +83,8 @@ namespace UserInterface.Views
             window1 = (Window)builder.GetObject("window1");
             button1 = (Button)builder.GetObject("button1");
             button2 = (Button)builder.GetObject("button2");
-            table1 = (Table)builder.GetObject("table1");
-            table2 = (Table)builder.GetObject("table2");
+            grid1 = (Grid)builder.GetObject("grid1");
+            grid2 = (Grid)builder.GetObject("grid2");
             firstNameBox = (Entry)builder.GetObject("firstNameBox");
             lastNameBox = (Entry)builder.GetObject("lastNameBox");
             organisationBox = (Entry)builder.GetObject("organisationBox");
@@ -93,7 +94,7 @@ namespace UserInterface.Views
             licenseContainer = (Container)builder.GetObject("licenseContainer");
             checkbutton1 = (CheckButton)builder.GetObject("checkbutton1");
             listview1 = (Gtk.TreeView)builder.GetObject("listview1");
-            alignment7 = (Alignment)builder.GetObject("alignment7");
+            scrolledWindow1 = (ScrolledWindow)builder.GetObject("scrolledwindow1");
             oldVersions = (CheckButton)builder.GetObject("checkbutton2");
             listview1.Model = listmodel;
 
@@ -101,7 +102,7 @@ namespace UserInterface.Views
             if (version.Build == customBuildVersion)
             {
                 button1.Sensitive = false;
-                table2.Hide();
+                grid2.Hide();
                 checkbutton1.Hide();
             }
 
@@ -130,8 +131,8 @@ namespace UserInterface.Views
             countryBox.AddAttribute(cell, "text", 0);
 
             // Make the tab order a little more sensible than the defaults
-            table1.FocusChain = new Widget[] { alignment7, button1, button2 };
-            table2.FocusChain = new Widget[] { firstNameBox, lastNameBox, emailBox, organisationBox, countryBox };
+            grid1.FocusChain = new Widget[] { scrolledWindow1, button1, button2 };
+            grid2.FocusChain = new Widget[] { firstNameBox, lastNameBox, emailBox, organisationBox, countryBox };
 
             licenseView = new MarkdownView(owner);
             licenseContainer.Add(licenseView.MainWidget);
@@ -160,7 +161,7 @@ namespace UserInterface.Views
         {
             try
             {
-                window1.Window.Cursor = new Gdk.Cursor(Gdk.CursorType.Watch);
+                window1.Window.Cursor = new Gdk.Cursor(Gdk.Display.Default, Gdk.CursorType.Watch);
                 while (Gtk.Application.EventsPending())
                     Gtk.Application.RunIteration();
                 PopulateForm();
@@ -200,11 +201,11 @@ namespace UserInterface.Views
                 label1.Text = "You are currently using version " + version.ToString() + ". You are using the latest version.";
 
 
-            firstNameBox.Text = Utility.Configuration.Settings.FirstName;
-            lastNameBox.Text = Utility.Configuration.Settings.LastName;
-            emailBox.Text = Utility.Configuration.Settings.Email;
-            organisationBox.Text = Utility.Configuration.Settings.Organisation;
-            countryBox.Active = Constants.Countries.ToList().IndexOf(Utility.Configuration.Settings.Country);
+            firstNameBox.Text = Configuration.Settings.FirstName;
+            lastNameBox.Text = Configuration.Settings.LastName;
+            emailBox.Text = Configuration.Settings.Email;
+            organisationBox.Text = Configuration.Settings.Organisation;
+            countryBox.Active = Constants.Countries.ToList().IndexOf(Configuration.Settings.Country);
 
             string tempLicenseFileName = Path.Combine(Path.GetTempPath(), "APSIM_NonCommercial_RD_licence.htm");
             if (File.Exists(tempLicenseFileName))
@@ -213,7 +214,7 @@ namespace UserInterface.Views
             if (version.Build == customBuildVersion)
             {
                 button1.Sensitive = false;
-                table2.Hide();
+                grid2.Hide();
                 checkbutton1.Hide();
                 licenseView.Text = "You are currently using a custom build - **Upgrade is not available!**";
             }
@@ -338,7 +339,7 @@ namespace UserInterface.Views
                             throw new Exception("Encountered an error while updating registration information. Please try again later.", err);
                         }
 
-                        window1.Window.Cursor = new Gdk.Cursor(Gdk.CursorType.Watch);
+                        window1.Window.Cursor = new Gdk.Cursor(Gdk.Display.Default, Gdk.CursorType.Watch);
 
                         tempSetupFileName = Path.Combine(Path.GetTempPath(), "APSIMSetup.exe");
 
@@ -370,7 +371,7 @@ namespace UserInterface.Views
 
                             var cancellationToken = new System.Threading.CancellationTokenSource();
                             FileStream file = new FileStream(tempSetupFileName, FileMode.Create, System.IO.FileAccess.Write);
-                            WebUtilities.GetAsyncWithProgress(sourceURL, file, progress, cancellationToken.Token, "*/*");
+                            _ = WebUtilities.GetAsyncWithProgress(sourceURL, file, progress, cancellationToken.Token, "*/*");
                             if (waitDlg.Run() == (int)ResponseType.Cancel)
                                 cancellationToken.Cancel();
 
@@ -583,12 +584,12 @@ namespace UserInterface.Views
         {
             try
             {
-                Utility.Configuration.Settings.FirstName = firstNameBox.Text;
-                Utility.Configuration.Settings.LastName = lastNameBox.Text;
-                Utility.Configuration.Settings.Email = emailBox.Text;
-                Utility.Configuration.Settings.Organisation = organisationBox.Text;
-                Utility.Configuration.Settings.Country = countryBox.GetActiveText();
-                Utility.Configuration.Settings.Save();
+                Configuration.Settings.FirstName = firstNameBox.Text;
+                Configuration.Settings.LastName = lastNameBox.Text;
+                Configuration.Settings.Email = emailBox.Text;
+                Configuration.Settings.Organisation = organisationBox.Text;
+                Configuration.Settings.Country = countryBox.GetActiveText();
+                Configuration.Settings.Save();
             }
             catch (Exception err)
             {

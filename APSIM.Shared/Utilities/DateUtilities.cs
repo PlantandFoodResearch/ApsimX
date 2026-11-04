@@ -36,18 +36,26 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// a list of month names with 3 letter abbreviations.
         /// </summary>
-        static public readonly string[] MONTHS_3_LETTERS = CultureInfo.InvariantCulture.DateTimeFormat.AbbreviatedMonthNames;
-
+        static public readonly string[] MONTHS_3_LETTERS = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",   //English
+                                                             "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" }; //German
         /// <summary>
-        /// a list of month names with 3 and 4 letter abbreviations for Australia. Thanks.
+        /// a list of month names with 3 and 4 letter abbreviations because Microsoft keep changing localizations to these
         /// </summary>
-        static public readonly string[] MONTHS_AU_LETTERS = CultureInfo.GetCultureInfo("en-AU").DateTimeFormat.AbbreviatedMonthNames;
+        static public readonly string[] MONTHS_4_LETTERS = { "Janu", "Febu", "Marh", "Aprl", "May", "June", "July", "Augt", "Sept", "Octo", "Novb", "Decb",   //English
+                                                             "Janu", "Febr", "Marz", "Aprl", "Mai", "Juni", "Juli", "Augt", "Sept", "Okto", "Novb", "Dezb" }; //German
         /// <summary>
         /// a list of month full names
         /// </summary>
-        static public readonly string[] MONTHS_FULL_NAME = CultureInfo.InvariantCulture.DateTimeFormat.MonthNames;
-
-        static private bool monthNamesInLowerCase = false;
+        static public readonly string[] MONTHS_FULL_NAME = { "January", "Feburary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", //English
+                                                             "Januar", "Februar", "Marz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" };  //German
+        /// <summary>
+        /// a list of abbreviated month names as defined by localization
+        /// </summary>
+        static public readonly string[] MONTHS_CULTURE_ABBREV_NAME = CultureInfo.InvariantCulture.DateTimeFormat.AbbreviatedMonthNames;
+        /// <summary>
+        /// a list of month full names as defined by localization
+        /// </summary>
+        static public readonly string[] MONTHS_CULTURE_FULL_NAME = CultureInfo.InvariantCulture.DateTimeFormat.MonthNames;
 
         /// <summary>
         /// List of all separators that can be used for date strings
@@ -85,8 +93,8 @@ namespace APSIM.Shared.Utilities
             rxYearShort = new Regex(@"^\d\d$"),
             rxDateNoSymbol = new Regex(@"^\d\d\w\w\w$|^\w\w\w\d\d$"),
             rxDateAllNums = new Regex(@"^\d\d?-\d\d?-(\d{4}|\d{2})$|^\d\d?-\d\d?$"),
-            rxISO = new Regex(@"^\d\d\d\d-\d\d-\d\d$|^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d$"),
-            rxDateAndTime = new Regex(@"^(\d+)/(\d+)/(\d+)\s\d+:\d+:\d+\s*\w*$");
+            rxISO = new Regex(@"^\d\d\d\d-\d?\d-\d?\d$|^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d$"),
+            rxDateAndTime = new Regex(@"^(\d+)[\W_ ](\d+)[\W_ ]*(\d+)\s\d+:\d+:\d+\s*\w*$");
 
         /// <summary>
         /// Convert any valid date string into a DateTime objects.
@@ -345,30 +353,18 @@ namespace APSIM.Shared.Utilities
         /// <returns>Return null if not valid, otherwise it returns a string with the valid dd-MMM string or a valid date as a string (yyyy-mm-dd)</returns>
         public static string ValidateDateString(string dateStr)
         {
-            DateAsParts parts;
-            parts = ParseDateString(dateStr);
-            if (parts.parseError)
-                return null;
+            return Validate(dateStr, true);
+        }
 
-            DateTime date;
-            try
-            {
-                date = GetDate(parts);
-            }
-            catch
-            {
-                return null;
-            }
-
-            if (parts.yearWasMissing)
-            {
-                //for consistency, return it as 'Title' case (ie, 01-Jan, not 1-jan)
-                return date.ToString(DEFAULT_FORMAT_DAY_MONTH, CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                return date.ToString(DEFAULT_FORMAT_DAY_MONTH_YEAR, CultureInfo.InvariantCulture);
-            }
+        /// <summary>
+        /// Takes in a string and checks to see if it is in the correct format for either a full date with year, month and date (in any recognised date format).
+        /// Will return null if not valid or if only a day and month was provided
+        /// </summary>
+        /// <param name="dateStr"></param>
+        /// <returns>Return null if not valid, otherwise it returns a string with the valid string (yyyy-mm-dd)</returns>
+        public static string ValidateDateStringWithYear(string dateStr)
+        {
+            return Validate(dateStr, false);
         }
 
         /// <summary>
@@ -408,6 +404,28 @@ namespace APSIM.Shared.Utilities
             return GetNextDate(dateToChange, date);
         }
 
+        /// <summary>
+        /// Converts a DateTime object to the standard yyyy-mm-dd we use in APSIM
+        /// </summary>
+        /// <param name="date">A DateTime Object</param>
+        /// <returns>Date as string in (yyyy-mm-dd)</returns>
+        public static string GetDateAsString(DateTime date)
+        {
+            return date.ToString("yyyy-MM-dd");
+        }
+
+        /// <summary>
+        /// Converts a DateTime object to the standard dd-MM we use in APSIM discard the year component
+        /// </summary>
+        /// <param name="date">A DateTime Object</param>
+        /// <returns>Date as string in (dd-MM)</returns>
+        public static string GetDateAsDayMonthString(DateTime date)
+        {
+            string day = date.ToString("dd");
+            string month = MONTHS_3_LETTERS[date.Month-1];
+            return $"{day}-{month}";
+        }
+
         /////////////////////////////////////////////////////////////////////////////   
         /////////////////////////////////////////////////////////////////////////////  
         /////////////////////////////////////////////////////////////////////////////  
@@ -421,6 +439,45 @@ namespace APSIM.Shared.Utilities
         private static DateTime GetDate(DateAsParts parts)
         {
             return GetDate(parts.day, parts.month, parts.year);
+        }
+
+        /// <summary>
+        /// Checks if a string is formatted to be a date, returns null if it can't be a date, or a formatted date string if it can.
+        /// </summary>
+        /// <param name="input">The given string to be checked</param>
+        /// <param name="allowPartialDate">If a day-month is allowed or if it must be a full date</param>
+        /// <returns>A formatted date as a string</returns>
+        private static string Validate(string input, bool allowPartialDate)
+        {
+            DateAsParts parts;
+            parts = ParseDateString(input);
+            if (parts.parseError)
+                return null;
+
+            DateTime date;
+            try
+            {
+                date = GetDate(parts);
+            }
+            catch
+            {
+                return null;
+            }
+
+            if (parts.yearWasMissing) {
+                if (allowPartialDate) {
+                    //for consistency, return it as 'Title' case (ie, 01-Jan, not 1-jan)
+                    return date.ToString(DEFAULT_FORMAT_DAY_MONTH, CultureInfo.InvariantCulture);
+                } 
+                else
+                {
+                    return null;
+                }
+            }
+            else 
+            {
+                return date.ToString(DEFAULT_FORMAT_DAY_MONTH_YEAR, CultureInfo.InvariantCulture);
+            }
         }
 
         /// <summary>
@@ -448,6 +505,10 @@ namespace APSIM.Shared.Utilities
             //trim whitespace
             string dateTrimmed = dateWithSymbolsParsed.Trim();
 
+            //if date ends in a . trim off the .
+            if (dateTrimmed.EndsWith("."))
+                dateTrimmed = dateTrimmed.Substring(0, dateTrimmed.Length-1);
+
             DateAsParts values = new DateAsParts(1, 1, DEFAULT_YEAR, false, false, "");
 
             //check that the string has a valid symbol
@@ -473,7 +534,7 @@ namespace APSIM.Shared.Utilities
                 foreach (char c in VALID_SEPERATORS)
                     symbols += c + " ";
 
-                if (types > 1)
+                if (types > 0)
                 {
                     Match match = rxDateAndTime.Match(dateTrimmed);
                     if (match.Success)
@@ -625,17 +686,23 @@ namespace APSIM.Shared.Utilities
             string monthLowerString = monthString.ToLower();
             errorMsg = "";
 
-            //make all our names lower case because they are capitalised
-            //we only do this once
-            if (!monthNamesInLowerCase)
+            string[] months3 = new string[24];
+            string[] months4 = new string[24];
+            string[] monthsFull = new string[24];
+            string[] monthsCultAbbrev = new string[12];
+            string[] monthsCultFull = new string[12];
+
+            for (int i = 0; i < MONTHS_FULL_NAME.Length; i++)
             {
-                for (int i = 0; i < 12; i++)
-                {
-                    MONTHS_3_LETTERS[i] = MONTHS_3_LETTERS[i].ToLower();
-                    MONTHS_AU_LETTERS[i] = MONTHS_AU_LETTERS[i].ToLower();
-                    MONTHS_FULL_NAME[i] = MONTHS_FULL_NAME[i].ToLower();
-                }
-                monthNamesInLowerCase = true;
+                months3[i] = MONTHS_3_LETTERS[i].ToLower();
+                months4[i] = MONTHS_4_LETTERS[i].ToLower();
+                monthsFull[i] = MONTHS_FULL_NAME[i].ToLower();
+            }
+
+            for (int i = 0; i < 12; i++)
+            {
+                monthsCultAbbrev[i] = MONTHS_CULTURE_ABBREV_NAME[i].ToLower();
+                monthsCultFull[i] = MONTHS_CULTURE_FULL_NAME[i].ToLower();
             }
             
             int index = -1;
@@ -645,22 +712,29 @@ namespace APSIM.Shared.Utilities
             }
             else
             {
-                if (index < 1 && rxMonthFull.Match(monthLowerString).Success)
-                    index = Array.IndexOf(MONTHS_FULL_NAME, monthLowerString) + 1;
-                if (index < 1 && rxMonth4Letter.Match(monthLowerString).Success)
-                    index = Array.IndexOf(MONTHS_AU_LETTERS, monthLowerString) + 1;
-                if (index < 1 && rxMonth3Letter.Match(monthLowerString).Success)
-                    index = Array.IndexOf(MONTHS_3_LETTERS, monthLowerString) + 1;
+                if (index < 0)
+                    index = Array.IndexOf(monthsFull, monthLowerString) % 12;
+                if (index < 0)
+                    index = Array.IndexOf(months4, monthLowerString) % 12;
+                if (index < 0)
+                    index = Array.IndexOf(months3, monthLowerString) % 12;
+                if (index < 0)
+                    index = Array.IndexOf(monthsCultFull, monthLowerString);
+                if (index < 0)
+                    index = Array.IndexOf(monthsCultAbbrev, monthLowerString);
+
+                //since months as numbers start as 1 not 0
+                index = index + 1;
 
                 if (index == 0)
                 {
-                    errorMsg = $"Date {fullDate} has {monthLowerString} for month. Month must be exactly 1 or 2 digits, a 3 or 4 letter abbrivation or the full name. (eg: 1, 01, Jun, June, September)";
+                    errorMsg = $"Date {fullDate} has {monthString} for month. Month must be exactly 1 or 2 digits, a 3 or 4 letter abbrivation or the full name. (eg: 9, 09, Sep, Sept, September)";
                     return 0;
                 }
             }
 
             if (index < 1)
-                errorMsg = $"Date {fullDate} has {monthLowerString} for month, {monthLowerString} was not found in a month name list.";
+                errorMsg = $"Date {fullDate} has {monthString} for month, {monthString} was not found in a month name list.";
 
             return index;
         }
@@ -846,6 +920,24 @@ namespace APSIM.Shared.Utilities
         public static DateTime DMYtoDate(string dmy)
         {
             return GetDate(dmy);
+        }
+
+        /// <summary>
+        /// Takes in a string and checks to see if it could be date with three components, day, month and year. Returns true if it could be,
+        /// false if not. Does not actually parse into a DateTime to avoid throwing an error.
+        /// This is used to test if a number with a . is a date or a double.
+        /// </summary>
+        /// <param name="dateStr"></param>
+        public static bool ValidateStringHasYear(string dateStr)
+        {
+            DateAsParts parts;
+            parts = ParseDateString(dateStr);
+            if (parts.parseError)
+                return false;
+            else if (parts.yearWasMissing)
+                return false;
+            else
+                return true;
         }
 
         /// <summary>

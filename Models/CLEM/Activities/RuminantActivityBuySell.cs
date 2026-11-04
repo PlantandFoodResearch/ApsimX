@@ -9,7 +9,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Models.Core.Attributes;
 using System.IO;
-using APSIM.Shared.Utilities;
+using APSIM.Numerics;
 
 namespace Models.CLEM.Activities
 {
@@ -30,6 +30,7 @@ namespace Models.CLEM.Activities
     [Version(1, 0, 2, "Allows for recording transactions by groups of individuals")]
     [Version(1, 0, 1, "")]
     [HelpUri(@"Content/Features/Activities/Ruminant/RuminantBuySell.htm")]
+    [MinimumTimeStepPermitted(TimeStepTypes.Daily)]
     public class RuminantActivityBuySell : CLEMRuminantActivityBase, IHandlesActivityCompanionModels, IValidatableObject
     {
         private FinanceType bankAccount = null;
@@ -54,8 +55,8 @@ namespace Models.CLEM.Activities
         /// <summary>
         /// Get the styles available for this activity
         /// </summary>
-        /// <returns>An Ienumerable of strings</returns>
-        public IEnumerable<string> ActivityStyleList()
+        /// <returns>An IEnumerable of strings</returns>
+        public static IEnumerable<string> ActivityStyleList()
         {
             return new string[] { "Arrange sales", "Arrange purchases" };
         }
@@ -119,18 +120,21 @@ namespace Models.CLEM.Activities
             this.InitialiseHerd(false, true);
             filterGroups = GetCompanionModelsByIdentifier<RuminantGroup>( false, true);
 
-            IEnumerable<Ruminant> testherd = this.CurrentHerd(true);
+            IEnumerable<Ruminant> testHerd = this.CurrentHerd(true);
 
             // check if finance is available and warn if not supplying bank account.
             if (Resources.ResourceItemsExist<Finance>())
             {
                 if (BankAccountName == "")
-                    Summary.WriteMessage(this, $"No bank account has been specified in [a={this.Name}] while Finances are available in the simulation. No financial transactions will be recorded for the purchase and sale of animals.", MessageType.Warning);
+                {
+                    Summary.WriteMessage(this, $"No bank account has been specified in [a={Name}] while Finances are available in the simulation. No financial transactions will be recorded for the purchase and sale of animals.", MessageType.Warning);
+                }
             }
             if (BankAccountName != "")
+            {
                 bankAccount = Resources.FindResourceType<Finance, FinanceType>(this, BankAccountName, OnMissingResourceActionTypes.Ignore, OnMissingResourceActionTypes.ReportErrorAndStop);
+            }
 
-            // get trucking settings
             truckingOptions = GetCompanionModelsByIdentifier<RuminantTrucking>(false, false);
             truckingWithImplications = truckingOptions?.Where(a => a.OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications).Any()??false;
         }
@@ -168,23 +172,29 @@ namespace Models.CLEM.Activities
             fundsNeededPurchaseSkipIndividuals = 0;
 
             IEnumerable<Ruminant> herd;
-            if(ActivityStyle == "Arrange purchases")
+            if (ActivityStyle == "Arrange purchases")
+            {
                 herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.ForPurchase);
+            }
             else
+            {
                 herd = GetIndividuals<Ruminant>(GetRuminantHerdSelectionStyle.MarkedForSale);
+            }
 
-            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
+            uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
             IndividualsToBeTrucked = uniqueIndividuals;
             numberToDo = uniqueIndividuals?.Count() ?? 0;
 
             if (truckingOptions != null)
             {
                 foreach (var trucking in truckingOptions)
+                {
                     trucking.ManuallyGetResourcesPerformActivity();
+                }
 
                 if (!truckingWithImplications)
                 {
-                    uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd);
+                    uniqueIndividuals = GetUniqueIndividuals<Ruminant>(filterGroups, herd, Structure);
                     IndividualsToBeTrucked = uniqueIndividuals;
                 }
             }
@@ -193,7 +203,7 @@ namespace Models.CLEM.Activities
         /// <inheritdoc/>
         public override List<ResourceRequest> RequestResourcesForTimestep(double argument = 0)
         {
-            List<ResourceRequest> requestResources = new List<ResourceRequest>();
+            List<ResourceRequest> requestResources = new();
             int numberTrucked = 0;
             double herdValue = 0;
 
@@ -202,7 +212,7 @@ namespace Models.CLEM.Activities
             if (truckingOptions is null)
             {
                 // no trucking found
-                herdValue = IndividualsToBeTrucked.Sum(a => a.BreedParams?.GetPriceGroupOfIndividual(a, priceStyle)?.CalculateValue(a)??0);
+                herdValue = IndividualsToBeTrucked.Sum(a => a.Parameters.Details?.GetPriceGroupOfIndividual(a, priceStyle)?.CalculateValue(a)??0);
                 numberTrucked = numberToDo;
             }
             else
@@ -210,7 +220,7 @@ namespace Models.CLEM.Activities
                 // all trucking has been allocated and each trucking component knows its individuals
                 foreach (var trucking in truckingOptions)
                 {
-                    herdValue += trucking.IndividualsToBeTrucked.Sum(a => a.BreedParams?.GetPriceGroupOfIndividual(a, priceStyle)?.CalculateValue(a)??0);
+                    herdValue += trucking.IndividualsToBeTrucked.Sum(a => a.Parameters.Details?.GetPriceGroupOfIndividual(a, priceStyle)?.CalculateValue(a)??0);
                     numberTrucked += trucking.IndividualsToBeTrucked.Count();
                 }
             }
@@ -226,7 +236,7 @@ namespace Models.CLEM.Activities
                     Required = herdValue,
                     AllowTransmutation = false,
                     Category = TransactionCategory,
-                    RelatesToResource = this.PredictedHerdNameToDisplay,
+                    RelatesToResource = PredictedHerdNameToDisplay,
                     AdditionalDetails = "Purchases",
                     ResourceType = typeof(Finance),
                     ResourceTypeName = BankAccountName,
@@ -256,19 +266,22 @@ namespace Models.CLEM.Activities
             if (numberTrucked < numberToDo)
             {
                 // Report trucks shortfall for task
-                ResourceRequestEventArgs rrEventArgs = new ResourceRequestEventArgs() { Request = new ResourceRequest()
+                ResourceRequestEventArgs rrEventArgs = new()
                 {
-                    Resource = null,
-                    ResourceType = null,
-                    ResourceTypeName = "Head trucked",
-                    AllowTransmutation = false,
-                    Required = numberToDo,
-                    Provided = numberTrucked,
-                    Category = ActivityStyle,
-                    AdditionalDetails = null,
-                    RelatesToResource = null,
-                    ActivityModel = this,
-                }};
+                    Request = new ResourceRequest()
+                    {
+                        Resource = null,
+                        ResourceType = null,
+                        ResourceTypeName = "Head trucked",
+                        AllowTransmutation = false,
+                        Required = numberToDo,
+                        Provided = numberTrucked,
+                        Category = ActivityStyle,
+                        AdditionalDetails = null,
+                        RelatesToResource = null,
+                        ActivityModel = this,
+                    }
+                };
 
 
                 if (OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.ReportErrorAndStop)
@@ -285,12 +298,17 @@ namespace Models.CLEM.Activities
                 else
                 {
                     Status = ActivityStatus.Partial;
-                    if(OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableResources)
+                    if (OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableResources)
+                    {
                         rrEventArgs.Request.ShortfallStatus = "No implication";
-                    if (OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications)
-                        rrEventArgs.Request.ShortfallStatus = "Affected outcome";
+                    }
 
-                    if(numberTrucked == 0)
+                    if (OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications)
+                    {
+                        rrEventArgs.Request.ShortfallStatus = "Affected outcome";
+                    }
+
+                    if (numberTrucked == 0)
                     {
                         Status= ActivityStatus.Warning;
                         AddStatusMessage($"{ActivityStyle} could not be performed");
@@ -330,11 +348,15 @@ namespace Models.CLEM.Activities
 
                 buySellShort = shortfalls.Where(a => a.CompanionModelDetails.unit == "per km trucked").FirstOrDefault();
                 if (buySellShort != null)
+                {
                     throw new Exception($"Unable to limit [{ActivityStyle}] by units [per km trucked] in [a={NameWithParent}]{Environment.NewLine}This resource cost does not support [ShortfallAffectsActivity] in [a=RuminantHerdBuySell]");
+                }
 
                 buySellShort = shortfalls.Where(a => a.CompanionModelDetails.unit == "per $ value").FirstOrDefault();
                 if (buySellShort != null)
+                {
                     throw new Exception($"Unable to limit [{ActivityStyle}] by units [per $ value] in [a={NameWithParent}]{Environment.NewLine}This resource cost does not support [ShortfallAffectsActivity] in [a=RuminantHerdBuySell] as costs are already accounted in ruminant purchases.");
+                }
             }
 
             // remove any additional individuals from end based on trucks to skip
@@ -354,7 +376,7 @@ namespace Models.CLEM.Activities
                         {
                             // adjust to take care of skipped individuals
                             var skipped = uniqueIndividuals.TakeLast(numberToSkip+numberTrucksToSkipIndividuals);
-                            valueOfSkipped = skipped.Sum(a => a.BreedParams.GetPriceGroupOfIndividual(a, PurchaseOrSalePricingStyleType.Sale).CalculateValue(a));
+                            valueOfSkipped = skipped.Sum(a => a.Parameters.Details.GetPriceGroupOfIndividual(a, PurchaseOrSalePricingStyleType.Sale).CalculateValue(a));
                         }
                         double shortfall = request.Required - request.Provided - valueOfSkipped;
                         if(MathUtilities.IsGreaterThan(shortfall, 0))
@@ -364,33 +386,37 @@ namespace Models.CLEM.Activities
                             foreach (var ind in uniqueIndividuals.SkipLast(numberToSkip + numberTrucksToSkipIndividuals).Reverse())
                             {
                                 fundsNeededPurchaseSkipIndividuals++;
-                                shortfall -= ind.BreedParams.GetPriceGroupOfIndividual(ind, PurchaseOrSalePricingStyleType.Sale).CalculateValue(ind);
+                                shortfall -= ind.Parameters.Details.GetPriceGroupOfIndividual(ind, PurchaseOrSalePricingStyleType.Sale).CalculateValue(ind);
                                 if (MathUtilities.IsLessThanOrEqual(shortfall, 0))
+                                {
                                     break;
+                                }
                             }
                             // report any financial shortfall in purchases when trying to purchase the animals
                             if (MathUtilities.IsPositive(shortfall))
                             {
-                                ResourceRequest purchaseRequest = new ResourceRequest
+                                ResourceRequest purchaseRequest = new()
                                 {
                                     ActivityModel = this,
                                     AllowTransmutation = false,
                                     Category = TransactionCategory,
-                                    RelatesToResource = this.PredictedHerdNameToDisplay
+                                    RelatesToResource = this.PredictedHerdNameToDisplay,
+                                    Available = bankAccount.AmountAvailable,
+                                    Required = request.Required - valueOfSkipped,
+                                    Provided = request.Provided - valueOfSkipped,
+                                    ResourceType = typeof(Finance),
+                                    ResourceTypeName = BankAccountName
                                 };
-                                purchaseRequest.Available = bankAccount.Amount;
-                                purchaseRequest.Required = request.Required-valueOfSkipped;
-                                purchaseRequest.Provided = request.Provided-valueOfSkipped;
-                                purchaseRequest.ResourceType = typeof(Finance);
-                                purchaseRequest.ResourceTypeName = BankAccountName;
-                                ResourceRequestEventArgs rre = new ResourceRequestEventArgs() { Request = purchaseRequest };
+                                ResourceRequestEventArgs rre = new() { Request = purchaseRequest };
                                 ActivitiesHolder.ReportActivityShortfall(rre);
                             }
                         }
 
                         // create pricing-based purchase requests
                         if (MathUtilities.IsGreaterThanOrEqual(herdValue - shortfall, request.Provided))
+                        {
                             throw new Exception("Invalid reduction of herd in Buy sell activity");
+                        }
                     }
 
                     var groupedIndividuals = HerdResource.SummarizeIndividualsByGroups(uniqueIndividuals.SkipLast(numberToSkip+ numberTrucksToSkipIndividuals + fundsNeededPurchaseSkipIndividuals), PurchaseOrSalePricingStyleType.Purchase);
@@ -420,17 +446,17 @@ namespace Models.CLEM.Activities
         private void ProcessAnimals()
         {
             int head = 0;
-            List<Ruminant> taskIndividuals = new List<Ruminant>();
+            List<Ruminant> taskIndividuals = new();
 
             if (ActivityStyle == "Arrange sales")
             {
                 double saleValue = 0;
                 foreach (var ind in uniqueIndividuals.SkipLast(numberToSkip+numberTrucksToSkipIndividuals).ToList())
                 {
-                    var pricing = ind.BreedParams.GetPriceGroupOfIndividual(ind, PurchaseOrSalePricingStyleType.Sale);
+                    var pricing = ind.Parameters.Details.GetPriceGroupOfIndividual(ind, PurchaseOrSalePricingStyleType.Sale);
                     if (pricing != null)
                         saleValue += pricing.CalculateValue(ind);
-                   
+
                     taskIndividuals.Add(ind);
                     HerdResource.RemoveRuminant(ind, this);
                     head++;
@@ -441,8 +467,12 @@ namespace Models.CLEM.Activities
                 {
                     var groupedIndividuals = HerdResource.SummarizeIndividualsByGroups(taskIndividuals, PurchaseOrSalePricingStyleType.Sale);
                     foreach (var item in groupedIndividuals)
+                    {
                         foreach (var item2 in item.RuminantTypeGroup)
-                            bankAccount.Add(item2.TotalPrice, this, $"{item.RuminantTypeNameToDisplay}.{item2.GroupName}".TrimStart('.'), TransactionCategory);
+                        {
+                            bankAccount.AddToResource(item2.TotalPrice, this, $"{item.RuminantTypeNameToDisplay}.{item2.GroupName}".TrimStart('.'), TransactionCategory);
+                        }
+                    }
                 }
             }
             else // purchases
@@ -462,7 +492,9 @@ namespace Models.CLEM.Activities
         public override void PerformTasksForTimestep(double argument = 0)
         {
             if (numberToDo - numberToSkip > 0)
+            {
                 ProcessAnimals();
+            }
         }
 
         #region validation
@@ -470,32 +502,13 @@ namespace Models.CLEM.Activities
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var results = new List<ValidationResult>();
-
             // check that all or none of children are ShortfallsWithImplications
-            var truckingComponents = FindAllChildren<RuminantTrucking>().Where(a => a.OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications);
-            if (truckingComponents.Any() && (truckingComponents.Count() != FindAllChildren<RuminantTrucking>().Count()))
+            var truckingComponents = Structure.FindChildren<RuminantTrucking>().Where(a => a.OnPartialResourcesAvailableAction == OnPartialResourcesAvailableActionTypes.UseAvailableWithImplications).ToList();
+            if (truckingComponents.Count != 0 && (truckingComponents.Count != Structure.FindChildren<RuminantTrucking>().Count()))
             {
-                string[] memberNames = new string[] { "RuminantTrucking" };
-                results.Add(new ValidationResult($"All [r=RuminantTrucking] components for [{ActivityStyle}] must be set to [UseAvailableWithImplications] if any are defined for this partial resources available action", memberNames));
+                yield return new ValidationResult($"All [r=RuminantTrucking] components for [{ActivityStyle}] must be set to [UseAvailableWithImplications] if any are defined for this partial resources available action", new string[] { "RuminantTrucking" });
             }
-            return results;
         }
-        #endregion
-
-        #region descriptive summary
-
-        /// <inheritdoc/>
-        public override string ModelSummary()
-        {
-            using (StringWriter htmlWriter = new StringWriter())
-            {
-                htmlWriter.Write($"\r\n<div class=\"activityentry\">{ActivityStyle} will use ");
-                htmlWriter.Write(CLEMModel.DisplaySummaryValueSnippet(BankAccountName, "Not set", HTMLSummaryStyle.Resource));
-                htmlWriter.Write("</div>");
-                return htmlWriter.ToString();
-            }
-        } 
         #endregion
     }
 }
