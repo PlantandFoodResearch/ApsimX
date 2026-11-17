@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using APSIM.Core;
+﻿using APSIM.Core;
 using APSIM.Numerics;
 using APSIM.Shared.Utilities;
 using BruTile;
 using Models.Core;
 using Models.Interfaces;
 using Models.PMF.Interfaces;
+using Models.Zones;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Zone = Models.Core.Zone;
 
 namespace Models.PMF
@@ -311,8 +312,9 @@ namespace Models.PMF
         /// <param name="deadToRemove">Fraction of dead biomass to remove from simulation (0-1).</param>
         /// <param name="liveToResidue">Fraction of live biomass to remove and send to residue pool(0-1).</param>
         /// <param name="deadToResidue">Fraction of dead biomass to remove and send to residue pool(0-1).</param>
+        /// <param name="fractionStanding">Fraction of biomass that remains standing when passed to surfaceOM (0-1).</param>
         /// <returns>The amount of biomass (live+dead) removed from the plant (g/m2).</returns>
-        public virtual double RemoveBiomass(double liveToRemove = 1, double deadToRemove = 0, double liveToResidue = 0, double deadToResidue = 0)
+        public virtual double RemoveBiomass(double liveToRemove = 1, double deadToRemove = 0, double liveToResidue = 0, double deadToResidue = 0, double fractionStanding = 0)
         {
             LiveRemoved = Live * liveToRemove;
             LiveToResidues = Live * liveToResidue;
@@ -327,7 +329,7 @@ namespace Models.PMF
             {
                 OrganNutrientsState totalToResidues = LiveToResidues + DeadToResidues;
                 Biomass toResidues = totalToResidues.ToBiomass;
-                AddSOMtoZones(toResidues.Wt, toResidues.N);
+                AddSOMtoZones(toResidues.Wt, toResidues.N, fractionStanding);
             }
             if ((liveToRemove + deadToRemove + liveToResidue + deadToResidue)>0)
             {
@@ -669,16 +671,19 @@ namespace Models.PMF
         /// </summary>
         /// <param name="wt"></param>
         /// <param name="n"></param>
-        private void AddSOMtoZones(double wt, double n)
+        /// <param name="fractionStanding"></param>
+        private void AddSOMtoZones(double wt, double n, double fractionStanding = 0)
         {
             int zi = 0;
-
             if (dimensionsOverZones == null)
             {
                 Zone z = Structure.FindParent<Zone>(recurse: true);
+                double area = 1.0; // default area of 1 as model does mass / m2 by default.
+                if (z.GetType() == typeof(RectangularZone))
+                    area = z.Area;
                 ISurfaceOrganicMatter somZone = Structure.FindChild<ISurfaceOrganicMatter>(relativeTo: z);
-                somZone.Add(wt/(z.Area * Constants.ha2sm) * Constants.gPerSm2kgPerHa, 
-                    n/(z.Area * Constants.ha2sm) * Constants.gPerSm2kgPerHa, 0, parentPlant.PlantType, Name);
+                somZone.Add(wt/(area * Constants.ha2sm) * Constants.gPerSm2kgPerHa, 
+                    n/(area * Constants.ha2sm) * Constants.gPerSm2kgPerHa, fractionStanding, parentPlant.PlantType, Name);
             }
             else
             {
@@ -687,7 +692,7 @@ namespace Models.PMF
                     ISurfaceOrganicMatter somZone = Structure.FindChild<ISurfaceOrganicMatter>(relativeTo: z);
 
                     somZone.Add((wt * dimensionsOverZones.RelativeAreaOverZone[zi] * Constants.gPerSm2kgPerHa) /(z.Area * Constants.ha2sm), 
-                        (n * dimensionsOverZones.RelativeAreaOverZone[zi] * Constants.gPerSm2kgPerHa) /(z.Area * Constants.ha2sm), 0, parentPlant.PlantType, Name);
+                        (n * dimensionsOverZones.RelativeAreaOverZone[zi] * Constants.gPerSm2kgPerHa) /(z.Area * Constants.ha2sm), 0, parentPlant.PlantType, Name, fractionStanding);
                     zi += 1;
                 }
             }

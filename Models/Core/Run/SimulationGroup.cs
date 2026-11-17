@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using APSIM.Core;
 using APSIM.Shared.JobRunning;
 using Models.PostSimulationTools;
+using Models.PreSimulationTools;
 using Models.Storage;
 
 namespace Models.Core.Run
@@ -89,27 +90,8 @@ namespace Models.Core.Run
                 Initialise();
         }
 
-        /// <summary>Contstructor</summary>
-        /// <param name="fileName">The name of the file to run.</param>
-        /// <param name="runTests">Run tests?</param>
-        /// <param name="simulationNamePatternMatch">A regular expression used to match simulation names to run.</param>
-        public SimulationGroup(string fileName,
-                             bool runTests = true,
-                             string simulationNamePatternMatch = null)
-        {
-            this.FileName = fileName;
-            this.runSimulations = true;
-            this.runPreAndPostSimulationTools = true;
-            this.runTests = runTests;
-
-            if (simulationNamePatternMatch != null)
-                patternMatch = new Regex(simulationNamePatternMatch);
-
-            Task.Run(() => { Initialise(); });
-        }
-
         /// <summary>Name of file where the jobs came from.</summary>
-        public string FileName { get; set; }
+        public string FileName { get { return rootModel.Node.FileName; } }
 
         /// <summary>A list of exceptions thrown before and after the simulation runs. Will be null when no exceptions found.</summary>
         public List<Exception> PrePostExceptionsThrown { get; private set; }
@@ -179,8 +161,9 @@ namespace Models.Core.Run
             if (!initialised)
                 SpinWait.SpinUntil(() => initialised);
 
-            if (storage?.Writer != null)
-                storage.Writer.TablesModified.Clear();
+            foreach (IDataStore datastore in rootModel.Node.FindAll<IDataStore>())
+                if (datastore.Writer != null)
+                    datastore.Writer.TablesModified.Clear();
 
             if (runPreAndPostSimulationTools)
             {
@@ -210,7 +193,7 @@ namespace Models.Core.Run
         public void StorageFinishWriting()
         {
             storage?.Writer.Stop();
-            storage?.Reader.Refresh();
+            storage?.Refresh();
         }
 
         /// <summary>Initialise the instance.</summary>
@@ -232,22 +215,17 @@ namespace Models.Core.Run
 
                 if (relativeTo != null)
                 {
-                    // If this simulation was not created from deserialisation then we need
-                    // to parent all child models correctly and call OnCreated for each model.
-                    bool hasBeenDeserialised = relativeTo.Children.Count > 0 &&
-                                               relativeTo.Children[0].Parent == relativeTo;
-                    if (!hasBeenDeserialised)
-                        throw new NotImplementedException();
-
                     // Find the root model.
                     rootModel = relativeTo;
                     while (rootModel.Parent != null)
                         rootModel = rootModel.Parent;
 
-                    if (rootModel is Simulations)
-                        FileName = (rootModel as Simulations).FileName;
-                    else if (rootModel is Simulation)
-                        FileName = (rootModel as Simulation).FileName;
+                    // It is possible that the base simulation is still in the process of being
+                    // initialised in another thread.
+                    if (rootModel.Node.IsInitialising && !rootModel.Node.WaitForInitialisation(TimeSpan.FromSeconds(60)))
+                        throw new Exception("Node initialisation timed out");
+                    if (rootModel.Node.InitialisationException != null)
+                        throw new Exception("Exception thrown during initialisation", rootModel.Node.InitialisationException);
 
                     // Check for duplicate simulation names.
                     string[] duplicates = FindDuplicateSimulationNames().ToArray();
@@ -267,7 +245,7 @@ namespace Models.Core.Run
                     e.Publish("BeginRun", new object[] { this, new EventArgs() });
 
                     // Find a storage model.
-                    storage = rootModel.Node.FindChild<IDataStore>();
+                    storage = rootModel.Node.FindChild<IDataStore>(recurse: true);
 
                     // Find simulations to run.
                     if (runSimulations)
@@ -289,7 +267,14 @@ namespace Models.Core.Run
                             storage.Writer.Clean(names, false);
                         }
                         foreach (IRunnable job in jobs)
-                            Add(job);
+                        {
+                            if (job is SimulationDescription simDescription)
+                            {
+                                if (simDescription.IsEnabled)
+                                    Add(simDescription);
+                            }
+                            else Add(job);
+                        }
                     }
 
                     if (numJobsToRun == 0)
@@ -322,7 +307,7 @@ namespace Models.Core.Run
                     if (SimulationNameIsMatched(description.Name))
                         yield return description;
             }
-            else if ((relativeTo is Folder && !Folder.IsModelReplacementsFolder(relativeTo)) || relativeTo is Simulations)
+            else if ((relativeTo is Folder && !Folder.IsModelReplacementsFolder(relativeTo)) || relativeTo is Simulations || relativeTo is Virtual)
             {
                 // Get a list of all models we're going to run.
                 foreach (var child in relativeTo.Children)
@@ -350,8 +335,8 @@ namespace Models.Core.Run
             // Call all pre simulation tools.
             foreach (IPreSimulationTool tool in FindPreSimulationTools())
             {
-                storage?.Writer.WaitForIdle();
-                storage?.Reader.Refresh();
+                if (storage != null)
+                    storage.Refresh();
                 try
                 {
                     if (tool.Enabled)
@@ -381,8 +366,7 @@ namespace Models.Core.Run
             object[] args = new object[] { this, new EventArgs() };
             foreach (IPostSimulationTool tool in FindPostSimulationTools())
             {
-                storage?.Writer.WaitForIdle();
-                storage?.Reader.Refresh();
+                storage?.Refresh();
 
                 DateTime startTime = DateTime.Now;
                 Exception exception = null;
@@ -414,8 +398,7 @@ namespace Models.Core.Run
         /// <summary>Run all tests.</summary>
         private void RunTests()
         {
-            storage?.Writer.WaitForIdle();
-            storage?.Reader.Refresh();
+            storage?.Refresh();
 
             List<object> services;
             if (relativeTo is Simulations)

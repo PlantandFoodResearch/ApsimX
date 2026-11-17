@@ -12,17 +12,21 @@
 set -euo pipefail
 
 test -z ${DOCKER_METADATA_OUTPUT_VERSION:+x} && ( echo "DOCKER_METADATA_OUTPUT_VERSION not set"; exit 1 )
-test -z ${NETLIFY_BUILD_HOOK:+x} && ( echo "NETLIFY_BUILD_HOOK not set"; exit 1 )
 test -z ${BUILDS_JWT:+x} && ( echo "BUILDS_JWT not set"; exit 1 )
 
 PULL_ID=${DOCKER_METADATA_OUTPUT_VERSION:3}
 test -z ${PULL_ID:+x} && ( echo "PULL_ID not set"; exit 1 )
 
 echo Adding build to DB...
-curl -fsX POST -H "Authorization: bearer $BUILDS_JWT" "https://builds.apsim.info/api/nextgen/add?pullRequestNumber=$PULL_ID"
+response_file=$(mktemp)
+http_code=$(curl -sS -o "$response_file" -w '%{http_code}' -X POST -H "Authorization: bearer $BUILDS_JWT" "https://builds.apsim.info/api/nextgen/add?pullRequestNumber=$PULL_ID") || http_code=000
+if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+    echo "Failed to add build to DB. HTTP status: $http_code"
+    cat "$response_file"
+    echo
+    exit 1
+fi
+rm -f "$response_file"
 
-echo Updating registration website cache
-curl -fs "https://registration.apsim.info/api/updateproducts"
-
-echo Updating netlify build...
-curl -fsX POST -d {} https://api.netlify.com/build_hooks/$NETLIFY_BUILD_HOOK
+echo new build uploaded
+echo finished

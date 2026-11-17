@@ -139,7 +139,7 @@ namespace Models.PMF.Organs
             {
                 if (Plant.IsAlive)
                 {
-                    double greenCover = 1.0 - Math.Exp(-ExtinctionCoefficient.Value() * LAI);
+                    double greenCover = coverGreenFunction.Value();
                     return Math.Min(Math.Max(greenCover, 0.0), 0.999999999); // limiting to within 10^-9, so MicroClimate doesn't complain
                 }
                 else
@@ -206,12 +206,15 @@ namespace Models.PMF.Organs
         [Units("g/m2/d")]
         private NutrientPoolFunctions nDemands = null;
 
-        /// <summary>The extinction coefficient function</summary>
+        /// <summary>The fractional cover for green canopy</summary>
         [Link(Type = LinkType.Child, ByName = true)]
-        IFunction ExtinctionCoefficient = null;
-        /// <summary>The extinction coefficient function for dead leaves</summary>
+        private IFunction coverGreenFunction = null;
+        /// <summary>The fractional cover for dead canopy</summary>
         [Link(Type = LinkType.Child, ByName = true)]
-        IFunction ExtinctionCoefficientDead = null;
+        private IFunction coverDeadFunction = null;
+
+
+
         /// <summary>The photosynthesis</summary>
         [Link(Type = LinkType.Child, ByName = true)]
         IFunction Photosynthesis = null;
@@ -305,7 +308,7 @@ namespace Models.PMF.Organs
         /// <summary>Gets the cover dead.</summary>
         public double CoverDead { 
             get {
-                double value = 1.0 - Math.Exp(-ExtinctionCoefficientDead.Value() * LAIDead);
+                double value = coverDeadFunction.Value();
                 if (MathUtilities.FloatsAreEqual(value, 0))
                     return 0; 
                 else
@@ -710,12 +713,13 @@ namespace Models.PMF.Organs
         /// <param name="deadToRemove">Fraction of dead biomass to remove from simulation (0-1).</param>
         /// <param name="liveToResidue">Fraction of live biomass to remove and send to residue pool(0-1).</param>
         /// <param name="deadToResidue">Fraction of dead biomass to remove and send to residue pool(0-1).</param>
+        /// <param name="fractionStanding">Fraction of biomass that remains standing when passed to surfaceOM (0-1).</param>
         /// <returns>The amount of biomass (live+dead) removed from the plant (g/m2).</returns>
-        public double RemoveBiomass(double liveToRemove, double deadToRemove, double liveToResidue, double deadToResidue)
+        public double RemoveBiomass(double liveToRemove, double deadToRemove, double liveToResidue, double deadToResidue, double fractionStanding = 0)
         {
             Biomass liveAfterRemoval = Live;
             Biomass deadAfterRemoval = Dead;
-            double amountRemoved = biomassRemovalModel.RemoveBiomass(liveToRemove, deadToRemove, liveToResidue, deadToResidue, liveAfterRemoval, deadAfterRemoval, Removed, Detached);
+            double amountRemoved = biomassRemovalModel.RemoveBiomass(liveToRemove, deadToRemove, liveToResidue, deadToResidue, liveAfterRemoval, deadAfterRemoval, Removed, Detached, fractionStanding);
 
             cohort.ReduceLeavesUniformly(liveFraction: MathUtilities.Divide(liveAfterRemoval.Wt, Live.Wt, 0),
                                          deadFraction: MathUtilities.Divide(deadAfterRemoval.Wt, Dead.Wt, 0));

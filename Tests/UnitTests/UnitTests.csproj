@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <BaseOutputPath>../../bin</BaseOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -23,7 +23,7 @@
     <EmbeddedResource Include="**\*.apsimx" />
     <EmbeddedResource Include="Weather\*.xlsx" />
     <EmbeddedResource Include="**\*.met" />
-    <EmbeddedResource Include="Weather\*.bin" />
+    <EmbeddedResource Include="Weather\**\*.bin" />
     <EmbeddedResource Include="**\*.Expected.txt" />
     <EmbeddedResource Include="APSIMShared/Resources/*.csv" />
     <EmbeddedResource Include="**\*.soil" />

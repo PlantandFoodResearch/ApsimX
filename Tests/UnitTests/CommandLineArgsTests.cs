@@ -1,5 +1,5 @@
 ﻿using APSIM.Core;
-using APSIM.Shared.Documentation.Extensions;
+using APSIM.Shared.Extensions;
 using APSIM.Shared.Utilities;
 using Models;
 using Models.Core;
@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace UnitTests
 {
@@ -52,7 +53,7 @@ namespace UnitTests
             clock.StartDate = new DateTime(2019, 1, 1);
             clock.EndDate = new DateTime(2019, 1, 10);
 
-            string output = Utilities.RunModels(file, "/Csv");
+            string output = Utilities.RunModels(file, "--csv");
 
             string csvFile = Path.ChangeExtension(file.FileName, ".Report.csv");
             Assert.That(File.Exists(csvFile), Is.True, "Models.exe failed to create a csv file when passed the /Csv command line argument. Output of Models.exe: " + output);
@@ -568,9 +569,9 @@ save {Path.GetFileName(apsimxFileName)}";
 
             Assert.That(File.Exists(newTempConfigFile), Is.True);
 
-            // Don't pass a path to the command file. Force main to use working directory.
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(newTempConfigFile));
-            Utilities.RunModels($"--apply {Path.GetFileName(newTempConfigFile)}");
+            // Pass the full command file path. The load/save commands remain pathless
+            // and should resolve relative to the command file location.
+            Utilities.RunModels($"--apply {newTempConfigFile}");
 
             string text = File.ReadAllText(file.FileName);
             // Reload simulation from file text. Needed to see changes made.
@@ -1245,8 +1246,7 @@ save {savingApsimFileNameShort} ";
             string outputFile = "test.apsimx";
 
             string configFile = tempPath + "config.txt";
-            File.WriteAllText(configFile, @"[Simulation].Name=<input.txt
-save " + outputFile);
+            File.WriteAllText(configFile, "[Simulation].Name= from input.txt\nsave " + outputFile);
 
             Utilities.RunModels(file, $"--apply {configFile}");
 
@@ -1303,6 +1303,36 @@ save test.apsimx";
             Clock clockNodeAfterChange = sim2.Node.Find<Clock>();
             Assert.That(clockNodeAfterChange.Start, Is.EqualTo(new DateTime(2017, 2, 1)));
         }
+
+        /// <summary>
+        /// Test to make sure that when running a batch file with the apply 
+        /// switch, if one of the rows has an error, 
+        /// the other rows will still run and produce output files.
+        /// </summary>
+        [Test]
+        public static void TestBatch_Continues_OnError()
+        {
+            string batchFilePath = Path.Combine(Path.GetTempPath(), "batch.csv");
+            string commandFilePath = Path.Combine(Path.GetTempPath(), "commands.txt");
+            string testSimFilePath = Path.Combine(Path.GetTempPath(), "test.apsimx");
+            string weatherFilePath = Path.Combine(Path.GetTempPath(), "AU_Dalby.met");
+            string batchFileContent = 
+                "Date,\n" +
+                "djnejfnjkenfkjenfj,\n" +
+                "1900-01-02,\n";
+            string commandFileContent = 
+                $"load test.apsimx\n" +
+                $"[Clock].StartDate=$Date\n" +
+                $"save test_$Date.apsimx\n" +
+                $"run";
+            File.WriteAllText(batchFilePath, batchFileContent);
+            File.WriteAllText(commandFilePath, commandFileContent);
+            File.WriteAllText(testSimFilePath, ReflectionUtilities.GetResourceAsString("UnitTests.Resources.BatchTestResources.test.apsimx"));
+            File.WriteAllText(weatherFilePath, ReflectionUtilities.GetResourceAsString("UnitTests.Resources.BatchTestResources.AU_Dalby.met"));
+            Assert.Throws<Exception>(() => Utilities.RunModels($"--apply {commandFilePath} --batch {batchFilePath}"));
+            Assert.That(File.Exists(Path.Combine(Path.GetTempPath(), "test_1900-01-02.apsimx")), Is.True);
+        }
+
 
 
     }

@@ -124,7 +124,11 @@ namespace Models.Soils
         /// </summary>
         private const double slcerr = 0.000001;
 
-        private const double hydrol_effective_depth = 450;
+        /// <summary>Depth in the soil to assess water content for runoff effect (mm).</summary>
+        public double hydrol_effective_depth { get; set; } = 450;
+
+        /// <summary>Exponent in the equation for hydraulic effectiveness for runoff (-).</summary>
+        public double hydrol_effective_exponent { get; set; } = 4.16;
 
         private double[] _swf;
         private string rain_time = null;
@@ -1169,7 +1173,9 @@ namespace Models.Soils
             GetSoluteVariables();
             GetCropVariables();
             residue_cover = surfaceOrganicMatter.Cover;
-            CNRunoff();
+
+            if (isbc != 2)  // if isbc is 2 the surface boundary condition is a power function and so we don't want to recalc runoff
+                CNRunoff();
 
             double timestepStart = Time(year, day, _apsimTimeMinutes);
             double timestep = apsim_timestep / 60.0;
@@ -1410,7 +1416,7 @@ namespace Models.Soils
             ibbc = 0;
             bbc_value = 0.0;
 
-            if (isbc == 2) // There doesn't seem to be anywhere for isbc to acquire a value other than 0  !!!!
+            if (isbc == 2) // There doesn't seem to be anywhere for isbc to acquire a value other than 0  !!!! VOS - yes there is see L700 "public void SetSurfaceBCForPowerFunction"
             {
                 if (Double.IsNaN(minimum_surface_storage))
                     throw new Exception("No value provided for minimum_surface_storage");
@@ -2319,7 +2325,7 @@ namespace Models.Soils
 
             hydrolEffectiveDepth = Math.Min(hydrol_effective_depth, profile_depth);
 
-            scale_fact = 1.0 / (1.0 - Math.Exp(-4.16));
+            scale_fact = 1.0 / (1.0 - Math.Exp(-hydrol_effective_exponent));
             hydrolEffectiveLayer = FindSwimLayer(hydrolEffectiveDepth);
 
             for (layer = 0; layer <= hydrolEffectiveLayer; layer++)
@@ -2330,7 +2336,7 @@ namespace Models.Soils
                 // assume water content to c%hydrol_effective_depth affects runoff
                 // sum of wf should = 1 - may need to be bounded? <dms 7-7-95>
 
-                wx = scale_fact * (1.0 - Math.Exp(-4.16 * cum_depth / hydrolEffectiveDepth));
+                wx = scale_fact * (1.0 - Math.Exp(-hydrol_effective_exponent * cum_depth / hydrolEffectiveDepth));
                 runoff_wf[layer] = wx - xx;
                 xx = wx;
 
@@ -2899,7 +2905,7 @@ namespace Models.Soils
             {
                 summary.WriteMessage(this, "     APSwim Numerical Diagnostics", MessageType.Diagnostic);
                 summary.WriteMessage(this, "     ------------------------------------------------------------------------------", MessageType.Diagnostic);
-                summary.WriteMessage(this, "      depth      Theta         psi        K           p          p*", MessageType.Diagnostic);
+                summary.WriteMessage(this, "      depth         Theta         psi         K              p          p*", MessageType.Diagnostic);
                 summary.WriteMessage(this, "     ------------------------------------------------------------------------------", MessageType.Diagnostic);
 
                 double k;
@@ -2907,7 +2913,7 @@ namespace Models.Soils
                 for (int layer = 0; layer < x.Length; layer++)
                 {
                     Watvar(layer, _p[layer], out dummy1, out dummy2, out dummy3, out dummy4, ref dummy5, out k, ref dummy6);
-                    summary.WriteMessage(this, String.Format("     {0,6:F1}         {1,9:F7} {2,10:0.###} {3,10:F3} {4,10:F3} {5,10:F3}",
+                    summary.WriteMessage(this, String.Format("     {0,6:F1}         {1,9:F7} {2,10:F3} {3,15:F8} {4,10:F3} {5,10:F3}",
                                       x[layer] * 10.0,
                                       th[layer],
                                       _psi[layer],

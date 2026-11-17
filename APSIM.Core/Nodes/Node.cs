@@ -1,5 +1,6 @@
 using APSIM.Shared;
 using APSIM.Shared.Utilities;
+using Models.Core;
 
 namespace APSIM.Core;
 
@@ -15,9 +16,11 @@ namespace APSIM.Core;
 public class Node : IStructure
 {
     private readonly List<Node> children = [];
+    private readonly ManualResetEventSlim initialisationComplete = new(true);
     private ScopingRules scope;
     private Locator locator;
     private string fileName;
+    private Exception exception = null;
 
     /// <summary>The node name.</summary>
     public string Name { get; private set; }
@@ -60,12 +63,17 @@ public class Node : IStructure
     /// <summary>Is the node readonly i.e. not changable.</summary>
     public bool ReadOnly => Model == null ? false : Model.ReadOnly;
 
-    /// <summary>Is initialisation underway?</summary>
-    public bool IsInitialising { get; private set; }
+    /// <summary>Is initialisation underway</summary>
+    public bool IsInitialising { get; private set; } = true;
+
+    /// <summary>
+    /// As the nodes can be initialised in the background, we need to store any 
+    /// exception to throw then later if they happen.
+    /// </summary>
+    public Exception InitialisationException { get {return Root().exception;} }
 
     /// <summary>Compiler instance.</summary>
     public ScriptCompiler Compiler { get; private set; }
-
 
     /// <summary>
     /// Create a NodeTree instance from a model instance.
@@ -475,7 +483,23 @@ public class Node : IStructure
         foreach (var child in children.ToArray())
             RemoveChild(child.Model);
     }
+    
+    /// <summary>Wait for node initialisation to complete.</summary>
+    /// <param name="timeout">The maximum time to wait.</param>
+    public bool WaitForInitialisation(TimeSpan timeout)
+    {
+        return Root().initialisationComplete.Wait(timeout);
+    }
 
+    /// <summary>Find and return the root node</summary>
+    public Node Root()
+    {
+        Node root = WalkParents().FirstOrDefault(n => n.Parent == null);
+        if (root != null)
+            return root;
+        else
+            return this;
+    }
 
     /// <summary>
     /// Constructor
@@ -491,13 +515,6 @@ public class Node : IStructure
 
         Name = model.Name;
         Model = model;
-    }
-
-    /// <summary>Find and return the root node</summary>
-    internal Node Root()
-    {
-        return WalkParents().FirstOrDefault(n => n.Parent == null)
-               ?? this;
     }
 
     /// <summary>
@@ -527,11 +544,19 @@ public class Node : IStructure
         // Replace all models that have a ResourceName with the official, released models from resources.
         Resource.Instance.Replace(head);
 
+        //check if this will generate nodes, if so, we can't do this in the background
+        bool willGenerateNodes = false;
+        foreach (var node in head.Walk())
+            if (node.Model is IGenerateNodes)
+                willGenerateNodes = true;
+
         // Initialise the model.
         if (doInitialise)
         {
+            head.initialisationComplete.Reset();
+
             // Call created in all models.
-            if (initInBackground)
+            if (initInBackground && !willGenerateNodes)
                 Task.Run(() => head.InitialiseModel(errorHandler));
             else
                 head.InitialiseModel(errorHandler);
@@ -547,27 +572,39 @@ public class Node : IStructure
     {
         try
         {
+            Root().exception = null;
+            List<IGenerateNodes> generateNodes = new List<IGenerateNodes>();
             foreach (var node in Walk())
+            {
                 node.IsInitialising = true;
+                if (node.Parent != null)
+                        if (node.Model is IGenerateNodes generateNode)
+                            generateNodes.Add(generateNode);
+            }
+
+            string directory = Path.GetDirectoryName(Walk().First().FileName);
+            foreach (IGenerateNodes model in generateNodes)
+            {
+                model.FilePath.SetStartDirectory(directory);
+                model.DeleteNodes();
+                model.CreateNodes();
+            }
 
             foreach (Node node in Walk().Where(n => n.Model is ICreatable))
-            {
-                try
-                {
-                    (node.Model as ICreatable).OnCreated();
-                }
-                catch (Exception err)
-                {
-                    if (errorHandler == null)
-                        throw;
-                    errorHandler(err);
-                }
-            }
+                (node.Model as ICreatable).OnCreated();
+        }
+        catch (Exception err)
+        {
+            Root().exception = err;
+            if (errorHandler == null)
+                throw;
+            errorHandler(err);
         }
         finally
         {
             foreach (var node in Walk())
                 node.IsInitialising = false;
+            Root().initialisationComplete.Set();
         }
     }
 
@@ -588,6 +625,7 @@ public class Node : IStructure
         childNode.scope = scope;
         childNode.locator = locator;
         childModel.Node = childNode;
+        childModel.ReadOnly = false;
 
         // Resolves child dependencies.
         ResolvesDependencies(childNode);

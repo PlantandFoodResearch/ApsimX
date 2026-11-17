@@ -9,9 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using UserInterface.Views;
 using Models.PMF.Phen;
-using APSIM.Shared.Documentation;
+using APSIM.Documentation.Tag;
 using APSIM.Core;
 using APSIM.Documentation;
+using Models;
 
 namespace UserInterface.Presenters
 {
@@ -85,6 +86,12 @@ namespace UserInterface.Presenters
             markdown.AppendLine();
             markdown.AppendLine(summary);
             markdown.AppendLine();
+
+            foreach (IText child in model.Node.FindChildren<IText>())
+            {
+                markdown.AppendLine(child.Text);
+                markdown.AppendLine();
+            }
 
             string remarks = CodeDocumentation.GetRemarks(model.GetType());
             if (!string.IsNullOrEmpty(remarks))

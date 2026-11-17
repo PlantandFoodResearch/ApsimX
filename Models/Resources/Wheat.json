@@ -1,6 +1,6 @@
 {
   "$type": "Models.Core.Simulations, Models",
-  "Version": 210,
+  "Version": 222,
   "Name": "Simulations",
   "ResourceName": null,
   "Children": [
@@ -784,7 +784,7 @@
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
-                  "ReadOnly": true
+                  "ReadOnly": false
                 },
                 {
                   "$type": "Models.Functions.AddFunction, Models",
@@ -798,7 +798,7 @@
                       "ResourceName": null,
                       "Children": [],
                       "Enabled": true,
-                      "ReadOnly": true
+                      "ReadOnly": false
                     },
                     {
                       "$type": "Models.Functions.MultiplyFunction, Models",
@@ -812,7 +812,7 @@
                           "ResourceName": null,
                           "Children": [],
                           "Enabled": true,
-                          "ReadOnly": true
+                          "ReadOnly": false
                         },
                         {
                           "$type": "Models.Functions.VariableReference, Models",
@@ -821,7 +821,7 @@
                           "ResourceName": null,
                           "Children": [],
                           "Enabled": true,
-                          "ReadOnly": true
+                          "ReadOnly": false
                         },
                         {
                           "$type": "Models.Functions.LinearInterpolationFunction, Models",
@@ -846,7 +846,7 @@
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
-                              "ReadOnly": true
+                              "ReadOnly": false
                             },
                             {
                               "$type": "Models.Functions.VariableReference, Models",
@@ -855,19 +855,19 @@
                               "ResourceName": null,
                               "Children": [],
                               "Enabled": true,
-                              "ReadOnly": true
+                              "ReadOnly": false
                             }
                           ],
                           "Enabled": true,
-                          "ReadOnly": true
+                          "ReadOnly": false
                         }
                       ],
                       "Enabled": true,
-                      "ReadOnly": true
+                      "ReadOnly": false
                     }
                   ],
                   "Enabled": true,
-                  "ReadOnly": true
+                  "ReadOnly": false
                 }
               ],
               "Enabled": true,
@@ -888,7 +888,7 @@
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
-                  "ReadOnly": true
+                  "ReadOnly": false
                 },
                 {
                   "$type": "Models.Functions.Constant, Models",
@@ -898,7 +898,7 @@
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
-                  "ReadOnly": true
+                  "ReadOnly": false
                 }
               ],
               "Enabled": true,
@@ -1019,25 +1019,62 @@
               "ReadOnly": false
             },
             {
-              "$type": "Models.PMF.Phen.ZadokPMFWheat, Models",
+              "$type": "Models.PMF.Phen.Zadok, Models",
               "Name": "Zadok",
               "ResourceName": null,
               "Children": [
                 {
                   "$type": "Models.Functions.VariableReference, Models",
-                  "VariableName": "[Phenology].HaunStage",
-                  "Name": "HaunStage",
+                  "VariableName": "[Phenology].Zadok.VegetativePhaseCalculationWheat",
+                  "Name": "VegetativePhaseFunction",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
                   "ReadOnly": false
                 },
                 {
-                  "$type": "Models.Functions.VariableReference, Models",
-                  "VariableName": "[Structure].TillerNumber",
-                  "Name": "TillerNumber",
+                  "$type": "Models.Functions.LinearInterpolationFunction, Models",
+                  "Name": "ZadokStageMapping",
                   "ResourceName": null,
-                  "Children": [],
+                  "Children": [
+                    {
+                      "$type": "Models.Functions.XYPairs, Models",
+                      "X": [
+                        5.0,
+                        5.99,
+                        6.0,
+                        7.0,
+                        8.0,
+                        9.0,
+                        10.0,
+                        11.0
+                      ],
+                      "Y": [
+                        30.0,
+                        34.0,
+                        39.0,
+                        55.0,
+                        65.0,
+                        71.0,
+                        87.0,
+                        90.0
+                      ],
+                      "Name": "XYPairs",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    },
+                    {
+                      "$type": "Models.Functions.VariableReference, Models",
+                      "VariableName": "[Phenology].Stage",
+                      "Name": "XValue",
+                      "ResourceName": null,
+                      "Children": [],
+                      "Enabled": true,
+                      "ReadOnly": false
+                    }
+                  ],
                   "Enabled": true,
                   "ReadOnly": false
                 }
@@ -1393,7 +1430,7 @@
                       "ResourceName": null,
                       "Children": [],
                       "Enabled": true,
-                      "ReadOnly": true
+                      "ReadOnly": false
                     },
                     {
                       "$type": "Models.Memo, Models",
@@ -3671,6 +3708,11 @@
           "TipsAtEmergence": 0,
           "CohortsAtInitialisation": 0,
           "FractionDied": 0.0,
+          "MostRecentLeafMaxSize": 0.0,
+          "MostRecentLeafSize": 0.0,
+          "MostRecentlyExpandedPosition": 0,
+          "MostRecentlyExpandedSize": 0.0,
+          "MostRecentlyExpandedPotentialSize": 0.0,
           "Name": "Leaf",
           "ResourceName": null,
           "Children": [
@@ -5415,6 +5457,24 @@
               "Units": "/plant",
               "Expression": "[Structure].BranchNumber + 1",
               "Name": "StemNumberPerPlant",
+              "ResourceName": null,
+              "Children": [],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Functions.VariableReference, Models",
+              "VariableName": "[Leaf].MostRecentlyExpandedSize",
+              "Name": "Size",
+              "ResourceName": null,
+              "Children": [],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Functions.VariableReference, Models",
+              "VariableName": "[Leaf].MostRecentlyExpandedPotentialSize",
+              "Name": "MaximumSize",
               "ResourceName": null,
               "Children": [],
               "Enabled": true,
@@ -7698,55 +7758,6 @@
                     "[Phenology].GrainFilling.Target.FixedValue = 700"
                   ],
                   "Name": "Sorrial",
-                  "ResourceName": null,
-                  "Children": [],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.PMF.Cultivar, Models",
-                  "Command": [
-                    "[Phenology].HeadEmergenceLongDayBase.FixedValue = 50",
-                    "[Phenology].Phyllochron.BasePhyllochron.FixedValue = 105.0",
-                    "[Leaf].ExtinctionCoeff.VegetativePhase.FixedValue = 0.75",
-                    "[Grain].NumberFunction.GrainNumber.GrainsPerGramOfStem.FixedValue = 28",
-                    "[Grain].MaximumPotentialGrainSize.FixedValue = 0.05",
-                    "[Leaf].CohortParameters.MaxArea.AreaLargestLeaves.FixedValue = 3000",
-                    "[Phenology].PhyllochronPpSensitivity.FixedValue = 0.33",
-                    "[Phenology].CAMP.FLNparams.MinLN = 8",
-                    "[Phenology].CAMP.FLNparams.PpLN = 12",
-                    "[Phenology].CAMP.FLNparams.VrnLN = 12",
-                    "[Phenology].CAMP.FLNparams.VxPLN = 4",
-                    "[Phenology].HeadEmergencePpSensitivity.FixedValue = 8",
-                    "[Phenology].CAMP.EnvData.VrnTreatTemp = 6",
-                    "[Phenology].CAMP.EnvData.VrnTreatDuration = 60",
-                    "[Phenology].GrainFilling.Target.FixedValue = 700"
-                  ],
-                  "Name": "Cesario",
-                  "ResourceName": null,
-                  "Children": [],
-                  "Enabled": true,
-                  "ReadOnly": false
-                },
-                {
-                  "$type": "Models.PMF.Cultivar, Models",
-                  "Command": [
-                    "[Phenology].HeadEmergenceLongDayBase.FixedValue = 50",
-                    "[Phenology].Phyllochron.BasePhyllochron.FixedValue = 105.0",
-                    "[Leaf].ExtinctionCoeff.VegetativePhase.FixedValue = 0.75",
-                    "[Grain].NumberFunction.GrainNumber.GrainsPerGramOfStem.FixedValue = 26",
-                    "[Grain].MaximumPotentialGrainSize.FixedValue = 0.045",
-                    "[Leaf].CohortParameters.MaxArea.AreaLargestLeaves.FixedValue = 3000",
-                    "[Phenology].PhyllochronPpSensitivity.FixedValue = 0.33",
-                    "[Phenology].CAMP.FLNparams.MinLN = 8",
-                    "[Phenology].CAMP.FLNparams.PpLN = 12",
-                    "[Phenology].CAMP.FLNparams.VrnLN = 12",
-                    "[Phenology].CAMP.FLNparams.VxPLN = 4",
-                    "[Phenology].HeadEmergencePpSensitivity.FixedValue = 8",
-                    "[Phenology].CAMP.EnvData.VrnTreatTemp = 6",
-                    "[Phenology].CAMP.EnvData.VrnTreatDuration = 60"
-                  ],
-                  "Name": "Stockade",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,
@@ -10666,6 +10677,43 @@
                     "[Phenology].HeadEmergencePpSensitivity.FixedValue = 2"
                   ],
                   "Name": "UOM001_9_1",
+                  "ResourceName": null,
+                  "Children": [],
+                  "Enabled": true,
+                  "ReadOnly": false
+                }
+              ],
+              "Enabled": true,
+              "ReadOnly": false
+            },
+            {
+              "$type": "Models.Core.Folder, Models",
+              "ShowInDocs": false,
+              "Name": "Argentina",
+              "ResourceName": null,
+              "Children": [
+                {
+                  "$type": "Models.PMF.Cultivar, Models",
+                  "Command": [
+                    "",
+                    "[Phenology].Phyllochron.BasePhyllochron.FixedValue = 90",
+                    "[Phenology].PhyllochronPpSensitivity.FixedValue = 0.24",
+                    "[Phenology].CAMP.FLNparams.MinLN = 10",
+                    "[Phenology].CAMP.FLNparams.PpLN = 0.5",
+                    "[Phenology].CAMP.FLNparams.VrnLN = 0",
+                    "[Phenology].CAMP.FLNparams.VxPLN = -1",
+                    "[Phenology].HeadEmergenceLongDayBase.FixedValue = 100",
+                    "[Phenology].HeadEmergencePpSensitivity.FixedValue = 1",
+                    "[Phenology].CAMP.EnvData.VrnTreatTemp = 5.8",
+                    "[Phenology].CAMP.EnvData.VrnTreatDuration = 10",
+                    "[Phenology].GrainFilling.Target.FixedValue = 290",
+                    "[Leaf].CohortParameters.SenescenceDuration.Constant.FixedValue = 6",
+                    "[Photosynthesis].RUE.FixedValue = 2.8",
+                    "[Leaf].ExtinctionCoeff.VegetativePhase.FixedValue = 0.65",
+                    "[Grain].NumberFunction.GrainNumber.GrainsPerGramOfStem.FixedValue = 30",
+                    "[Grain].MaximumPotentialGrainSize.FixedValue = 0.040"
+                  ],
+                  "Name": "AGP_FAST",
                   "ResourceName": null,
                   "Children": [],
                   "Enabled": true,

@@ -13,7 +13,7 @@ namespace UserInterface.Presenters
     /// <summary>
     /// A presenter for a graph component
     /// </summary>
-    public class QuadGraphPresenter : IPresenter
+    public class QuadGraphPresenter : IPresenter, ISubPresenter
     {
         /// <summary>Parent explorer presenter.</summary>
         private ExplorerPresenter explorerPresenter;
@@ -23,6 +23,13 @@ namespace UserInterface.Presenters
 
         /// <summary>The model.</summary>
         private IModel model;
+
+        /// <summary>
+        /// Flag to record if Presenter is currently listening for events.
+        /// Prevents event listeners from being doubled up when used as sub 
+        /// presenter.
+        /// </summary>
+        private bool _eventsConnected = false;
 
         /// <summary>Attach the model to the view.</summary>
         /// <param name="model">The model.</param>
@@ -36,13 +43,13 @@ namespace UserInterface.Presenters
             this.view.AddContextAction("Copy graph to clipboard", CopyGraphToClipboard);
 
             this.explorerPresenter = explorerPresenter;
-            explorerPresenter.CommandHistory.ModelChanged += OnModelChanged;
+            ConnectEvents();
         }
 
         /// <summary>Detach the model from the view.</summary>
         public void Detach()
         {
-            explorerPresenter.CommandHistory.ModelChanged -= OnModelChanged;
+            DisconnectEvents();
         }
 
         /// <summary>Populate the graph with data.</summary>
@@ -77,7 +84,6 @@ namespace UserInterface.Presenters
             {
                 Water water = null;
                 Physical physical = null;
-                SoilCrop crop = null;
                 if (model is Water)
                 {
                     water = model as Water;
@@ -90,9 +96,8 @@ namespace UserInterface.Presenters
                 }
                 else if (model is SoilCrop)
                 {
-                    crop = model as SoilCrop;
-                    physical = model.Node.FindSibling<Physical>();
-                    water = model.Node.FindSibling<Water>();
+                    physical = model.Parent as Physical;
+                    water = physical.Node.FindSibling<Water>();
                 }
 
                 if (water != null)
@@ -104,12 +109,12 @@ namespace UserInterface.Presenters
 
                     if (model is SoilCrop soilCrop)
                     {
-                        llsoilName = (model as SoilCrop).Name;
+                        llsoilName = soilCrop.Name;
                         string cropName = llsoilName.Substring(0, llsoilName.IndexOf("Soil"));
                         llsoilName = cropName + " LL";
-                        llsoil = (model as SoilCrop).LL;
+                        llsoil = soilCrop.LL;
                         cllName = llsoilName;
-                        relativeLL = (model as SoilCrop).LL;
+                        relativeLL = soilCrop.LL;
                     }
                     //Since we can view the soil relative to water, lets not have the water node graphing options effect this graph.
                     if (physical.Thickness != null)
@@ -139,15 +144,23 @@ namespace UserInterface.Presenters
         }
 
         /// <summary>Connect all widget events.</summary>
-        private void ConnectEvents()
+        public void ConnectEvents()
         {
-            explorerPresenter.CommandHistory.ModelChanged += OnModelChanged;
+            if (!_eventsConnected)
+            {
+                _eventsConnected = true;
+                explorerPresenter.CommandHistory.ModelChanged += OnModelChanged;
+            }
         }
 
         /// <summary>Disconnect all widget events.</summary>
-        private void DisconnectEvents()
+        public void DisconnectEvents()
         {
-            explorerPresenter.CommandHistory.ModelChanged -= OnModelChanged;
+            if (_eventsConnected)
+            {
+                _eventsConnected = false;
+                explorerPresenter.CommandHistory.ModelChanged -= OnModelChanged;
+            }
         }
 
         /// <summary>
@@ -319,9 +332,11 @@ namespace UserInterface.Presenters
         private static void PopulateWaterGraph(GraphView graph, double[] thickness, double[] airdry, double[] ll15, double[] dul, double[] sat,
                                                string cllName, double[] swThickness, double[] cll, double[] sw, string llsoilsName, double[] llsoil)
         {
-
             double[] cumulativeThickness = APSIM.Shared.Utilities.SoilUtilities.ToCumThickness(thickness);
-            double[] cumulativeSWThickness = APSIM.Shared.Utilities.SoilUtilities.ToCumThickness(swThickness);
+
+            double[] cumulativeSWThickness = null;
+            if (swThickness != null)
+                cumulativeSWThickness = APSIM.Shared.Utilities.SoilUtilities.ToCumThickness(swThickness);
 
             double[] cllMapped = null;
             if (cll != null)
@@ -417,12 +432,13 @@ namespace UserInterface.Presenters
             xTopMin -= xTopMax * padding;
             xTopMax += xTopMax * padding;
 
-
-            double physicalHeight = MathUtilities.Max(cumulativeThickness);
-            double waterHeight = MathUtilities.Max(cumulativeSWThickness);
-            double height = physicalHeight;
-            if (waterHeight < physicalHeight)
-                height = waterHeight;
+            double height = MathUtilities.Max(cumulativeThickness);
+            if (cumulativeSWThickness != null)
+            {
+                double waterHeight = MathUtilities.Max(cumulativeSWThickness);
+                if (waterHeight < height)
+                    height = waterHeight;
+            }
 
             graph.FormatAxis(AxisPosition.Top, "Volumetric water (mm/mm)", inverted: false, xTopMin, xTopMax, double.NaN, false, false);
             graph.FormatAxis(AxisPosition.Left, "Depth (mm)", inverted: true, 0, height, double.NaN, false, false);
